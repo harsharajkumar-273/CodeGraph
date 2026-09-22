@@ -1,0 +1,47 @@
+:root { color-scheme: dark; }
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; margin: 0; }
+body { background: #0d1117; color: #e6edf3; font: 13px/1.45 -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif; }
+code, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11.5px; }
+.app { display: grid; grid-template-columns: 340px 1fr; height: 100%; }
+.side { border-right: 1px solid #21262d; background: #0d1117; padding: 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+.brand { font-size: 17px; font-weight: 700; letter-spacing: .2px; }
+.logo { color: #58a6ff; margin-right: 4px; }
+.muted { color: #8b949e; }
+.small { font-size: 11.5px; }
+.stats { display: flex; justify-content: space-between; gap: 8px; }
+button { font: inherit; background: #21262d; color: #e6edf3; border: 1px solid #30363d; border-radius: 6px; padding: 5px 10px; cursor: pointer; }
+button:hover { background: #30363d; }
+button.link { background: none; border: none; color: #58a6ff; padding: 0 4px; }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 2px; }
+.seg button { border: none; background: none; border-radius: 6px; padding: 6px 0; color: #8b949e; }
+.seg button.on { background: #1f6feb; color: #fff; }
+.search { width: 100%; background: #0d1117; border: 1px solid #30363d; color: #e6edf3; border-radius: 6px; padding: 7px 10px; font: inherit; }
+.search:focus { outline: 1px solid #58a6ff; border-color: #58a6ff; }
+.results { list-style: none; margin: -4px 0 0; padding: 4px; border: 1px solid #30363d; border-radius: 6px; background: #161b22; max-height: 280px; overflow-y: auto; }
+.results li { display: grid; grid-template-columns: 18px 1fr; gap: 0 6px; padding: 4px 6px; border-radius: 4px; cursor: pointer; }
+.results li:hover { background: #21262d; }
+.rname { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rfile { grid-column: 2; color: #8b949e; font-size: 10.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kind { display: inline-grid; place-items: center; width: 16px; height: 16px; border-radius: 4px; font-size: 10px; font-weight: 700; background: #30363d; color: #c9d1d9; }
+.kind.function { background: #1f6feb55; } .kind.method { background: #8957e555; } .kind.class { background: #d2992255; } .kind.file { background: #23863655; } .kind.variable { background: #58a6ff33; color: #79c0ff; }
+.controls { display: flex; flex-direction: column; gap: 8px; }
+.controls label { display: flex; flex-direction: column; gap: 3px; color: #8b949e; font-size: 11.5px; }
+select { background: #0d1117; color: #e6edf3; border: 1px solid #30363d; border-radius: 6px; padding: 5px 6px; font: inherit; }
+input[type=range] { accent-color: #58a6ff; }
+.card { border: 1px solid #21262d; background: #161b22; border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+.card .h { font-weight: 700; word-break: break-word; }
+.impact { display: flex; align-items: center; gap: 10px; }
+.impact .big { font-size: 30px; font-weight: 800; color: #f85149; line-height: 1; }
+.card .mono { word-break: break-all; }
+.chip { display: inline-block; background: #21262d; border: 1px solid #30363d; border-radius: 999px; padding: 1px 8px; margin: 2px 4px 2px 0; cursor: pointer; font-size: 11px; }
+.chip:hover { background: #30363d; border-color: #58a6ff; }
+.symlist { max-height: 220px; overflow-y: auto; }
+.symrow { padding: 2px 4px; border-radius: 4px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.symrow:hover { background: #21262d; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 12px; color: #8b949e; font-size: 11px; margin-top: auto; padding-top: 6px; }
+.legend i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 5px; }
+.legend b { display: inline-block; width: 18px; border-top: 2px solid #6e7681; margin-right: 5px; vertical-align: middle; }
+.canvas { position: relative; height: 100%; }
+.note { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); background: #161b22; border: 1px solid #30363d; padding: 6px 12px; border-radius: 999px; color: #8b949e; font-size: 12px; pointer-events: none; }
+.react-flow__node { cursor: pointer; }
