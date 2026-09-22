@@ -1,0 +1,7 @@
+node_modules
+dist
+.codegraph
+*.log
+.DS_Store
+coverage
+packages/web/vite.config.ts.timestamp-*

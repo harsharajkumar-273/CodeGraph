@@ -1,0 +1,8 @@
+{
+  "name": "@codegraph/parser",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "exports": { ".": "./src/index.ts" },
+  "dependencies": { "web-tree-sitter": "0.25.10", "tree-sitter-wasms": "0.1.13" }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "@codegraph/cli",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "bin": { "codegraph": "./src/bin.ts" },
+  "dependencies": { "@codegraph/core": "*", "@codegraph/extractors": "*", "@codegraph/analysis": "*" }
+}

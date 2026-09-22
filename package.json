@@ -1,0 +1,20 @@
+{
+  "name": "codegraph",
+  "private": true,
+  "type": "module",
+  "description": "AST dependency, call-graph and blast-radius engine for analyzing repos (Tree-sitter + TypeScript).",
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "cg": "tsx packages/cli/src/bin.ts",
+    "dev:web": "npm -w @codegraph/web run dev",
+    "build:web": "npm -w @codegraph/web run build"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "vitest": "^3.0.0"
+  }
+}
