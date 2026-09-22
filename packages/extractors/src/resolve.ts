@@ -255,6 +255,30 @@ class Resolver {
     return null;
   }
 
+  /**
+   * The directory that would be on `sys.path` for `from` — i.e. the parent of the
+   * top-most package directory containing it, found by walking up only while each
+   * directory is itself a package (has `__init__.py`).
+   *
+   * This is the ONE legitimate implicit search root for an absolute import; it is
+   * NOT every ancestor directory. Adding every ancestor (the old behavior) let a
+   * nested package shadow a same-named top-level/stdlib module — e.g. inside
+   * `flask/json/provider.py`, `import json` must resolve to the stdlib, not to the
+   * sibling `flask/json` package, but treating `flask/` (an ancestor two levels up)
+   * as a search root made `json` match `flask/json/__init__.py`. Walking up only
+   * through `__init__.py`-having directories and stopping at the first one without
+   * one — the real package boundary — avoids that.
+   */
+  private packageRoot(from: string): string {
+    let dir = p.dirname(from);
+    while (dir !== '.' && dir !== '/' && this.has(p.join(dir, '__init__.py'))) {
+      const parent = p.dirname(dir);
+      if (parent === dir) return dir;
+      dir = parent;
+    }
+    return dir === '.' ? '' : dir;
+  }
+
   private resolvePy(from: string, spec: string, level: number): ModuleRef {
     const parts = spec ? spec.split('.') : [];
     if (level > 0) {
@@ -263,11 +287,7 @@ class Resolver {
       const f = this.pyFile(p.join(base, ...parts));
       return f ? { file: f } : null;
     }
-    const roots = new Set<string>(['', 'src', 'lib', 'app']);
-    for (let d = p.dirname(from); ; d = p.dirname(d)) {
-      roots.add(d === '.' ? '' : d);
-      if (d === '.' || d === '/') break;
-    }
+    const roots = new Set<string>([this.packageRoot(from), '', 'src', 'lib', 'app']);
     for (const r of roots) {
       const f = this.pyFile(p.join(r, ...parts));
       if (f) return { file: f };
