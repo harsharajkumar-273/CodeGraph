@@ -58,29 +58,32 @@ Targets accepted by `impact` / `slice`: `src/a.ts`, `src/a.ts#Foo.bar`, `src/a.t
 | Symbols | functions, arrows, classes, methods, `Foo.prototype.x =`, `module.exports` | functions, classes, methods, nested functions |
 | Calls | plain, member, `this`, `new`, JSX components, callbacks passed by name | plain, member, `self`/`super()`, decorators, callbacks |
 | Type-aware | annotations, `new Foo()`, constructor parameter properties | annotations, `x = Foo()`, `self.x = Foo()` |
+| Variables | `const`/`let`/`var`, params, `for`/`for-of`, `catch`, `+=` | assignment, params, `for`, `+=` |
+
+Variable lineage is **intra-procedural** (stage 1): it tracks a variable's value only within its own function, not across closures or object fields (`this.x`, `self.x`) — see [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md#6-variable-lineage--stage-1-intra-procedural) for exactly what is and isn't tracked yet.
 
 ## Layout
 
 ```
 packages/core        graph types + CodeGraph
 packages/parser      web-tree-sitter loader (WASM grammars)
-packages/extractors  per-file fact extraction + cross-file resolver + indexer
-packages/analysis    blast radius, slice, diff→symbols, import cycles  (pure TS: Node or browser)
-packages/cli         codegraph index | impact | slice | cycles | serve
-packages/web         React Flow UI with folder → file → function zoom
+packages/extractors  per-file fact extraction (incl. variable def/use) + cross-file resolver + indexer
+packages/analysis    blast radius, slice, variable lineage, diff→symbols, import cycles  (pure TS: Node or browser)
+packages/cli         codegraph index | impact | slice | vars | cycles | serve
+packages/web         React Flow UI with folder → file → function zoom, plus a variable dataflow view
 fixtures/            tiny TS/JS and Python repos with hand-verified expected edges
 docs/ARCHITECTURE.md design, schema, resolution algorithm, decisions, roadmap
 ```
 
 ## Honest limitations
 
-Tree-sitter parses syntax; it is not a type checker. Dynamic dispatch (`getattr`, `obj[name]()`, DI containers, monkey-patching, `current_app`-style proxies) is invisible, and return-type inference is not attempted — that is exactly why edges carry confidence. Variable def-use chains are planned (v0.2) but not implemented yet. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+Tree-sitter parses syntax; it is not a type checker. Dynamic dispatch (`getattr`, `obj[name]()`, DI containers, monkey-patching, `current_app`-style proxies) is invisible, and return-type inference is not attempted — that is exactly why edges carry confidence. Variable lineage doesn't yet cross closures, doesn't track object fields, and orders reads/writes lexically rather than with a real control-flow graph (a stage-2 item). See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ## Development
 
 ```bash
-npm test             # vitest: fixtures pin expected call/import edges
+npm test             # vitest: fixtures pin expected call/import/flows edges
 npm run typecheck
 ```
 
-Indexing speed on a laptop-class machine: Flask (83 files, ~1.6k symbols) in ~1.2 s, Express (141 files) in ~0.5 s.
+Indexing speed on a laptop-class machine: Flask (83 files, ~1.6k symbols, ~3k variable nodes) in well under a second, Express (141 files) similarly fast.
