@@ -1,7 +1,13 @@
 import type { CodeGraph } from '@codegraph/core';
 
-/** Import cycles: strongly connected components (size > 1) of the file import graph (Tarjan). */
-export function importCycles(graph: CodeGraph): string[][] {
+/**
+ * Import cycles: strongly connected components (size > 1) of the file import graph (Tarjan).
+ *
+ * `TYPE_CHECKING`-guarded imports (Python) are excluded by default: they're erased at runtime,
+ * so a cycle that only exists through one isn't a real dependency cycle — including it can also
+ * merge two otherwise-separate real cycles into one misleadingly large component.
+ */
+export function importCycles(graph: CodeGraph, opts: { includeTypeOnly?: boolean } = {}): string[][] {
   const files = graph.nodes('file');
   let index = 0;
   const idx = new Map<string, number>();
@@ -17,6 +23,7 @@ export function importCycles(graph: CodeGraph): string[][] {
     stack.push(v);
     onStack.add(v);
     for (const e of graph.outgoing(v, ['imports'])) {
+      if (e.typeOnly && !opts.includeTypeOnly) continue;
       const w = e.to;
       if (graph.node(w)?.kind !== 'file') continue;
       if (!idx.has(w)) {

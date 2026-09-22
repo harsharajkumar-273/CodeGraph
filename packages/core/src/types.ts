@@ -37,6 +37,8 @@ export interface GraphEdge {
   kind: EdgeKind;
   confidence: Confidence;
   line?: number;
+  /** Import edge from a `TYPE_CHECKING`-guarded import (Python) — erased at runtime, so not a real dependency. */
+  typeOnly?: boolean;
 }
 
 export interface GraphJSON {
