@@ -5,6 +5,8 @@ import type { CallFact, FileFacts, ImportBinding, SymbolFact, VarFact } from './
 interface Ctx {
   caller: string | null;
   cls: string | null;
+  /** Inside an `if TYPE_CHECKING:` block — imports here are erased at runtime. */
+  typeOnly?: boolean;
 }
 
 const line = (n: Node) => n.startPosition.row + 1;
@@ -147,21 +149,21 @@ export function extractPython(path: string, lang: string, root: Node): FileFacts
     if (body) for (const c of named(body)) visit(c, { caller: qname, cls: qname });
   }
 
-  function handleImport(node: Node) {
+  function handleImport(node: Node, typeOnly: boolean) {
     const bindings: ImportBinding[] = [];
     for (const c of named(node)) {
       if (c.type === 'dotted_name') {
-        facts.imports.push({ specifier: c.text, bindings: [{ local: c.text, imported: '*' }], line: line(node) });
+        facts.imports.push({ specifier: c.text, bindings: [{ local: c.text, imported: '*' }], line: line(node), ...(typeOnly ? { typeOnly } : {}) });
       } else if (c.type === 'aliased_import') {
         const nm = c.childForFieldName('name');
         const al = c.childForFieldName('alias');
-        if (nm) facts.imports.push({ specifier: nm.text, bindings: [{ local: (al ?? nm).text, imported: '*' }], line: line(node) });
+        if (nm) facts.imports.push({ specifier: nm.text, bindings: [{ local: (al ?? nm).text, imported: '*' }], line: line(node), ...(typeOnly ? { typeOnly } : {}) });
       }
     }
     void bindings;
   }
 
-  function handleFrom(node: Node) {
+  function handleFrom(node: Node, typeOnly: boolean) {
     const mod = node.childForFieldName('module_name');
     if (!mod) return;
     let level = 0;
@@ -186,7 +188,7 @@ export function extractPython(path: string, lang: string, root: Node): FileFacts
         if (nm) bindings.push({ local: (al ?? nm).text, imported: nm.text });
       }
     }
-    facts.imports.push({ specifier, bindings, line: line(node), level, star });
+    facts.imports.push({ specifier, bindings, line: line(node), level, star, ...(typeOnly ? { typeOnly } : {}) });
   }
 
   function push(c: Omit<CallFact, 'caller'>, ctx: Ctx) {
@@ -218,11 +220,26 @@ export function extractPython(path: string, lang: string, root: Node): FileFacts
   function visit(node: Node, ctx: Ctx) {
     switch (node.type) {
       case 'import_statement':
-        handleImport(node);
+        handleImport(node, ctx.typeOnly ?? false);
         return;
       case 'import_from_statement':
-        handleFrom(node);
+        handleFrom(node, ctx.typeOnly ?? false);
         return;
+      case 'if_statement': {
+        const cond = node.childForFieldName('condition');
+        const condName = chain(cond);
+        // Matches `TYPE_CHECKING`, `typing.TYPE_CHECKING`, or any aliased-import form
+        // (`import typing as t; if t.TYPE_CHECKING:`, which is how the stdlib itself
+        // and most real-world code — Flask included — actually write this guard).
+        const isTypeChecking = condName === 'TYPE_CHECKING' || (condName?.endsWith('.TYPE_CHECKING') ?? false);
+        const consequence = node.childForFieldName('consequence');
+        if (consequence) visit(consequence, isTypeChecking ? { ...ctx, typeOnly: true } : ctx);
+        for (const c of named(node)) {
+          if (c.id === cond?.id || c.id === consequence?.id) continue;
+          visit(c, ctx); // elif/else: not TYPE_CHECKING-guarded, evaluated normally
+        }
+        return;
+      }
       case 'function_definition':
         declareFunction(node, ctx);
         return;

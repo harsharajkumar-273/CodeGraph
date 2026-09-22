@@ -527,12 +527,13 @@ class Resolver {
     for (const imp of f.imports) {
       const m = this.resolveModule(f.path, imp.specifier, imp.level ?? 0);
       if (!m) continue;
+      const typeOnly = imp.typeOnly ? { typeOnly: true as const } : {};
       if ('file' in m) {
-        g.addEdge({ from, to: fileId(m.file), kind: 'imports', confidence: 'resolved', line: imp.line });
+        g.addEdge({ from, to: fileId(m.file), kind: 'imports', confidence: 'resolved', line: imp.line, ...typeOnly });
       } else {
         const id = externalId(m.external);
         g.addNode({ id, kind: 'external', name: m.external });
-        g.addEdge({ from, to: id, kind: 'imports', confidence: 'resolved', line: imp.line });
+        g.addEdge({ from, to: id, kind: 'imports', confidence: 'resolved', line: imp.line, ...typeOnly });
       }
     }
   }

@@ -29,6 +29,8 @@ export interface ImportFact {
   level?: number;
   /** `export * from` (JS) / `from x import *` (Python). */
   star?: boolean;
+  /** Inside `if TYPE_CHECKING:` (Python) — erased at runtime, not a real dependency edge. */
+  typeOnly?: boolean;
 }
 
 export interface ExportFact {

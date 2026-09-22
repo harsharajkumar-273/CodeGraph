@@ -130,4 +130,43 @@ describe('cycles', () => {
     });
     expect(importCycles(graph)).toEqual([['a.ts', 'b.ts']]);
   });
+
+  it('does not report a cycle through imports only reachable inside `if TYPE_CHECKING:`', async () => {
+    const { graph } = await indexFiles({
+      'a.py': [
+        'from typing import TYPE_CHECKING',
+        'if TYPE_CHECKING:',
+        '    from b import Bee',
+        'def f(x: "Bee") -> None: ...',
+      ].join('\n'),
+      'b.py': [
+        'from typing import TYPE_CHECKING',
+        'if TYPE_CHECKING:',
+        '    from a import Aye',
+        'def g(x: "Aye") -> None: ...',
+      ].join('\n'),
+    });
+    // Both edges are typeOnly (erased at runtime), so this is not a real cycle by default...
+    expect(importCycles(graph)).toEqual([]);
+    // ...but the edges are still there, tagged, for anyone who explicitly wants to see them.
+    expect(importCycles(graph, { includeTypeOnly: true })).toEqual([['a.py', 'b.py']]);
+  });
+
+  it('recognizes `if t.TYPE_CHECKING:` behind an aliased `import typing as t` too (as Flask itself writes it)', async () => {
+    const { graph } = await indexFiles({
+      'a.py': [
+        'import typing as t',
+        'if t.TYPE_CHECKING:',
+        '    from b import Bee',
+        'def f(x: "Bee") -> None: ...',
+      ].join('\n'),
+      'b.py': [
+        'import typing as t',
+        'if t.TYPE_CHECKING:',
+        '    from a import Aye',
+        'def g(x: "Aye") -> None: ...',
+      ].join('\n'),
+    });
+    expect(importCycles(graph)).toEqual([]);
+  });
 });
