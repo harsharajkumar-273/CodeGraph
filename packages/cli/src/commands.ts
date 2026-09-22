@@ -39,9 +39,12 @@ async function load(repoArg: string, flags: Flags): Promise<{ graph: CodeGraph; 
   return { graph, root };
 }
 
+// Default to 'probable': ambiguous edges are, by design, low-confidence name-only
+// matches, and a blast radius or slice that defaults to including them is more
+// likely to mislead than help. Pass --min-confidence ambiguous to see everything.
 const minConf = (f: Flags): Confidence => {
   const v = f['min-confidence'];
-  return v === 'resolved' || v === 'probable' || v === 'ambiguous' ? v : 'ambiguous';
+  return v === 'resolved' || v === 'probable' || v === 'ambiguous' ? v : 'probable';
 };
 
 export async function cmdIndex(pos: string[], flags: Flags) {
