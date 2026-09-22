@@ -6,7 +6,7 @@ import type { LineageResult } from '@codegraph/analysis';
 import { importCycles } from '@codegraph/analysis';
 import { COLORS, buildView, computeImpact, symbolTitle, type Params } from './model';
 
-const INITIAL: Params = { view: 'files', mode: 'impact', folderDepth: 2, scope: '', focus: null, minConf: 'ambiguous', radius: 2 };
+const INITIAL: Params = { view: 'files', mode: 'impact', folderDepth: 2, scope: '', focus: null, minConf: 'probable', radius: 2 };
 
 function FitOnChange({ signature }: { signature: string }) {
   const { fitView } = useReactFlow();
