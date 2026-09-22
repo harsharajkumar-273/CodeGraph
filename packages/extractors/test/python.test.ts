@@ -41,4 +41,12 @@ describe('Python extraction', () => {
   it('records module-level calls under the file node', () => {
     expect(conf(g, 'calls', 'app.py', 'app.py#main')).toBe('resolved');
   });
+
+  it('does not let a nested same-named package shadow the standard library (pkg/json/provider.py: `import json`)', () => {
+    // Before the fix, every ancestor directory of the importing file was treated as an
+    // implicit search root, so `import json` inside pkg/json/provider.py resolved to the
+    // sibling package pkg/json/__init__.py instead of the stdlib `json` module.
+    expect(edge(g, 'imports', 'pkg/json/provider.py', 'ext:json')).toBeTruthy();
+    expect(edge(g, 'imports', 'pkg/json/provider.py', 'pkg/json/__init__.py')).toBeFalsy();
+  });
 });
