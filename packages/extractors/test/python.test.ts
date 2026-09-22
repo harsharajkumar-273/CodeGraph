@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import type { CodeGraph } from '@codegraph/core';
 import { indexFiles, indexRepo } from '../src';
-import { conf, edge, fixture } from './helpers';
+import { conf, edge, fixture, label } from './helpers';
 
 let g: CodeGraph;
 beforeAll(async () => {
@@ -64,5 +64,27 @@ describe('Python extraction', () => {
     // `x`'s type is unknown, so this is a bare-name match against Store.setdefault — but
     // `setdefault` is a builtin dict method too common to trust a name-only match on.
     expect(conf(graph, 'calls', 'store.py#use', 'store.py#Store.setdefault')).toBe('ambiguous');
+  });
+
+  it('does not resolve super().method() to an unrelated same-file class when the base chain has no match', async () => {
+    const { graph } = await indexFiles({
+      'classes.py': [
+        'class Other:',
+        '    def __init__(self):',
+        '        self.x = 1',
+        '',
+        'class Base:',
+        '    pass',
+        '',
+        'class Derived(Base):',
+        '    def __init__(self):',
+        '        super().__init__()',
+      ].join('\n'),
+    });
+    // Base (Derived's only resolved base) defines no __init__, so super().__init__() has no
+    // real target. Before the fix, this fell back to an unconstrained same-file name search
+    // and matched the unrelated Other.__init__ instead of producing no edge at all.
+    expect(edge(graph, 'calls', 'classes.py#Derived.__init__', 'classes.py#Other.__init__')).toBeFalsy();
+    expect(graph.edges('calls').filter((e) => label(graph, e.from) === 'classes.py#Derived.__init__')).toHaveLength(0);
   });
 });
