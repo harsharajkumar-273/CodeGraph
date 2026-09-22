@@ -28,6 +28,10 @@ const COMMON = new Set([
   'keys', 'values', 'entries', 'toString', 'then', 'catch', 'log', 'error', 'warn', 'info', 'debug', 'append', 'extend',
   'update', 'items', 'format', 'strip', 'replace', 'find', 'includes', 'indexOf', 'copy', 'clear', 'close', 'open',
   'read', 'write', 'send', 'emit', 'on', 'off', 'call', 'apply', 'bind', 'next', 'run', 'start', 'stop', 'init', 'test',
+  // dict/mapping and generic-dispatch methods, plus Python dunders implemented by nearly every class —
+  // a bare-name match on these is essentially never evidence of a real call target.
+  'setdefault', 'invoke', '__init__', '__repr__', '__str__', '__eq__', '__enter__', '__exit__', '__call__', '__len__',
+  '__iter__', '__new__',
 ]);
 
 export function parseJsonc(text: string): any {
