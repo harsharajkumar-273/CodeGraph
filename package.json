@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "description": "AST dependency, call-graph and blast-radius engine for analyzing repos (Tree-sitter + TypeScript).",
+  "license": "MIT",
   "workspaces": ["packages/*"],
   "scripts": {
     "test": "vitest run",
