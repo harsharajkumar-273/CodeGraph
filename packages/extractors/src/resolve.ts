@@ -667,6 +667,12 @@ class Resolver {
             const r = b && this.findMethod(b.file, b.sym.qname, call.callee);
             if (r) return one(r.file, r.sym, 'resolved');
           }
+          // `super().method()` is a deliberate, scoped reference to the resolved base
+          // chain. If nothing there matches, do NOT fall back to an unconstrained
+          // same-file name search — that produces high-confidence-looking but wrong
+          // edges: the class's own method of the same name, or an unrelated sibling
+          // class's, neither of which is what `super()` refers to.
+          return [];
         }
       }
       return this.nameFallback(entry, call.callee, new Set([path]));
