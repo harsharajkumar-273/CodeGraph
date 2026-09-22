@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import type { CodeGraph } from '@codegraph/core';
-import { indexRepo } from '../src';
+import { indexFiles, indexRepo } from '../src';
 import { conf, edge, fixture } from './helpers';
 
 let g: CodeGraph;
@@ -48,5 +48,21 @@ describe('Python extraction', () => {
     // sibling package pkg/json/__init__.py instead of the stdlib `json` module.
     expect(edge(g, 'imports', 'pkg/json/provider.py', 'ext:json')).toBeTruthy();
     expect(edge(g, 'imports', 'pkg/json/provider.py', 'pkg/json/__init__.py')).toBeFalsy();
+  });
+
+  it('downgrades name-only matches on builtin dict/dunder method names to ambiguous', async () => {
+    const { graph } = await indexFiles({
+      'store.py': [
+        'class Store:',
+        '    def setdefault(self, k, v):',
+        '        return v',
+        '',
+        'def use(x):',
+        "    return x.setdefault('a', 1)",
+      ].join('\n'),
+    });
+    // `x`'s type is unknown, so this is a bare-name match against Store.setdefault — but
+    // `setdefault` is a builtin dict method too common to trust a name-only match on.
+    expect(conf(graph, 'calls', 'store.py#use', 'store.py#Store.setdefault')).toBe('ambiguous');
   });
 });
