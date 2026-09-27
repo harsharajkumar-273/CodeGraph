@@ -1,5 +1,9 @@
 # CodeGraph
 
+[![npm version](https://img.shields.io/npm/v/codegraph-engine.svg)](https://www.npmjs.com/package/codegraph-engine)
+[![npm downloads](https://img.shields.io/npm/dm/codegraph-engine.svg)](https://www.npmjs.com/package/codegraph-engine)
+[![license](https://img.shields.io/npm/l/codegraph-engine.svg)](LICENSE)
+
 **AST dependency, call-graph and blast-radius engine for real repositories** — TypeScript + Tree-sitter, with a React Flow UI.
 
 Point it at a local repo or a GitHub URL and it builds a multi-granular graph (folders → file imports → function calls → local variable dataflow). Then it answers:
@@ -20,6 +24,8 @@ Impact   3 symbols in 6 files  (3 resolved · 0 probable · 0 ambiguous)
 Every edge is labelled **resolved / probable / ambiguous**, so you can see *how much* of a blast radius is proven vs. guessed, and filter accordingly. `resolved`/`probable` are 97% accurate on a 99-edge hand-verified sample across three unrelated codebases (Python, JS, TS) — see [`docs/PRECISION.md`](docs/PRECISION.md) for the numbers, methodology, and known limitations.
 
 ## Install
+
+[`codegraph-engine`](https://www.npmjs.com/package/codegraph-engine) on npm:
 
 ```bash
 npm install -g codegraph-engine
