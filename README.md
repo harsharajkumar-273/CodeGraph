@@ -17,9 +17,18 @@ Impact   3 symbols in 6 files  (3 resolved · 0 probable · 0 ambiguous)
   d3  resolved  src/flask/app.py#Flask.__call__
 ```
 
-Every edge is labelled **resolved / probable / ambiguous**, so you can see *how much* of a blast radius is proven vs. guessed, and filter accordingly.
+Every edge is labelled **resolved / probable / ambiguous**, so you can see *how much* of a blast radius is proven vs. guessed, and filter accordingly. `resolved`/`probable` are 97% accurate on a 99-edge hand-verified sample across three unrelated codebases (Python, JS, TS) — see [`docs/PRECISION.md`](docs/PRECISION.md) for the numbers, methodology, and known limitations.
 
-## Quick start
+## Install
+
+```bash
+npm install -g codegraph-engine
+codegraph index pallets/flask
+```
+
+Or without installing globally: `npx --package=codegraph-engine codegraph index .`
+
+## Quick start (from a clone of this repo)
 
 ```bash
 npm install

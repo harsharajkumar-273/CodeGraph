@@ -197,7 +197,10 @@ const MIME: Record<string, string> = { '.html': 'text/html', '.js': 'text/javasc
 export async function cmdServe(pos: string[], flags: Flags) {
   const { graph } = await load(pos[0] ?? '.', flags);
   const json = JSON.stringify(graph.toJSON());
-  const webDist = resolve(dirname(fileURLToPath(import.meta.url)), '../../web/dist');
+  // Dev/monorepo layout: packages/cli/src/commands.ts -> ../../web/dist.
+  // Published-package layout: dist/bin.js -> ./web (copied there by the build script).
+  const here = dirname(fileURLToPath(import.meta.url));
+  const webDist = [resolve(here, '../../web/dist'), resolve(here, 'web')].find((p) => existsSync(p)) ?? resolve(here, '../../web/dist');
   const port = flags.port ? Number(flags.port) : 4173;
   const server = createServer((req, res) => {
     const url = new URL(req.url ?? '/', 'http://x');
