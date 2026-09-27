@@ -20,7 +20,7 @@
     "node": ">=20"
   },
   "bin": {
-    "codegraph": "./dist/bin.js"
+    "codegraph": "dist/bin.js"
   },
   "files": [
     "dist"
