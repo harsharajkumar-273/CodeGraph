@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "cg": "tsx packages/cli/src/bin.ts",
     "dev:web": "npm -w @codegraph/web run dev",
-    "build:web": "npm -w @codegraph/web run build"
+    "build:web": "npm -w @codegraph/web run build",
+    "build:cli": "npm run build:web && npm -w codegraph-engine run build"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

@@ -1,8 +1,38 @@
 {
-  "name": "@codegraph/cli",
+  "name": "codegraph-engine",
   "version": "0.1.0",
+  "description": "AST dependency, call-graph, variable-lineage and blast-radius engine for TypeScript/JavaScript/Python repos, with confidence-labeled edges (resolved/probable/ambiguous) and a React Flow UI.",
   "type": "module",
-  "private": true,
-  "bin": { "codegraph": "./src/bin.ts" },
-  "dependencies": { "@codegraph/core": "*", "@codegraph/extractors": "*", "@codegraph/analysis": "*" }
+  "license": "MIT",
+  "homepage": "https://github.com/harsharajkumar-273/CodeGraph",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/harsharajkumar-273/CodeGraph.git"
+  },
+  "bugs": {
+    "url": "https://github.com/harsharajkumar-273/CodeGraph/issues"
+  },
+  "keywords": [
+    "ast", "call-graph", "dependency-graph", "blast-radius", "static-analysis",
+    "tree-sitter", "code-analysis", "impact-analysis", "variable-lineage"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "codegraph": "./dist/bin.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "web-tree-sitter": "0.25.10",
+    "tree-sitter-wasms": "0.1.13"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  },
+  "scripts": {
+    "build": "node build.mjs"
+  }
 }

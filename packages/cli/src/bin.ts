@@ -1,4 +1,3 @@
-#!/usr/bin/env -S npx tsx
 import { parseArgs } from 'node:util';
 import { cmdCycles, cmdImpact, cmdIndex, cmdServe, cmdSlice, cmdVars, type Flags } from './commands';
 
