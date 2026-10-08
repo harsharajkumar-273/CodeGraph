@@ -5,6 +5,10 @@ import type { CallFact, ExportFact, FileFacts, ImportBinding, ImportFact, Symbol
 interface Ctx {
   caller: string | null;
   cls: string | null;
+  /** Inside an anonymous function/callback (`test('x', () => { ... })`), where no named symbol owns the code. */
+  anon?: boolean;
+  /** Parameter names of the enclosing anonymous functions (`inst` in `init((inst, def) => { inst.min = ... })`). */
+  anonParams?: Set<string>;
 }
 
 const FUNC_VALUE = new Set(['arrow_function', 'function_expression', 'function', 'generator_function']);
@@ -167,7 +171,7 @@ export function extractJs(path: string, lang: string, root: Node): FileFacts {
   }
   const ctorType = (v: Node | null | undefined) => (v?.type === 'new_expression' ? chain(v.childForFieldName('constructor')) : null);
 
-  function declareFunction(name: string, node: Node, ctx: Ctx, kind: 'function' | 'method' = 'function') {
+  function declareFunction(name: string, node: Node, ctx: Ctx, kind: 'function' | 'method' = 'function', local = false) {
     const qname = kind === 'method' && ctx.cls ? `${ctx.cls}.${name}` : qual(ctx, name);
     collectParams(node, qname, kind === 'method' && name === 'constructor' ? ctx.cls : null);
     declareParamVars(node, qname);
@@ -178,6 +182,7 @@ export function extractJs(path: string, lang: string, root: Node): FileFacts {
       startLine: line(node),
       endLine: node.endPosition.row + 1,
       className: kind === 'method' ? (ctx.cls ?? undefined) : undefined,
+      ...(local ? { local: true } : {}),
     });
     // Parameter default values / body are visited with this symbol as the caller.
     const inner: Ctx = { caller: qname, cls: kind === 'method' ? ctx.cls : null };
@@ -429,7 +434,11 @@ export function extractJs(path: string, lang: string, root: Node): FileFacts {
       if (isProto || isObj) {
         const cls = parts[0];
         const name = parts[parts.length - 1];
-        declareFunction(name, right, { caller: cls, cls }, 'method');
+        // Inside an anonymous callback, an owner that is a *local variable* (a test's one-off
+        // `schema.parse = ...` monkeypatch) is not a module-level object other files can be calling.
+        // An owner that is the callback's own *parameter* (`inst.min = ...` in an instance initializer)
+        // is how such libraries really define methods, so that stays a normal method.
+        declareFunction(name, right, { caller: cls, cls }, 'method', !!ctx.anon && !ctx.anonParams?.has(cls));
         return true;
       }
     }
@@ -472,7 +481,12 @@ export function extractJs(path: string, lang: string, root: Node): FileFacts {
             } else visit(v, ctx);
           }
         }
-      } else visit(right, ctx);
+      } else {
+        // `module.exports = require('./lib/express')` forwards the other module's default export (package-root index.js files).
+        const spec = right.type === 'call_expression' && right.childForFieldName('function')?.text === 'require' ? strLit(named(right.childForFieldName('arguments'))[0]) : null;
+        if (spec) addExport({ name: 'default', from: spec, fromName: 'default' });
+        visit(right, ctx);
+      }
       return true;
     }
     return false;
@@ -562,6 +576,20 @@ export function extractJs(path: string, lang: string, root: Node): FileFacts {
         const p = node.childForFieldName('parameter');
         if (p?.type === 'identifier') pushVar({ scope: ctx.caller, name: p.text, kind: 'catch', line: line(p), reads: [] });
         visitChildren(node, ctx);
+        return;
+      }
+      case 'arrow_function':
+      case 'function_expression':
+      case 'function':
+      case 'generator_function': {
+        const params = new Set(ctx.anonParams);
+        const single = node.childForFieldName('parameter');
+        if (single?.type === 'identifier') params.add(single.text);
+        for (const prm of named(node.childForFieldName('parameters'))) {
+          const id = prm.type === 'identifier' ? prm : prm.childForFieldName('pattern');
+          if (id?.type === 'identifier') params.add(id.text);
+        }
+        visitChildren(node, { ...ctx, anon: true, anonParams: params });
         return;
       }
       case 'jsx_opening_element':

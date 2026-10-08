@@ -1,0 +1,62 @@
+[
+ {
+  "file": "lib/response.js",
+  "start": 282,
+  "end": 321
+ },
+ {
+  "file": "lib/utils.js",
+  "start": 67,
+  "end": 106
+ },
+ {
+  "file": "lib/request.js",
+  "start": 287,
+  "end": 326
+ },
+ {
+  "file": "lib/utils.js",
+  "start": 176,
+  "end": 215
+ },
+ {
+  "file": "lib/response.js",
+  "start": 1005,
+  "end": 1044
+ },
+ {
+  "file": "lib/request.js",
+  "start": 367,
+  "end": 406
+ },
+ {
+  "file": "test/res.redirect.js",
+  "start": 36,
+  "end": 75
+ },
+ {
+  "file": "test/req.range.js",
+  "start": 7,
+  "end": 46
+ },
+ {
+  "file": "test/app.js",
+  "start": 19,
+  "end": 58
+ },
+ {
+  "file": "test/req.accepts.js",
+  "start": 37,
+  "end": 76
+ },
+ {
+  "file": "examples/view-locals/index.js",
+  "start": 42,
+  "end": 81
+ },
+ {
+  "file": "examples/ejs/index.js",
+  "start": 16,
+  "end": 55
+ }
+]
