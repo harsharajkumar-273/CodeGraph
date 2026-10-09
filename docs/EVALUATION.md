@@ -105,6 +105,14 @@ Reading it:
 | Zod | retargeted, 8 sampled | 3 correct, 5 still wrong (files importing **both** v3 and v4) |
 | Flask | changed sites (44 of 5,276), ~40 reviewed individually | gained `App.add_url_rule` / `register_blueprint`-style edges looked correct; the 4 dropped (`MockCtx.exit`, `View.index`, `ObjectWithHTML.__html__`) were wrong test-local targets; found and fixed two regressions of my own: dropped true `app.app_context()` edges, and `flask.make_response()` → `Flask.make_response` |
 
+## Human-reviewed validation (sample C) — pending
+
+Samples A and B were labeled by a single LLM, and B is only partly blind to the last import fixes, so neither is
+independent evidence. A fresh sample **C** (seed 777001, excluding all A/B windows; 12 Express + 14 Zod windows) is
+prepared as a code-only review packet in `docs/eval/review-C/` for two independent human reviewers, with
+`scripts/eval/{symbols,validate-truth,agreement,score}.mjs` to label, check agreement, adjudicate and score. **No
+human labels exist yet, so there are no sample-C results; the numbers above remain LLM-labeled.**
+
 ## Known limits (not fixed)
 
 - **Unresolved by design, and large for Zod v4**: methods defined as object literals passed to `$constructor(…)`,
