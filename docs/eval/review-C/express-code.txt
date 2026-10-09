@@ -1,0 +1,504 @@
+
+===== W1 lib/application.js:184-223
+  184   * If the _fn_ parameter is an express app, then it will be
+  185   * mounted at the _route_ specified.
+  186   *
+  187   * @public
+  188   */
+  189  
+  190  app.use = function use(fn) {
+  191    var offset = 0;
+  192    var path = '/';
+  193  
+  194    // default path to '/'
+  195    // disambiguate app.use([fn])
+  196    if (typeof fn !== 'function') {
+  197      var arg = fn;
+  198  
+  199      while (Array.isArray(arg) && arg.length !== 0) {
+  200        arg = arg[0];
+  201      }
+  202  
+  203      // first arg is the path
+  204      if (typeof arg !== 'function') {
+  205        offset = 1;
+  206        path = fn;
+  207      }
+  208    }
+  209  
+  210    var fns = flatten.call(slice.call(arguments, offset), Infinity);
+  211  
+  212    if (fns.length === 0) {
+  213      throw new TypeError('app.use() requires a middleware function')
+  214    }
+  215  
+  216    // get router
+  217    var router = this.router;
+  218  
+  219    fns.forEach(function (fn) {
+  220      // non-express app
+  221      if (!fn || !fn.handle || !fn.set) {
+  222        return router.use(path, fn);
+  223      }
+
+===== W2 lib/utils.js:115-154
+  115  
+  116      index = endIndex + 1;
+  117    }
+  118  
+  119    return ret;
+  120  }
+  121  
+  122  /**
+  123   * Compile "etag" value to function.
+  124   *
+  125   * @param  {Boolean|String|Function} val
+  126   * @return {Function}
+  127   * @api private
+  128   */
+  129  
+  130  exports.compileETag = function(val) {
+  131    var fn;
+  132  
+  133    if (typeof val === 'function') {
+  134      return val;
+  135    }
+  136  
+  137    switch (val) {
+  138      case true:
+  139      case 'weak':
+  140        fn = exports.wetag;
+  141        break;
+  142      case false:
+  143        break;
+  144      case 'strong':
+  145        fn = exports.etag;
+  146        break;
+  147      default:
+  148        throw new TypeError('unknown value for etag function: ' + val);
+  149    }
+  150  
+  151    return fn;
+  152  }
+  153  
+  154  /**
+
+===== W3 lib/application.js:453-492
+  453  };
+  454  
+  455  /**
+  456   * Disable `setting`.
+  457   *
+  458   * @param {String} setting
+  459   * @return {app} for chaining
+  460   * @public
+  461   */
+  462  
+  463  app.disable = function disable(setting) {
+  464    return this.set(setting, false);
+  465  };
+  466  
+  467  /**
+  468   * Delegate `.VERB(...)` calls to `router.VERB(...)`.
+  469   */
+  470  
+  471  methods.forEach(function (method) {
+  472    app[method] = function (path) {
+  473      if (method === 'get' && arguments.length === 1) {
+  474        // app.get(setting)
+  475        return this.set(path);
+  476      }
+  477  
+  478      var route = this.route(path);
+  479      route[method].apply(route, slice.call(arguments, 1));
+  480      return this;
+  481    };
+  482  });
+  483  
+  484  /**
+  485   * Special-cased "all" method, applying the given route `path`,
+  486   * middleware, and callback to _every_ HTTP method.
+  487   *
+  488   * @param {String} path
+  489   * @param {Function} ...
+  490   * @return {app} for chaining
+  491   * @public
+  492   */
+
+===== W4 lib/response.js:570-609
+  570   * @public
+  571   */
+  572  
+  573  res.format = function(obj){
+  574    var req = this.req;
+  575    var next = req.next;
+  576  
+  577    var keys = Object.keys(obj)
+  578      .filter(function (v) { return v !== 'default' })
+  579  
+  580    var key = keys.length > 0
+  581      ? req.accepts(keys)
+  582      : false;
+  583  
+  584    this.vary("Accept");
+  585  
+  586    if (key) {
+  587      this.set('Content-Type', normalizeType(key).value);
+  588      obj[key](req, this, next);
+  589    } else if (obj.default) {
+  590      obj.default(req, this, next)
+  591    } else {
+  592      next(createError(406, {
+  593        types: normalizeTypes(keys).map(function (o) { return o.value })
+  594      }))
+  595    }
+  596  
+  597    return this;
+  598  };
+  599  
+  600  /**
+  601   * Set _Content-Disposition_ header to _attachment_ with optional `filename`.
+  602   *
+  603   * @param {String} filename
+  604   * @return {ServerResponse}
+  605   * @public
+  606   */
+  607  
+  608  res.attachment = function attachment(filename) {
+  609    const name = filename !== undefined ? basename(filename) : undefined;
+
+===== W5 lib/request.js:96-135
+   96   * Examples:
+   97   *
+   98   *     // Accept: text/html
+   99   *     req.accepts('html');
+  100   *     // => "html"
+  101   *
+  102   *     // Accept: text/*, application/json
+  103   *     req.accepts('html');
+  104   *     // => "html"
+  105   *     req.accepts('text/html');
+  106   *     // => "text/html"
+  107   *     req.accepts('json', 'text');
+  108   *     // => "json"
+  109   *     req.accepts('application/json');
+  110   *     // => "application/json"
+  111   *
+  112   *     // Accept: text/*, application/json
+  113   *     req.accepts('image/png');
+  114   *     req.accepts('png');
+  115   *     // => false
+  116   *
+  117   *     // Accept: text/*;q=.5, application/json
+  118   *     req.accepts(['html', 'json']);
+  119   *     req.accepts('html', 'json');
+  120   *     // => "json"
+  121   *
+  122   * @param {String|Array} type(s)
+  123   * @return {String|Array|Boolean}
+  124   * @public
+  125   */
+  126  
+  127  req.accepts = function(){
+  128    var accept = accepts(this);
+  129    return accept.types.apply(accept, arguments);
+  130  };
+  131  
+  132  /**
+  133   * Check if the given `encoding`s are accepted.
+  134   *
+  135   * @param {String} ...encoding
+
+===== W6 lib/view.js:43-82
+   43   *   - `defaultEngine` the default template engine name
+   44   *   - `engines` template engine require() cache
+   45   *   - `root` root path for view lookup
+   46   *
+   47   * @param {string} name
+   48   * @param {object} options
+   49   * @public
+   50   */
+   51  
+   52  function View(name, options) {
+   53    var opts = options || {};
+   54  
+   55    this.defaultEngine = opts.defaultEngine;
+   56    this.ext = extname(name);
+   57    this.name = name;
+   58    this.root = opts.root;
+   59  
+   60    if (!this.ext && !this.defaultEngine) {
+   61      throw new Error('No default engine was specified and no extension was provided.');
+   62    }
+   63  
+   64    var fileName = name;
+   65  
+   66    if (!this.ext) {
+   67      // get extension from default engine name
+   68      this.ext = this.defaultEngine[0] !== '.'
+   69        ? '.' + this.defaultEngine
+   70        : this.defaultEngine;
+   71  
+   72      fileName += this.ext;
+   73    }
+   74  
+   75    if (!opts.engines[this.ext]) {
+   76      // load engine
+   77      var mod = this.ext.slice(1)
+   78      debug('require "%s"', mod)
+   79  
+   80      // default engine export
+   81      var fn = require(mod).__express
+   82  
+
+===== W7 test/req.subdomains.js:76-115
+   76        })
+   77      })
+   78  
+   79      describe('with trusted X-Forwarded-Host', function () {
+   80        it('should return an array', function (done) {
+   81          var app = express();
+   82  
+   83          app.set('trust proxy', true);
+   84          app.use(function (req, res) {
+   85            res.send(req.subdomains);
+   86          });
+   87  
+   88          request(app)
+   89          .get('/')
+   90          .set('X-Forwarded-Host', 'tobi.ferrets.example.com')
+   91          .expect(200, ['ferrets', 'tobi'], done);
+   92        })
+   93      })
+   94  
+   95      describe('when subdomain offset is set', function(){
+   96        describe('when subdomain offset is zero', function(){
+   97          it('should return an array with the whole domain', function(done){
+   98            var app = express();
+   99            app.set('subdomain offset', 0);
+  100  
+  101            app.use(function(req, res){
+  102              res.send(req.subdomains);
+  103            });
+  104  
+  105            request(app)
+  106            .get('/')
+  107            .set('Host', 'tobi.ferrets.sub.example.com')
+  108            .expect(200, ['com', 'example', 'sub', 'ferrets', 'tobi'], done);
+  109          })
+  110  
+  111          it('should return an array with the whole IPv4', function (done) {
+  112            var app = express();
+  113            app.set('subdomain offset', 0);
+  114  
+  115            app.use(function(req, res){
+
+===== W8 test/req.protocol.js:50-89
+   50  
+   51        it('should ignore X-Forwarded-Proto if socket addr not trusted', function(done){
+   52          var app = express();
+   53  
+   54          app.set('trust proxy', '10.0.0.1');
+   55  
+   56          app.use(function(req, res){
+   57            res.end(req.protocol);
+   58          });
+   59  
+   60          request(app)
+   61          .get('/')
+   62          .set('X-Forwarded-Proto', 'https')
+   63          .expect('http', done);
+   64        })
+   65  
+   66        it('should default to http', function(done){
+   67          var app = express();
+   68  
+   69          app.enable('trust proxy');
+   70  
+   71          app.use(function(req, res){
+   72            res.end(req.protocol);
+   73          });
+   74  
+   75          request(app)
+   76          .get('/')
+   77          .expect('http', done);
+   78        })
+   79  
+   80        describe('when trusting hop count', function () {
+   81          it('should respect X-Forwarded-Proto', function (done) {
+   82            var app = express();
+   83  
+   84            app.set('trust proxy', 1);
+   85  
+   86            app.use(function (req, res) {
+   87              res.end(req.protocol);
+   88            });
+   89  
+
+===== W9 test/app.request.js:94-133
+   94        app1.get('/', function (req, res) {
+   95          res.send(req.foobar())
+   96        })
+   97  
+   98        app2.get('/', function (req, res) {
+   99          res.send(req.foobar())
+  100        })
+  101  
+  102        request(app1)
+  103          .get('/')
+  104          .expect(200, 'tobi', cb)
+  105  
+  106        request(app1)
+  107          .get('/sub')
+  108          .expect(200, 'loki', cb)
+  109      })
+  110  
+  111      it('should not pollute parent app', function (done) {
+  112        var app1 = express()
+  113        var app2 = express()
+  114        var cb = after(2, done)
+  115  
+  116        app1.request.foobar = function () {
+  117          return 'tobi'
+  118        }
+  119  
+  120        app2.request.foobar = function () {
+  121          return 'loki'
+  122        }
+  123  
+  124        app1.use('/sub', app2)
+  125  
+  126        app1.get('/sub/foo', function (req, res) {
+  127          res.send(req.foobar())
+  128        })
+  129  
+  130        app2.get('/', function (req, res) {
+  131          res.send(req.foobar())
+  132        })
+  133  
+
+===== W10 test/res.location.js:41-80
+   41        })
+   42  
+   43        request(app)
+   44        .get('/')
+   45        .expect('Location', 'https://google.com?q=%E2%98%83%20%C2%A710')
+   46        .expect(200, done)
+   47      })
+   48  
+   49      it('should encode data uri', function (done) {
+   50        var app = express()
+   51        app.use(function (req, res) {
+   52          res.location('data:text/javascript,export default () => { }').end();
+   53        });
+   54  
+   55        request(app)
+   56          .get('/')
+   57          .expect('Location', 'data:text/javascript,export%20default%20()%20=%3E%20%7B%20%7D')
+   58          .expect(200, done)
+   59      })
+   60  
+   61      it('should consistently handle non-string input: boolean', function (done) {
+   62        var app = express()
+   63        app.use(function (req, res) {
+   64          res.location(true).end();
+   65        });
+   66  
+   67        request(app)
+   68          .get('/')
+   69          .expect('Location', 'true')
+   70          .expect(200, done)
+   71      });
+   72  
+   73      it('should consistently handle non-string inputs: object', function (done) {
+   74        var app = express()
+   75        app.use(function (req, res) {
+   76          res.location({}).end();
+   77        });
+   78  
+   79        request(app)
+   80          .get('/')
+
+===== W11 examples/resource/index.js:27-66
+   27  
+   28  // Fake records
+   29  
+   30  var users = [
+   31    { name: 'tj' }
+   32    , { name: 'ciaran' }
+   33    , { name: 'aaron' }
+   34    , { name: 'guillermo' }
+   35    , { name: 'simon' }
+   36    , { name: 'tobi' }
+   37  ];
+   38  
+   39  // Fake controller.
+   40  
+   41  var User = {
+   42    index: function(req, res){
+   43      res.send(users);
+   44    },
+   45    show: function(req, res){
+   46      res.send(users[req.params.id] || { error: 'Cannot find user' });
+   47    },
+   48    destroy: function(req, res, id){
+   49      var destroyed = id in users;
+   50      delete users[id];
+   51      res.send(destroyed ? 'destroyed' : 'Cannot find user');
+   52    },
+   53    range: function(req, res, a, b, format){
+   54      var range = users.slice(a, b + 1);
+   55      switch (format) {
+   56        case 'json':
+   57          res.send(range);
+   58          break;
+   59        case 'html':
+   60        default:
+   61          var html = '<ul>' + range.map(function(user){
+   62            return '<li>' + user.name + '</li>';
+   63          }).join('\n') + '</ul>';
+   64          res.send(html);
+   65          break;
+   66      }
+
+===== W12 examples/route-middleware/index.js:18-57
+   18  // Placeholder users
+   19  var users = [
+   20    { id: 0, name: 'tj', email: 'tj@vision-media.ca', role: 'member' }
+   21    , { id: 1, name: 'ciaran', email: 'ciaranj@gmail.com', role: 'member' }
+   22    , { id: 2, name: 'aaron', email: 'aaron.heckmann+github@gmail.com', role: 'admin' }
+   23  ];
+   24  
+   25  function loadUser(req, res, next) {
+   26    // You would fetch your user from the db
+   27    var user = users[req.params.id];
+   28    if (user) {
+   29      req.user = user;
+   30      next();
+   31    } else {
+   32      next(new Error('Failed to load user ' + req.params.id));
+   33    }
+   34  }
+   35  
+   36  function andRestrictToSelf(req, res, next) {
+   37    // If our authenticated user is the user we are viewing
+   38    // then everything is fine :)
+   39    if (req.authenticatedUser.id === req.user.id) {
+   40      next();
+   41    } else {
+   42      // You may want to implement specific exceptions
+   43      // such as UnauthorizedError or similar so that you
+   44      // can handle these can be special-cased in an error handler
+   45      // (view ./examples/pages for this)
+   46      next(new Error('Unauthorized'));
+   47    }
+   48  }
+   49  
+   50  function andRestrictTo(role) {
+   51    return function(req, res, next) {
+   52      if (req.authenticatedUser.role === role) {
+   53        next();
+   54      } else {
+   55        next(new Error('Unauthorized'));
+   56      }
+   57    }

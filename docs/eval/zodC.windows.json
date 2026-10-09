@@ -1,0 +1,72 @@
+[
+ {
+  "file": "packages/zod/src/v3/types.ts",
+  "start": 1585,
+  "end": 1624
+ },
+ {
+  "file": "packages/zod/src/v3/tests/recursive.test.ts",
+  "start": 79,
+  "end": 118
+ },
+ {
+  "file": "packages/zod/src/v3/tests/catch.test.ts",
+  "start": 77,
+  "end": 116
+ },
+ {
+  "file": "packages/zod/src/v4/classic/schemas.ts",
+  "start": 2214,
+  "end": 2253
+ },
+ {
+  "file": "packages/zod/src/v4/classic/tests/nonoptional.test.ts",
+  "start": 61,
+  "end": 100
+ },
+ {
+  "file": "packages/zod/src/v4/classic/tests/redos.test.ts",
+  "start": 15,
+  "end": 54
+ },
+ {
+  "file": "packages/zod/src/v4/classic/tests/prefault.test.ts",
+  "start": 2,
+  "end": 41
+ },
+ {
+  "file": "packages/zod/src/v4/classic/tests/stringbool.test.ts",
+  "start": 40,
+  "end": 79
+ },
+ {
+  "file": "packages/zod/src/v4/core/tests/locales/ru.test.ts",
+  "start": 78,
+  "end": 117
+ },
+ {
+  "file": "packages/zod/src/v4/core/doc.ts",
+  "start": 5,
+  "end": 44
+ },
+ {
+  "file": "packages/zod/src/v4/core/schemas.ts",
+  "start": 3285,
+  "end": 3324
+ },
+ {
+  "file": "packages/zod/src/v4/mini/tests/number.test.ts",
+  "start": 39,
+  "end": 78
+ },
+ {
+  "file": "packages/zod/src/v4/mini/tests/index.test.ts",
+  "start": 622,
+  "end": 661
+ },
+ {
+  "file": "packages/zod/src/v4/mini/tests/apply.test.ts",
+  "start": 17,
+  "end": 56
+ }
+]
