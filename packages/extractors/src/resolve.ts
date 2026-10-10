@@ -90,12 +90,20 @@ export interface BuildStats {
   flowEdges: number;
 }
 
+/** Per-call-site resolution result, for evaluation and debugging (the graph dedups edges per caller/callee pair). */
+export interface CallTrace {
+  file: string;
+  call: CallFact;
+  targets: { file: string; qname: string; confidence: Confidence }[];
+}
+
 export function buildGraph(
   factsList: FileFacts[],
   configs: Map<string, string> = new Map(),
   root = '.',
+  trace?: (t: CallTrace) => void,
 ): { graph: CodeGraph; stats: BuildStats } {
-  return new Resolver(factsList, configs, root).build();
+  return new Resolver(factsList, configs, root, trace).build();
 }
 
 class Resolver {
@@ -103,6 +111,8 @@ class Resolver {
   private paths = new Set<string>();
   private methodsByName = new Map<string, { file: string; sym: SymbolFact }[]>();
   private moduleCache = new Map<string, ModuleRef>();
+  /** Lowercased names of prototype/object-style owners (`app`, `res`, `Route`): methods exist only where explicitly assigned. */
+  private protoOwners = new Set<string>();
   private workspace: WorkspacePkg[] = [];
   private tsconfigs = new Map<string, TsConfig>();
   private graph: CodeGraph;
@@ -112,7 +122,7 @@ class Resolver {
     variableNodes: 0, flowEdges: 0,
   };
 
-  constructor(private factsList: FileFacts[], configs: Map<string, string>, root: string) {
+  constructor(private factsList: FileFacts[], configs: Map<string, string>, root: string, private trace?: (t: CallTrace) => void) {
     this.graph = new CodeGraph(root);
     for (const f of factsList) {
       this.paths.add(f.path);
@@ -123,6 +133,7 @@ class Resolver {
           const m = methods.get(s.className) ?? new Map();
           m.set(s.name, s);
           methods.set(s.className, m);
+          if (!s.local && symbols.get(s.className)?.kind !== 'class') this.protoOwners.add(s.className.split('.').pop()!.toLowerCase());
           const list = this.methodsByName.get(s.name) ?? [];
           list.push({ file: f.path, sym: s });
           this.methodsByName.set(s.name, list);
@@ -168,7 +179,12 @@ class Resolver {
       for (const e of TS_EXTS) if (this.has(stem + e)) return stem + e;
     }
     for (const e of JS_EXTS) if (this.has(base + e)) return base + e;
-    for (const e of JS_EXTS) if (this.has(`${base}/index${e}`)) return `${base}/index${e}`;
+    // `join` (not a template) so a directory that normalized to '' or '.' — `require('..')`, `import '.'` —
+    // still finds the root `index.js` instead of probing '/index.js' / './index.js'.
+    for (const e of JS_EXTS) {
+      const idx = p.join(base, `index${e}`);
+      if (this.has(idx)) return idx;
+    }
     return null;
   }
 
@@ -222,12 +238,52 @@ class Resolver {
         if (f) return { file: f };
       } else if (spec.startsWith(pkg.name + '/')) {
         const sub = spec.slice(pkg.name.length + 1);
-        const f = this.tryFile(p.join(pkg.dir, sub)) ?? this.tryFile(p.join(pkg.dir, 'src', sub));
+        // The package's own `exports` map is authoritative for a subpath (`zod/v4`, `zod/mini`);
+        // directory guesses are only the fallback for packages that don't declare one.
+        const f = this.pkgSubpath(pkg, sub) ?? this.tryFile(p.join(pkg.dir, sub)) ?? this.tryFile(p.join(pkg.dir, 'src', sub));
         if (f) return { file: f };
       }
     }
     const parts = spec.split('/');
     return { external: spec.startsWith('@') ? parts.slice(0, 2).join('/') : parts[0] };
+  }
+
+  /** Resolves `<pkg>/<sub>` through `exports["./<sub>"]` (or a `./prefix/*` pattern) to a source file. */
+  private pkgSubpath(pkg: WorkspacePkg, sub: string): string | null {
+    const ex = pkg.json.exports;
+    if (!ex || typeof ex !== 'object') return null;
+    const key = './' + sub;
+    let target: any = ex[key];
+    if (target === undefined) {
+      for (const [pat, t] of Object.entries<any>(ex)) {
+        const star = pat.indexOf('*');
+        if (star < 0 || !key.startsWith(pat.slice(0, star)) || !key.endsWith(pat.slice(star + 1))) continue;
+        const rest = key.slice(star, key.length - (pat.length - star - 1));
+        target = JSON.parse(JSON.stringify(t, (_k, v) => (typeof v === 'string' ? v.replace('*', rest) : v)));
+        break;
+      }
+    }
+    if (target === undefined) return null;
+    return this.firstSource(pkg, target);
+  }
+
+  private firstSource(pkg: WorkspacePkg, target: any): string | null {
+    const cands: string[] = [];
+    const flat = (v: any) => {
+      if (typeof v === 'string') cands.push(v);
+      else if (v && typeof v === 'object') Object.values(v).forEach(flat);
+    };
+    flat(target);
+    for (const c of cands) {
+      const direct = this.tryFile(p.join(pkg.dir, c));
+      if (direct) return direct;
+      const srcAlt = c.replace(/^\.?\/?(dist|lib|build|out)\//, 'src/');
+      if (srcAlt !== c) {
+        const f = this.tryFile(p.join(pkg.dir, srcAlt));
+        if (f) return f;
+      }
+    }
+    return null;
   }
 
   private pkgEntry(pkg: WorkspacePkg): string | null {
@@ -559,6 +615,7 @@ class Resolver {
       const from = call.caller ? symbolId(f.path, call.caller) : fileId(f.path);
       if (call.caller && !this.graph.hasNode(from)) continue;
       const targets = this.resolveCall(entry, call);
+      this.trace?.({ file: f.path, call, targets: targets.map((t) => ({ file: t.file, qname: t.sym.qname, confidence: t.confidence })) });
       if (targets.length === 0) {
         this.stats.unresolvedCalls++;
         continue;
@@ -613,15 +670,90 @@ class Resolver {
     return undefined;
   }
 
-  private nameFallback(entry: Entry, name: string, only?: Set<string>): { file: string; sym: SymbolFact; confidence: Confidence }[] {
-    const all = this.methodsByName.get(name) ?? [];
+  /** Every internal file reachable from `file` through its imports (transitively, barrels included). */
+  private closureCache = new Map<string, Set<string>>();
+  private importClosure(file: string): Set<string> {
+    const hit = this.closureCache.get(file);
+    if (hit) return hit;
+    const seen = new Set<string>();
+    const stack = [file];
+    while (stack.length) {
+      const cur = stack.pop()!;
+      const e = this.entries.get(cur);
+      if (!e) continue;
+      for (const imp of e.facts.imports) {
+        const m = this.resolveModule(cur, imp.specifier, imp.level ?? 0);
+        if (m && 'file' in m && !seen.has(m.file)) {
+          seen.add(m.file);
+          stack.push(m.file);
+        }
+      }
+    }
+    this.closureCache.set(file, seen);
+    return seen;
+  }
+
+  /**
+   * True when `cand` lives in a sibling subtree of `from`'s own tree (`v3/` vs `v4/`, `lib/` vs `examples/`)
+   * that nothing `from` imports ever reaches. A bare-name guess into such a tree is how parallel
+   * implementations of one API (Zod's v3 / v4 / mini) get cross-wired: the caller demonstrably works
+   * against its own tree, and the name is shared only by coincidence.
+   */
+  private inUnreachedSiblingTree(from: string, cand: string): boolean {
+    const dirs = (f: string) => (p.dirname(f) === '.' ? [] : p.dirname(f).split('/'));
+    const a = dirs(from);
+    const b = dirs(cand);
+    let i = 0;
+    while (i < a.length && i < b.length && a[i] === b[i]) i++;
+    if (i >= a.length || i >= b.length) return false; // one directory contains the other: not sibling trees
+    const closure = this.importClosure(from);
+    // No resolved internal import means no evidence about which tree the caller works against (an unresolvable
+    // `from flaskr import ...`, a script with only external imports): leave the guess alone rather than drop it.
+    if (closure.size === 0) return false;
+    const prefix = b.slice(0, i + 1).join('/') + '/';
+    for (const f of closure) if (f.startsWith(prefix)) return false;
+    return true;
+  }
+
+  /** Last identifier of a receiver (`this.app` -> `app`), lowercased; none for this/self/super. */
+  private receiverHint(recv?: string): string | undefined {
+    const last = recv?.split('.').pop()?.replace(/^_+/, '').toLowerCase();
+    return last && !['this', 'self', 'cls', 'super'].includes(last) ? last : undefined;
+  }
+
+  private nameFallback(entry: Entry, name: string, only?: Set<string>, recv?: string): { file: string; sym: SymbolFact; confidence: Confidence }[] {
+    const all = (this.methodsByName.get(name) ?? []).filter((c) => !c.sym.local || c.file === entry.facts.path);
     const near = only ?? this.nearFiles(entry);
+    // Receiver/owner affinity: in prototype-style code (`app.get = ...`, `res.get = ...`, `Route.prototype.all = ...`)
+    // the owner IS the conventional variable name, so `app.get()` belongs to `app`, not to the unrelated `res.get`.
+    const hint = only ? undefined : this.receiverHint(recv);
+    // An imported name (`import shop.views` -> `shop.make_response()`) is a module namespace, not an instance of
+    // the same-named class: the receiver's name says nothing about an owner then.
+    const head = recv?.split('.')[0];
+    const isImported = !!head && [...entry.bindings.keys()].some((k) => k === head || k.startsWith(head + '.'));
+    if (hint && !isImported) {
+      const owned = all.filter((c) => c.sym.className?.split('.').pop()?.toLowerCase() === hint);
+      if (owned.length) {
+        const nearOwned = owned.filter((c) => near.has(c.file));
+        const pick = nearOwned.length ? nearOwned : owned;
+        if (pick.length <= 4) return pick.map((c) => ({ ...c, confidence: (pick.length === 1 ? 'probable' : 'ambiguous') as Confidence }));
+      } else if (this.protoOwners.has(hint)) {
+        // The receiver names a prototype-style object we know (`app`) that has no extracted method of this
+        // name (e.g. `app.get` is attached in a `methods.forEach` loop). A same-named method on a DIFFERENT
+        // owner (`res.get`) is a collision, not evidence: report it unresolved rather than guess.
+        return [];
+      }
+    }
     const nearC = all.filter((c) => near.has(c.file));
     const common = COMMON.has(name);
     if (nearC.length === 1) return [{ ...nearC[0], confidence: common ? 'ambiguous' : 'probable' }];
     if (nearC.length > 1 && nearC.length <= 4) return nearC.map((c) => ({ ...c, confidence: 'ambiguous' as Confidence }));
-    if (!only && nearC.length === 0 && all.length >= 1 && all.length <= 3 && !common)
-      return all.map((c) => ({ ...c, confidence: 'ambiguous' as Confidence }));
+    if (!only && nearC.length === 0 && all.length >= 1 && all.length <= 3 && !common) {
+      // Same gate as before (the filter must only ever remove edges, never widen the fallback).
+      return all
+        .filter((c) => !this.inUnreachedSiblingTree(entry.facts.path, c.file))
+        .map((c) => ({ ...c, confidence: 'ambiguous' as Confidence }));
+    }
     return [];
   }
 
@@ -725,6 +857,6 @@ class Resolver {
         if (t?.type === 'symbol') return this.nameFallback(entry, call.callee, new Set([t.file]));
       }
     }
-    return this.nameFallback(entry, call.callee);
+    return this.nameFallback(entry, call.callee, undefined, recv);
   }
 }

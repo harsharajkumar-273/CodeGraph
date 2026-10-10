@@ -1,0 +1,1190 @@
+[
+{
+"file": "packages/zod/src/v3/types.ts",
+"line": 2563,
+"callee": "mergeObjectSync",
+"target": "packages/zod/src/v3/helpers/parseUtil.ts#ParseStatus.mergeObjectSync"
+},
+{
+"file": "packages/zod/src/v3/types.ts",
+"line": 2566,
+"callee": "mergeObjectSync",
+"target": "packages/zod/src/v3/helpers/parseUtil.ts#ParseStatus.mergeObjectSync"
+},
+{
+"file": "packages/zod/src/v3/types.ts",
+"line": 2576,
+"callee": "ZodObject",
+"target": "packages/zod/src/v3/types.ts#ZodObject"
+},
+{
+"file": "packages/zod/src/v3/types.ts",
+"line": 2585,
+"callee": "errToObj",
+"target": "packages/zod/src/v3/helpers/errorUtil.ts#errToObj"
+},
+{
+"file": "packages/zod/src/v3/tests/all-errors.test.ts",
+"line": 35,
+"callee": "assertEqual",
+"target": "packages/zod/src/v3/helpers/util.ts#assertEqual"
+},
+{
+"file": "packages/zod/src/v3/tests/all-errors.test.ts",
+"line": 36,
+"callee": "assertEqual",
+"target": "packages/zod/src/v3/helpers/util.ts#assertEqual"
+},
+{
+"file": "packages/zod/src/v3/tests/all-errors.test.ts",
+"line": 37,
+"callee": "assertEqual",
+"target": "packages/zod/src/v3/helpers/util.ts#assertEqual"
+},
+{
+"file": "packages/zod/src/v3/tests/all-errors.test.ts",
+"line": 46,
+"callee": "assertEqual",
+"target": "packages/zod/src/v3/helpers/util.ts#assertEqual"
+},
+{
+"file": "packages/zod/src/v3/tests/all-errors.test.ts",
+"line": 50,
+"callee": "safeParse",
+"target": "packages/zod/src/v3/types.ts#ZodType.safeParse"
+},
+{
+"file": "packages/zod/src/v3/tests/all-errors.test.ts",
+"line": 51,
+"callee": "flatten",
+"target": "packages/zod/src/v3/ZodError.ts#ZodError.flatten"
+},
+{
+"file": "packages/zod/src/v3/tests/all-errors.test.ts",
+"line": 53,
+"callee": "flatten",
+"target": "packages/zod/src/v3/ZodError.ts#ZodError.flatten"
+},
+{
+"file": "packages/zod/src/v3/tests/all-errors.test.ts",
+"line": 54,
+"callee": "flatten",
+"target": "packages/zod/src/v3/ZodError.ts#ZodError.flatten"
+},
+{
+"file": "packages/zod/src/v3/tests/all-errors.test.ts",
+"line": 56,
+"callee": "flatten",
+"target": "packages/zod/src/v3/ZodError.ts#ZodError.flatten"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 13,
+"callee": "string",
+"target": "packages/zod/src/v3/types.ts#ZodString.create"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 13,
+"callee": "readonly",
+"target": "packages/zod/src/v3/types.ts#ZodType.readonly"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 14,
+"callee": "number",
+"target": "packages/zod/src/v3/types.ts#ZodNumber.create"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 14,
+"callee": "readonly",
+"target": "packages/zod/src/v3/types.ts#ZodType.readonly"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 15,
+"callee": "nan",
+"target": "packages/zod/src/v3/types.ts#ZodNaN.create"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 15,
+"callee": "readonly",
+"target": "packages/zod/src/v3/types.ts#ZodType.readonly"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 16,
+"callee": "bigint",
+"target": "packages/zod/src/v3/types.ts#ZodBigInt.create"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 16,
+"callee": "readonly",
+"target": "packages/zod/src/v3/types.ts#ZodType.readonly"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 17,
+"callee": "boolean",
+"target": "packages/zod/src/v3/types.ts#ZodBoolean.create"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 17,
+"callee": "readonly",
+"target": "packages/zod/src/v3/types.ts#ZodType.readonly"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 18,
+"callee": "date",
+"target": "packages/zod/src/v3/types.ts#ZodDate.create"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 18,
+"callee": "readonly",
+"target": "packages/zod/src/v3/types.ts#ZodType.readonly"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 19,
+"callee": "undefined",
+"target": "packages/zod/src/v3/types.ts#ZodUndefined.create"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 19,
+"callee": "readonly",
+"target": "packages/zod/src/v3/types.ts#ZodType.readonly"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 20,
+"callee": "null",
+"target": "packages/zod/src/v3/types.ts#ZodNull.create"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 20,
+"callee": "readonly",
+"target": "packages/zod/src/v3/types.ts#ZodType.readonly"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 21,
+"callee": "any",
+"target": "packages/zod/src/v3/types.ts#ZodAny.create"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 21,
+"callee": "readonly",
+"target": "packages/zod/src/v3/types.ts#ZodType.readonly"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 22,
+"callee": "unknown",
+"target": "packages/zod/src/v3/types.ts#ZodUnknown.create"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 22,
+"callee": "readonly",
+"target": "packages/zod/src/v3/types.ts#ZodType.readonly"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 23,
+"callee": "void",
+"target": "packages/zod/src/v3/types.ts#ZodVoid.create"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 23,
+"callee": "readonly",
+"target": "packages/zod/src/v3/types.ts#ZodType.readonly"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 24,
+"callee": "function",
+"target": "packages/zod/src/v3/types.ts#ZodFunction.create"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 24,
+"callee": "args",
+"target": "packages/zod/src/v3/types.ts#ZodFunction.args"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 24,
+"callee": "string",
+"target": "packages/zod/src/v3/types.ts#ZodString.create"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 24,
+"callee": "number",
+"target": "packages/zod/src/v3/types.ts#ZodNumber.create"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 24,
+"callee": "readonly",
+"target": "packages/zod/src/v3/types.ts#ZodType.readonly"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 26,
+"callee": "array",
+"target": "packages/zod/src/v3/types.ts#ZodArray.create"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 26,
+"callee": "string",
+"target": "packages/zod/src/v3/types.ts#ZodString.create"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 26,
+"callee": "readonly",
+"target": "packages/zod/src/v3/types.ts#ZodType.readonly"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 27,
+"callee": "tuple",
+"target": "packages/zod/src/v3/types.ts#ZodTuple.create"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 27,
+"callee": "string",
+"target": "packages/zod/src/v3/types.ts#ZodString.create"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 27,
+"callee": "number",
+"target": "packages/zod/src/v3/types.ts#ZodNumber.create"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 27,
+"callee": "readonly",
+"target": "packages/zod/src/v3/types.ts#ZodType.readonly"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 28,
+"callee": "map",
+"target": "packages/zod/src/v3/types.ts#ZodMap.create"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 28,
+"callee": "string",
+"target": "packages/zod/src/v3/types.ts#ZodString.create"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 28,
+"callee": "date",
+"target": "packages/zod/src/v3/types.ts#ZodDate.create"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 28,
+"callee": "readonly",
+"target": "packages/zod/src/v3/types.ts#ZodType.readonly"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 29,
+"callee": "set",
+"target": "packages/zod/src/v3/types.ts#ZodSet.create"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 29,
+"callee": "promise",
+"target": "packages/zod/src/v3/types.ts#ZodPromise.create"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 29,
+"callee": "string",
+"target": "packages/zod/src/v3/types.ts#ZodString.create"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 29,
+"callee": "readonly",
+"target": "packages/zod/src/v3/types.ts#ZodType.readonly"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 30,
+"callee": "record",
+"target": "packages/zod/src/v3/types.ts#ZodRecord.create"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 30,
+"callee": "string",
+"target": "packages/zod/src/v3/types.ts#ZodString.create"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 30,
+"callee": "readonly",
+"target": "packages/zod/src/v3/types.ts#ZodType.readonly"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 31,
+"callee": "record",
+"target": "packages/zod/src/v3/types.ts#ZodRecord.create"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 31,
+"callee": "string",
+"target": "packages/zod/src/v3/types.ts#ZodString.create"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 31,
+"callee": "number",
+"target": "packages/zod/src/v3/types.ts#ZodNumber.create"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 31,
+"callee": "readonly",
+"target": "packages/zod/src/v3/types.ts#ZodType.readonly"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 32,
+"callee": "object",
+"target": "packages/zod/src/v3/types.ts#ZodObject.create"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 32,
+"callee": "string",
+"target": "packages/zod/src/v3/types.ts#ZodString.create"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 32,
+"callee": "number",
+"target": "packages/zod/src/v3/types.ts#ZodNumber.create"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 32,
+"callee": "readonly",
+"target": "packages/zod/src/v3/types.ts#ZodType.readonly"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 33,
+"callee": "nativeEnum",
+"target": "packages/zod/src/v3/types.ts#ZodNativeEnum.create"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 33,
+"callee": "readonly",
+"target": "packages/zod/src/v3/types.ts#ZodType.readonly"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 34,
+"callee": "promise",
+"target": "packages/zod/src/v3/types.ts#ZodPromise.create"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 34,
+"callee": "string",
+"target": "packages/zod/src/v3/types.ts#ZodString.create"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 34,
+"callee": "readonly",
+"target": "packages/zod/src/v3/types.ts#ZodType.readonly"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 38,
+"callee": "assertEqual",
+"target": "packages/zod/src/v3/helpers/util.ts#assertEqual"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 39,
+"callee": "assertEqual",
+"target": "packages/zod/src/v3/helpers/util.ts#assertEqual"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 40,
+"callee": "assertEqual",
+"target": "packages/zod/src/v3/helpers/util.ts#assertEqual"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 41,
+"callee": "assertEqual",
+"target": "packages/zod/src/v3/helpers/util.ts#assertEqual"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 42,
+"callee": "assertEqual",
+"target": "packages/zod/src/v3/helpers/util.ts#assertEqual"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 43,
+"callee": "assertEqual",
+"target": "packages/zod/src/v3/helpers/util.ts#assertEqual"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 44,
+"callee": "assertEqual",
+"target": "packages/zod/src/v3/helpers/util.ts#assertEqual"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 45,
+"callee": "assertEqual",
+"target": "packages/zod/src/v3/helpers/util.ts#assertEqual"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 46,
+"callee": "assertEqual",
+"target": "packages/zod/src/v3/helpers/util.ts#assertEqual"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 47,
+"callee": "assertEqual",
+"target": "packages/zod/src/v3/helpers/util.ts#assertEqual"
+},
+{
+"file": "packages/zod/src/v3/tests/readonly.test.ts",
+"line": 48,
+"callee": "assertEqual",
+"target": "packages/zod/src/v3/helpers/util.ts#assertEqual"
+},
+{
+"file": "packages/zod/src/v4/classic/schemas.ts",
+"line": 1068,
+"callee": "$constructor",
+"target": "packages/zod/src/v4/core/core.ts#$constructor"
+},
+{
+"file": "packages/zod/src/v4/classic/schemas.ts",
+"line": 1072,
+"callee": "init",
+"target": "NOSYM:init callback passed to $constructor"
+},
+{
+"file": "packages/zod/src/v4/classic/schemas.ts",
+"line": 1073,
+"callee": "init",
+"target": "NOSYM:init callback passed to $constructor"
+},
+{
+"file": "packages/zod/src/v4/classic/schemas.ts",
+"line": 1081,
+"callee": "_stringFormat",
+"target": "packages/zod/src/v4/core/api.ts#_stringFormat"
+},
+{
+"file": "packages/zod/src/v4/classic/schemas.ts",
+"line": 1085,
+"callee": "_stringFormat",
+"target": "packages/zod/src/v4/core/api.ts#_stringFormat"
+},
+{
+"file": "packages/zod/src/v4/classic/schemas.ts",
+"line": 1089,
+"callee": "_stringFormat",
+"target": "packages/zod/src/v4/core/api.ts#_stringFormat"
+},
+{
+"file": "packages/zod/src/v4/classic/schemas.ts",
+"line": 1093,
+"callee": "_stringFormat",
+"target": "packages/zod/src/v4/core/api.ts#_stringFormat"
+},
+{
+"file": "packages/zod/src/v4/classic/tests/template-literal.test.ts",
+"line": 751,
+"callee": "safeParse",
+"target": "NOSYM:object-literal method passed to $constructor"
+},
+{
+"file": "packages/zod/src/v4/classic/tests/template-literal.test.ts",
+"line": 766,
+"callee": "safeParse",
+"target": "NOSYM:object-literal method passed to $constructor"
+},
+{
+"file": "packages/zod/src/v4/classic/tests/template-literal.test.ts",
+"line": 784,
+"callee": "templateLiteral",
+"target": "packages/zod/src/v4/classic/schemas.ts#templateLiteral"
+},
+{
+"file": "packages/zod/src/v4/classic/tests/template-literal.test.ts",
+"line": 784,
+"callee": "string",
+"target": "packages/zod/src/v4/classic/schemas.ts#string"
+},
+{
+"file": "packages/zod/src/v4/classic/tests/template-literal.test.ts",
+"line": 784,
+"callee": "min",
+"target": "NOSYM:object-literal method passed to $constructor"
+},
+{
+"file": "packages/zod/src/v4/classic/tests/template-literal.test.ts",
+"line": 784,
+"callee": "max",
+"target": "NOSYM:object-literal method passed to $constructor"
+},
+{
+"file": "packages/zod/src/v4/classic/tests/template-literal.test.ts",
+"line": 784,
+"callee": "optional",
+"target": "NOSYM:object-literal method passed to $constructor"
+},
+{
+"file": "packages/zod/src/v4/classic/tests/error.test.ts",
+"line": 365,
+"callee": "safeParse",
+"target": "NOSYM:object-literal method passed to $constructor"
+},
+{
+"file": "packages/zod/src/v4/classic/tests/error.test.ts",
+"line": 371,
+"callee": "string",
+"target": "packages/zod/src/v4/classic/schemas.ts#string"
+},
+{
+"file": "packages/zod/src/v4/classic/tests/error.test.ts",
+"line": 371,
+"callee": "transform",
+"target": "NOSYM:object-literal method passed to $constructor"
+},
+{
+"file": "packages/zod/src/v4/classic/tests/error.test.ts",
+"line": 371,
+"callee": "refine",
+"target": "NOSYM:object-literal method passed to $constructor"
+},
+{
+"file": "packages/zod/src/v4/classic/tests/error.test.ts",
+"line": 371,
+"callee": "refine",
+"target": "NOSYM:object-literal method passed to $constructor"
+},
+{
+"file": "packages/zod/src/v4/classic/tests/error.test.ts",
+"line": 381,
+"callee": "parse",
+"target": "NOSYM:object-literal method passed to $constructor"
+},
+{
+"file": "packages/zod/src/v4/classic/tests/error.test.ts",
+"line": 391,
+"callee": "safeParse",
+"target": "NOSYM:object-literal method passed to $constructor"
+},
+{
+"file": "packages/zod/src/v4/classic/tests/error.test.ts",
+"line": 392,
+"callee": "safeParse",
+"target": "NOSYM:object-literal method passed to $constructor"
+},
+{
+"file": "packages/zod/src/v4/classic/tests/pickomit.test.ts",
+"line": 139,
+"callee": "object",
+"target": "packages/zod/src/v4/classic/schemas.ts#object"
+},
+{
+"file": "packages/zod/src/v4/classic/tests/pickomit.test.ts",
+"line": 161,
+"callee": "object",
+"target": "packages/zod/src/v4/classic/schemas.ts#object"
+},
+{
+"file": "packages/zod/src/v4/classic/tests/pickomit.test.ts",
+"line": 140,
+"callee": "string",
+"target": "packages/zod/src/v4/classic/schemas.ts#string"
+},
+{
+"file": "packages/zod/src/v4/classic/tests/pickomit.test.ts",
+"line": 141,
+"callee": "string",
+"target": "packages/zod/src/v4/classic/schemas.ts#string"
+},
+{
+"file": "packages/zod/src/v4/classic/tests/pickomit.test.ts",
+"line": 142,
+"callee": "string",
+"target": "packages/zod/src/v4/classic/schemas.ts#string"
+},
+{
+"file": "packages/zod/src/v4/classic/tests/pickomit.test.ts",
+"line": 162,
+"callee": "string",
+"target": "packages/zod/src/v4/classic/schemas.ts#string"
+},
+{
+"file": "packages/zod/src/v4/classic/tests/pickomit.test.ts",
+"line": 163,
+"callee": "string",
+"target": "packages/zod/src/v4/classic/schemas.ts#string"
+},
+{
+"file": "packages/zod/src/v4/classic/tests/pickomit.test.ts",
+"line": 164,
+"callee": "string",
+"target": "packages/zod/src/v4/classic/schemas.ts#string"
+},
+{
+"file": "packages/zod/src/v4/classic/tests/pickomit.test.ts",
+"line": 142,
+"callee": "array",
+"target": "NOSYM:object-literal method passed to $constructor"
+},
+{
+"file": "packages/zod/src/v4/classic/tests/pickomit.test.ts",
+"line": 164,
+"callee": "array",
+"target": "NOSYM:object-literal method passed to $constructor"
+},
+{
+"file": "packages/zod/src/v4/classic/tests/pickomit.test.ts",
+"line": 145,
+"callee": "superRefine",
+"target": "NOSYM:object-literal method passed to $constructor"
+},
+{
+"file": "packages/zod/src/v4/classic/tests/pickomit.test.ts",
+"line": 167,
+"callee": "superRefine",
+"target": "NOSYM:object-literal method passed to $constructor"
+},
+{
+"file": "packages/zod/src/v4/classic/tests/codec.test.ts",
+"line": 221,
+"callee": "decode",
+"target": "NOSYM:const bound to a call result (export const parse = _parse(...))"
+},
+{
+"file": "packages/zod/src/v4/classic/tests/codec.test.ts",
+"line": 234,
+"callee": "encode",
+"target": "NOSYM:const bound to a call result (export const parse = _parse(...))"
+},
+{
+"file": "packages/zod/src/v4/classic/tests/codec.test.ts",
+"line": 246,
+"callee": "safeDecode",
+"target": "NOSYM:const bound to a call result (export const parse = _parse(...))"
+},
+{
+"file": "packages/zod/src/v4/core/tests/email-regex.test.ts",
+"line": 95,
+"callee": "pick",
+"target": "packages/zod/src/v4/core/tests/email-regex.test.ts#fuzz.pick"
+},
+{
+"file": "packages/zod/src/v4/core/tests/email-regex.test.ts",
+"line": 100,
+"callee": "run",
+"target": "packages/zod/src/v4/core/tests/email-regex.test.ts#fuzz.run"
+},
+{
+"file": "packages/zod/src/v4/core/tests/email-regex.test.ts",
+"line": 102,
+"callee": "run",
+"target": "packages/zod/src/v4/core/tests/email-regex.test.ts#fuzz.run"
+},
+{
+"file": "packages/zod/src/v4/core/tests/email-regex.test.ts",
+"line": 102,
+"callee": "run",
+"target": "packages/zod/src/v4/core/tests/email-regex.test.ts#fuzz.run"
+},
+{
+"file": "packages/zod/src/v4/core/tests/email-regex.test.ts",
+"line": 104,
+"callee": "run",
+"target": "packages/zod/src/v4/core/tests/email-regex.test.ts#fuzz.run"
+},
+{
+"file": "packages/zod/src/v4/core/tests/email-regex.test.ts",
+"line": 104,
+"callee": "run",
+"target": "packages/zod/src/v4/core/tests/email-regex.test.ts#fuzz.run"
+},
+{
+"file": "packages/zod/src/v4/core/tests/email-regex.test.ts",
+"line": 104,
+"callee": "run",
+"target": "packages/zod/src/v4/core/tests/email-regex.test.ts#fuzz.run"
+},
+{
+"file": "packages/zod/src/v4/core/tests/email-regex.test.ts",
+"line": 106,
+"callee": "run",
+"target": "packages/zod/src/v4/core/tests/email-regex.test.ts#fuzz.run"
+},
+{
+"file": "packages/zod/src/v4/core/tests/email-regex.test.ts",
+"line": 106,
+"callee": "run",
+"target": "packages/zod/src/v4/core/tests/email-regex.test.ts#fuzz.run"
+},
+{
+"file": "packages/zod/src/v4/core/tests/email-regex.test.ts",
+"line": 106,
+"callee": "run",
+"target": "packages/zod/src/v4/core/tests/email-regex.test.ts#fuzz.run"
+},
+{
+"file": "packages/zod/src/v4/core/tests/email-regex.test.ts",
+"line": 109,
+"callee": "run",
+"target": "packages/zod/src/v4/core/tests/email-regex.test.ts#fuzz.run"
+},
+{
+"file": "packages/zod/src/v4/core/tests/email-regex.test.ts",
+"line": 112,
+"callee": "pick",
+"target": "packages/zod/src/v4/core/tests/email-regex.test.ts#fuzz.pick"
+},
+{
+"file": "packages/zod/src/v4/core/tests/email-regex.test.ts",
+"line": 113,
+"callee": "pick",
+"target": "packages/zod/src/v4/core/tests/email-regex.test.ts#fuzz.pick"
+},
+{
+"file": "packages/zod/src/v4/core/compile.ts",
+"line": 495,
+"callee": "ZodCompileUnsupportedError",
+"target": "packages/zod/src/v4/core/compile.ts#ZodCompileUnsupportedError"
+},
+{
+"file": "packages/zod/src/v4/core/compile.ts",
+"line": 503,
+"callee": "ZodCompileUnsupportedError",
+"target": "packages/zod/src/v4/core/compile.ts#ZodCompileUnsupportedError"
+},
+{
+"file": "packages/zod/src/v4/core/compile.ts",
+"line": 508,
+"callee": "ZodCompileUnsupportedError",
+"target": "packages/zod/src/v4/core/compile.ts#ZodCompileUnsupportedError"
+},
+{
+"file": "packages/zod/src/v4/core/compile.ts",
+"line": 512,
+"callee": "ZodCompileUnsupportedError",
+"target": "packages/zod/src/v4/core/compile.ts#ZodCompileUnsupportedError"
+},
+{
+"file": "packages/zod/src/v4/core/compile.ts",
+"line": 510,
+"callee": "addConstant",
+"target": "packages/zod/src/v4/core/compile.ts#addConstant"
+},
+{
+"file": "packages/zod/src/v4/core/compile.ts",
+"line": 522,
+"callee": "write",
+"target": "packages/zod/src/v4/core/doc.ts#Doc.write"
+},
+{
+"file": "packages/zod/src/v4/core/compile.ts",
+"line": 522,
+"callee": "comparisonOperand",
+"target": "packages/zod/src/v4/core/compile.ts#comparisonOperand"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/cyclic-data.test.ts",
+"line": 35,
+"callee": "parse",
+"target": "NOSYM:object-literal method passed to $constructor"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/cyclic-data.test.ts",
+"line": 35,
+"callee": "cyclic",
+"target": "packages/zod/src/v4/mini/tests/cyclic-data.test.ts#cyclic"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/cyclic-data.test.ts",
+"line": 39,
+"callee": "config",
+"target": "packages/zod/src/v4/core/core.ts#config"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/cyclic-data.test.ts",
+"line": 39,
+"callee": "memoizer",
+"target": "packages/zod/src/v4/core/memoizer.ts#memoizer"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/cyclic-data.test.ts",
+"line": 48,
+"callee": "config",
+"target": "packages/zod/src/v4/core/core.ts#config"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/cyclic-data.test.ts",
+"line": 48,
+"callee": "memoizer",
+"target": "packages/zod/src/v4/core/memoizer.ts#memoizer"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/cyclic-data.test.ts",
+"line": 67,
+"callee": "config",
+"target": "packages/zod/src/v4/core/core.ts#config"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/cyclic-data.test.ts",
+"line": 67,
+"callee": "memoizer",
+"target": "packages/zod/src/v4/core/memoizer.ts#memoizer"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/cyclic-data.test.ts",
+"line": 40,
+"callee": "array",
+"target": "packages/zod/src/v4/mini/schemas.ts#array"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/cyclic-data.test.ts",
+"line": 40,
+"callee": "lazy",
+"target": "packages/zod/src/v4/mini/schemas.ts#_lazy"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/cyclic-data.test.ts",
+"line": 43,
+"callee": "parse",
+"target": "NOSYM:object-literal method passed to $constructor"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/cyclic-data.test.ts",
+"line": 49,
+"callee": "object",
+"target": "packages/zod/src/v4/mini/schemas.ts#object"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/cyclic-data.test.ts",
+"line": 50,
+"callee": "string",
+"target": "packages/zod/src/v4/mini/schemas.ts#string"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/cyclic-data.test.ts",
+"line": 55,
+"callee": "pipe",
+"target": "packages/zod/src/v4/mini/schemas.ts#pipe"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/cyclic-data.test.ts",
+"line": 57,
+"callee": "transform",
+"target": "packages/zod/src/v4/mini/schemas.ts#transform"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/cyclic-data.test.ts",
+"line": 63,
+"callee": "parse",
+"target": "NOSYM:object-literal method passed to $constructor"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/cyclic-data.test.ts",
+"line": 68,
+"callee": "object",
+"target": "packages/zod/src/v4/mini/schemas.ts#object"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/cyclic-data.test.ts",
+"line": 69,
+"callee": "pipe",
+"target": "packages/zod/src/v4/mini/schemas.ts#pipe"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/cyclic-data.test.ts",
+"line": 70,
+"callee": "number",
+"target": "packages/zod/src/v4/mini/schemas.ts#number"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/cyclic-data.test.ts",
+"line": 71,
+"callee": "transform",
+"target": "packages/zod/src/v4/mini/schemas.ts#transform"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/deep-partial.test.ts",
+"line": 6,
+"callee": "object",
+"target": "packages/zod/src/v4/mini/schemas.ts#object"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/deep-partial.test.ts",
+"line": 7,
+"callee": "string",
+"target": "packages/zod/src/v4/mini/schemas.ts#string"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/deep-partial.test.ts",
+"line": 8,
+"callee": "object",
+"target": "packages/zod/src/v4/mini/schemas.ts#object"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/deep-partial.test.ts",
+"line": 8,
+"callee": "string",
+"target": "packages/zod/src/v4/mini/schemas.ts#string"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/deep-partial.test.ts",
+"line": 8,
+"callee": "number",
+"target": "packages/zod/src/v4/mini/schemas.ts#number"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/deep-partial.test.ts",
+"line": 10,
+"callee": "deepPartial",
+"target": "packages/zod/src/v4/mini/deep-partial.ts#deepPartial"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/deep-partial.test.ts",
+"line": 22,
+"callee": "deepPartial",
+"target": "packages/zod/src/v4/mini/deep-partial.ts#deepPartial"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/deep-partial.test.ts",
+"line": 29,
+"callee": "deepPartial",
+"target": "packages/zod/src/v4/mini/deep-partial.ts#deepPartial"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/deep-partial.test.ts",
+"line": 39,
+"callee": "deepPartial",
+"target": "packages/zod/src/v4/mini/deep-partial.ts#deepPartial"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/deep-partial.test.ts",
+"line": 12,
+"callee": "parse",
+"target": "NOSYM:object-literal method passed to $constructor"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/deep-partial.test.ts",
+"line": 13,
+"callee": "parse",
+"target": "NOSYM:object-literal method passed to $constructor"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/deep-partial.test.ts",
+"line": 14,
+"callee": "parse",
+"target": "NOSYM:object-literal method passed to $constructor"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/deep-partial.test.ts",
+"line": 30,
+"callee": "parse",
+"target": "NOSYM:object-literal method passed to $constructor"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/deep-partial.test.ts",
+"line": 31,
+"callee": "parse",
+"target": "NOSYM:object-literal method passed to $constructor"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/deep-partial.test.ts",
+"line": 21,
+"callee": "object",
+"target": "packages/zod/src/v4/mini/schemas.ts#object"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/deep-partial.test.ts",
+"line": 21,
+"callee": "string",
+"target": "packages/zod/src/v4/mini/schemas.ts#string"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/deep-partial.test.ts",
+"line": 21,
+"callee": "object",
+"target": "packages/zod/src/v4/mini/schemas.ts#object"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/deep-partial.test.ts",
+"line": 21,
+"callee": "number",
+"target": "packages/zod/src/v4/mini/schemas.ts#number"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/deep-partial.test.ts",
+"line": 28,
+"callee": "tuple",
+"target": "packages/zod/src/v4/mini/schemas.ts#tuple"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/deep-partial.test.ts",
+"line": 28,
+"callee": "object",
+"target": "packages/zod/src/v4/mini/schemas.ts#object"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/deep-partial.test.ts",
+"line": 28,
+"callee": "string",
+"target": "packages/zod/src/v4/mini/schemas.ts#string"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/deep-partial.test.ts",
+"line": 28,
+"callee": "string",
+"target": "packages/zod/src/v4/mini/schemas.ts#string"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/deep-partial.test.ts",
+"line": 35,
+"callee": "codec",
+"target": "packages/zod/src/v4/mini/schemas.ts#codec"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/deep-partial.test.ts",
+"line": 35,
+"callee": "object",
+"target": "packages/zod/src/v4/mini/schemas.ts#object"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/deep-partial.test.ts",
+"line": 35,
+"callee": "string",
+"target": "packages/zod/src/v4/mini/schemas.ts#string"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/deep-partial.test.ts",
+"line": 35,
+"callee": "object",
+"target": "packages/zod/src/v4/mini/schemas.ts#object"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/deep-partial.test.ts",
+"line": 35,
+"callee": "string",
+"target": "packages/zod/src/v4/mini/schemas.ts#string"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/object.test.ts",
+"line": 88,
+"callee": "keyof",
+"target": "packages/zod/src/v4/mini/schemas.ts#keyof"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/object.test.ts",
+"line": 98,
+"callee": "safeParse",
+"target": "NOSYM:const bound to a call result (export const parse = _parse(...))"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/object.test.ts",
+"line": 99,
+"callee": "safeParse",
+"target": "NOSYM:const bound to a call result (export const parse = _parse(...))"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/object.test.ts",
+"line": 100,
+"callee": "safeParse",
+"target": "NOSYM:const bound to a call result (export const parse = _parse(...))"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/object.test.ts",
+"line": 101,
+"callee": "safeParse",
+"target": "NOSYM:const bound to a call result (export const parse = _parse(...))"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/object.test.ts",
+"line": 116,
+"callee": "safeParse",
+"target": "NOSYM:const bound to a call result (export const parse = _parse(...))"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/object.test.ts",
+"line": 105,
+"callee": "extend",
+"target": "packages/zod/src/v4/mini/schemas.ts#extend"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/object.test.ts",
+"line": 106,
+"callee": "boolean",
+"target": "packages/zod/src/v4/mini/schemas.ts#boolean"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/object.test.ts",
+"line": 120,
+"callee": "merge",
+"target": "packages/zod/src/v4/mini/schemas.ts#merge"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/object.test.ts",
+"line": 120,
+"callee": "object",
+"target": "packages/zod/src/v4/mini/schemas.ts#object"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/object.test.ts",
+"line": 120,
+"callee": "boolean",
+"target": "packages/zod/src/v4/mini/schemas.ts#boolean"
+},
+{
+"file": "packages/zod/src/v4/mini/tests/deep-partial.test.ts",
+"line": 44,
+"callee": "object",
+"target": "packages/zod/src/v4/mini/schemas.ts#object"
+}
+]

@@ -1,0 +1,72 @@
+[
+ {
+  "file": "packages/zod/src/v3/types.ts",
+  "start": 1421,
+  "end": 1460
+ },
+ {
+  "file": "packages/zod/src/v3/tests/tuple.test.ts",
+  "start": 26,
+  "end": 65
+ },
+ {
+  "file": "packages/zod/src/v3/tests/primitive.test.ts",
+  "start": 116,
+  "end": 155
+ },
+ {
+  "file": "packages/zod/src/v4/classic/schemas.ts",
+  "start": 1164,
+  "end": 1203
+ },
+ {
+  "file": "packages/zod/src/v4/classic/tests/from-json-schema.test.ts",
+  "start": 840,
+  "end": 879
+ },
+ {
+  "file": "packages/zod/src/v4/classic/tests/properties.test.ts",
+  "start": 77,
+  "end": 116
+ },
+ {
+  "file": "packages/zod/src/v4/classic/tests/optin-ladder.test.ts",
+  "start": 195,
+  "end": 234
+ },
+ {
+  "file": "packages/zod/src/v4/classic/tests/firstparty.test.ts",
+  "start": 106,
+  "end": 145
+ },
+ {
+  "file": "packages/zod/src/v4/core/tests/treeshake.test.ts",
+  "start": 3,
+  "end": 42
+ },
+ {
+  "file": "packages/zod/src/v4/core/tests/locales/fr.test.ts",
+  "start": 4,
+  "end": 43
+ },
+ {
+  "file": "packages/zod/src/v4/core/json-schema-processors.ts",
+  "start": 200,
+  "end": 239
+ },
+ {
+  "file": "packages/zod/src/v4/mini/iso.ts",
+  "start": 6,
+  "end": 45
+ },
+ {
+  "file": "packages/zod/src/v4/mini/tests/checks.test.ts",
+  "start": 52,
+  "end": 91
+ },
+ {
+  "file": "packages/zod/src/v4/mini/tests/standard-schema.test.ts",
+  "start": 4,
+  "end": 43
+ }
+]

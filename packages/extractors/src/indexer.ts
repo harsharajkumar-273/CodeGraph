@@ -4,7 +4,7 @@ import ignore from 'ignore';
 import type { CodeGraph } from '@codegraph/core';
 import { SUPPORTED_EXTENSIONS } from '@codegraph/parser';
 import { extractFile } from './extract';
-import { buildGraph, type BuildStats } from './resolve';
+import { buildGraph, type BuildStats, type CallTrace } from './resolve';
 import type { FileFacts } from './types';
 
 export interface IndexOptions {
@@ -12,6 +12,8 @@ export interface IndexOptions {
   exclude?: string[];
   maxFileBytes?: number;
   onProgress?: (done: number, total: number) => void;
+  /** Receives the resolver's verdict for every call site (the graph itself dedups edges per caller/callee pair). */
+  trace?: (t: CallTrace) => void;
 }
 
 export interface IndexResult {
@@ -112,6 +114,6 @@ export async function indexFiles(
     }
     opts.onProgress?.(++done, fm.size);
   }
-  const { graph, stats } = buildGraph(facts, cm, root);
+  const { graph, stats } = buildGraph(facts, cm, root, opts.trace);
   return { graph, stats: { ...stats, skipped: 0, parseErrors, ms: Date.now() - t0 }, warnings };
 }

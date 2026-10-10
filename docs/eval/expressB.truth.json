@@ -1,0 +1,386 @@
+[
+{
+"file": "lib/response.js",
+"line": 286,
+"callee": "set",
+"target": "lib/response.js#res.header"
+},
+{
+"file": "lib/response.js",
+"line": 287,
+"callee": "set",
+"target": "lib/response.js#res.header"
+},
+{
+"file": "lib/response.js",
+"line": 307,
+"callee": "send",
+"target": "lib/response.js#res.send"
+},
+{
+"file": "lib/request.js",
+"line": 297,
+"callee": "defineGetter",
+"target": "lib/request.js#defineGetter"
+},
+{
+"file": "lib/request.js",
+"line": 301,
+"callee": "get",
+"target": "NOSYM:dynamic-definition (app[method] = ... in methods.forEach)"
+},
+{
+"file": "lib/request.js",
+"line": 309,
+"callee": "get",
+"target": "lib/request.js#req.header"
+},
+{
+"file": "lib/request.js",
+"line": 326,
+"callee": "defineGetter",
+"target": "lib/request.js#defineGetter"
+},
+{
+"file": "lib/request.js",
+"line": 383,
+"callee": "defineGetter",
+"target": "lib/request.js#defineGetter"
+},
+{
+"file": "lib/request.js",
+"line": 388,
+"callee": "get",
+"target": "NOSYM:dynamic-definition (app[method] = ... in methods.forEach)"
+},
+{
+"file": "lib/request.js",
+"line": 403,
+"callee": "defineGetter",
+"target": "lib/request.js#defineGetter"
+},
+{
+"file": "test/res.redirect.js",
+"line": 36,
+"callee": "express",
+"target": "lib/express.js#createApplication"
+},
+{
+"file": "test/res.redirect.js",
+"line": 51,
+"callee": "express",
+"target": "lib/express.js#createApplication"
+},
+{
+"file": "test/res.redirect.js",
+"line": 66,
+"callee": "express",
+"target": "lib/express.js#createApplication"
+},
+{
+"file": "test/res.redirect.js",
+"line": 38,
+"callee": "use",
+"target": "lib/application.js#app.use"
+},
+{
+"file": "test/res.redirect.js",
+"line": 53,
+"callee": "use",
+"target": "lib/application.js#app.use"
+},
+{
+"file": "test/res.redirect.js",
+"line": 68,
+"callee": "use",
+"target": "lib/application.js#app.use"
+},
+{
+"file": "test/res.redirect.js",
+"line": 39,
+"callee": "redirect",
+"target": "lib/response.js#res.redirect"
+},
+{
+"file": "test/res.redirect.js",
+"line": 54,
+"callee": "redirect",
+"target": "lib/response.js#res.redirect"
+},
+{
+"file": "test/res.redirect.js",
+"line": 69,
+"callee": "redirect",
+"target": "lib/response.js#res.redirect"
+},
+{
+"file": "test/req.range.js",
+"line": 9,
+"callee": "express",
+"target": "lib/express.js#createApplication"
+},
+{
+"file": "test/req.range.js",
+"line": 22,
+"callee": "express",
+"target": "lib/express.js#createApplication"
+},
+{
+"file": "test/req.range.js",
+"line": 35,
+"callee": "express",
+"target": "lib/express.js#createApplication"
+},
+{
+"file": "test/req.range.js",
+"line": 11,
+"callee": "use",
+"target": "lib/application.js#app.use"
+},
+{
+"file": "test/req.range.js",
+"line": 24,
+"callee": "use",
+"target": "lib/application.js#app.use"
+},
+{
+"file": "test/req.range.js",
+"line": 37,
+"callee": "use",
+"target": "lib/application.js#app.use"
+},
+{
+"file": "test/req.range.js",
+"line": 12,
+"callee": "json",
+"target": "lib/response.js#res.json"
+},
+{
+"file": "test/req.range.js",
+"line": 25,
+"callee": "json",
+"target": "lib/response.js#res.json"
+},
+{
+"file": "test/req.range.js",
+"line": 38,
+"callee": "json",
+"target": "lib/response.js#res.json"
+},
+{
+"file": "test/req.range.js",
+"line": 12,
+"callee": "range",
+"target": "lib/request.js#req.range"
+},
+{
+"file": "test/req.range.js",
+"line": 25,
+"callee": "range",
+"target": "lib/request.js#req.range"
+},
+{
+"file": "test/req.range.js",
+"line": 38,
+"callee": "range",
+"target": "lib/request.js#req.range"
+},
+{
+"file": "test/app.js",
+"line": 20,
+"callee": "express",
+"target": "lib/express.js#createApplication"
+},
+{
+"file": "test/app.js",
+"line": 28,
+"callee": "express",
+"target": "lib/express.js#createApplication"
+},
+{
+"file": "test/app.js",
+"line": 29,
+"callee": "express",
+"target": "lib/express.js#createApplication"
+},
+{
+"file": "test/app.js",
+"line": 30,
+"callee": "express",
+"target": "lib/express.js#createApplication"
+},
+{
+"file": "test/app.js",
+"line": 43,
+"callee": "express",
+"target": "lib/express.js#createApplication"
+},
+{
+"file": "test/app.js",
+"line": 44,
+"callee": "express",
+"target": "lib/express.js#createApplication"
+},
+{
+"file": "test/app.js",
+"line": 45,
+"callee": "express",
+"target": "lib/express.js#createApplication"
+},
+{
+"file": "test/app.js",
+"line": 46,
+"callee": "express",
+"target": "lib/express.js#createApplication"
+},
+{
+"file": "test/app.js",
+"line": 32,
+"callee": "use",
+"target": "lib/application.js#app.use"
+},
+{
+"file": "test/app.js",
+"line": 33,
+"callee": "use",
+"target": "lib/application.js#app.use"
+},
+{
+"file": "test/app.js",
+"line": 48,
+"callee": "use",
+"target": "lib/application.js#app.use"
+},
+{
+"file": "test/app.js",
+"line": 49,
+"callee": "use",
+"target": "lib/application.js#app.use"
+},
+{
+"file": "test/app.js",
+"line": 50,
+"callee": "use",
+"target": "lib/application.js#app.use"
+},
+{
+"file": "test/req.accepts.js",
+"line": 48,
+"callee": "express",
+"target": "lib/express.js#createApplication"
+},
+{
+"file": "test/req.accepts.js",
+"line": 62,
+"callee": "express",
+"target": "lib/express.js#createApplication"
+},
+{
+"file": "test/req.accepts.js",
+"line": 74,
+"callee": "express",
+"target": "lib/express.js#createApplication"
+},
+{
+"file": "test/req.accepts.js",
+"line": 50,
+"callee": "use",
+"target": "lib/application.js#app.use"
+},
+{
+"file": "test/req.accepts.js",
+"line": 64,
+"callee": "use",
+"target": "lib/application.js#app.use"
+},
+{
+"file": "test/req.accepts.js",
+"line": 76,
+"callee": "use",
+"target": "lib/application.js#app.use"
+},
+{
+"file": "test/req.accepts.js",
+"line": 37,
+"callee": "accepts",
+"target": "lib/request.js#req.accepts"
+},
+{
+"file": "test/req.accepts.js",
+"line": 51,
+"callee": "accepts",
+"target": "lib/request.js#req.accepts"
+},
+{
+"file": "test/req.accepts.js",
+"line": 65,
+"callee": "accepts",
+"target": "lib/request.js#req.accepts"
+},
+{
+"file": "examples/view-locals/index.js",
+"line": 49,
+"callee": "count",
+"target": "examples/view-locals/user.js#User.count"
+},
+{
+"file": "examples/view-locals/index.js",
+"line": 57,
+"callee": "all",
+"target": "examples/view-locals/user.js#User.all"
+},
+{
+"file": "examples/view-locals/index.js",
+"line": 64,
+"callee": "get",
+"target": "NOSYM:dynamic-definition (app[method] = ... in methods.forEach)"
+},
+{
+"file": "examples/view-locals/index.js",
+"line": 65,
+"callee": "render",
+"target": "lib/response.js#res.render"
+},
+{
+"file": "examples/ejs/index.js",
+"line": 23,
+"callee": "engine",
+"target": "lib/application.js#app.engine"
+},
+{
+"file": "examples/ejs/index.js",
+"line": 27,
+"callee": "set",
+"target": "lib/application.js#app.set"
+},
+{
+"file": "examples/ejs/index.js",
+"line": 31,
+"callee": "use",
+"target": "lib/application.js#app.use"
+},
+{
+"file": "examples/ejs/index.js",
+"line": 36,
+"callee": "set",
+"target": "lib/application.js#app.set"
+},
+{
+"file": "examples/ejs/index.js",
+"line": 45,
+"callee": "get",
+"target": "NOSYM:dynamic-definition (app[method] = ... in methods.forEach)"
+},
+{
+"file": "examples/ejs/index.js",
+"line": 46,
+"callee": "render",
+"target": "lib/response.js#res.render"
+},
+{
+"file": "examples/ejs/index.js",
+"line": 55,
+"callee": "listen",
+"target": "lib/application.js#app.listen"
+}
+]

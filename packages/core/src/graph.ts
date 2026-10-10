@@ -44,7 +44,11 @@ export class CodeGraph {
     const key = `${edge.from}|${edge.to}|${edge.kind}`;
     const existing = this.edgeMap.get(key);
     if (existing) {
-      if (CONFIDENCE_RANK[edge.confidence] > CONFIDENCE_RANK[existing.confidence]) existing.confidence = edge.confidence;
+      // Keep the call site that justifies the winning confidence, so the reported line and tier agree.
+      if (CONFIDENCE_RANK[edge.confidence] > CONFIDENCE_RANK[existing.confidence]) {
+        existing.confidence = edge.confidence;
+        if (edge.line !== undefined) existing.line = edge.line;
+      }
       return;
     }
     const e = { ...edge };
