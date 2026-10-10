@@ -70,3 +70,10 @@ This doesn't affect `resolved` (11/11) or `probable` (10/11, one unrelated miss)
 this sample, but it means: on a codebase that maintains multiple parallel
 implementations of the same interface, `ambiguous` edges are close to a coin flip, and
 worse than that when native built-ins share a name with the library's own API.
+
+## Follow-up
+
+The two Express collisions and the Zod cross-version collision above are diagnosed, fixed and re-measured —
+including recall, which the original sample could not show — in [`EVALUATION.md`](EVALUATION.md). The Express
+"resolved" mislabel turned out to be an edge-merge artifact (a correct `this.get()` lending its tier to the wrong
+`app.get()` site), not a `COMMON`-set bypass.

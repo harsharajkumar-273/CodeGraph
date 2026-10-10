@@ -1,0 +1,9 @@
+{
+  "name": "zodlike",
+  "exports": {
+    ".": "./src/v4/index.ts",
+    "./v3": "./src/v3/index.ts",
+    "./v4": "./src/v4/index.ts",
+    "./mini": "./src/v4/mini/index.ts"
+  }
+}

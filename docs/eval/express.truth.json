@@ -1,0 +1,482 @@
+[
+{
+"file": "lib/view.js",
+"line": 94,
+"callee": "lookup",
+"target": "lib/view.js#View.lookup"
+},
+{
+"file": "lib/view.js",
+"line": 119,
+"callee": "resolve",
+"target": "lib/view.js#View.resolve"
+},
+{
+"file": "lib/application.js",
+"line": 134,
+"callee": "set",
+"target": "lib/application.js#app.set"
+},
+{
+"file": "lib/application.js",
+"line": 135,
+"callee": "set",
+"target": "lib/application.js#app.set"
+},
+{
+"file": "lib/application.js",
+"line": 136,
+"callee": "set",
+"target": "lib/application.js#app.set"
+},
+{
+"file": "lib/application.js",
+"line": 139,
+"callee": "enable",
+"target": "lib/application.js#app.enable"
+},
+{
+"file": "lib/application.js",
+"line": 155,
+"callee": "get",
+"target": "NOSYM:dynamic-definition (app[method] = ... in methods.forEach)"
+},
+{
+"file": "lib/application.js",
+"line": 160,
+"callee": "enabled",
+"target": "lib/application.js#app.enabled"
+},
+{
+"file": "lib/utils.js",
+"line": 40,
+"callee": "createETagGenerator",
+"target": "lib/utils.js#createETagGenerator"
+},
+{
+"file": "lib/utils.js",
+"line": 51,
+"callee": "createETagGenerator",
+"target": "lib/utils.js#createETagGenerator"
+},
+{
+"file": "lib/utils.js",
+"line": 63,
+"callee": "acceptParams",
+"target": "lib/utils.js#acceptParams"
+},
+{
+"file": "lib/express.js",
+"line": 38,
+"callee": "handle",
+"target": "lib/application.js#app.handle"
+},
+{
+"file": "lib/express.js",
+"line": 54,
+"callee": "init",
+"target": "lib/application.js#app.init"
+},
+{
+"file": "lib/view.js",
+"line": 174,
+"callee": "tryStat",
+"target": "lib/view.js#tryStat"
+},
+{
+"file": "lib/view.js",
+"line": 182,
+"callee": "tryStat",
+"target": "lib/view.js#tryStat"
+},
+{
+"file": "test/app.router.js",
+"line": 403,
+"callee": "express",
+"target": "lib/express.js#createApplication"
+},
+{
+"file": "test/app.router.js",
+"line": 410,
+"callee": "use",
+"target": "lib/application.js#app.use"
+},
+{
+"file": "test/app.router.js",
+"line": 413,
+"callee": "send",
+"target": "lib/response.js#res.send"
+},
+{
+"file": "test/app.router.js",
+"line": 425,
+"callee": "express",
+"target": "lib/express.js#createApplication"
+},
+{
+"file": "test/app.router.js",
+"line": 427,
+"callee": "get",
+"target": "NOSYM:dynamic-definition (app[method] = ... in methods.forEach)"
+},
+{
+"file": "test/req.range.js",
+"line": 61,
+"callee": "express",
+"target": "lib/express.js#createApplication"
+},
+{
+"file": "test/req.range.js",
+"line": 74,
+"callee": "express",
+"target": "lib/express.js#createApplication"
+},
+{
+"file": "test/req.range.js",
+"line": 89,
+"callee": "express",
+"target": "lib/express.js#createApplication"
+},
+{
+"file": "test/req.range.js",
+"line": 63,
+"callee": "use",
+"target": "lib/application.js#app.use"
+},
+{
+"file": "test/req.range.js",
+"line": 76,
+"callee": "use",
+"target": "lib/application.js#app.use"
+},
+{
+"file": "test/req.range.js",
+"line": 91,
+"callee": "use",
+"target": "lib/application.js#app.use"
+},
+{
+"file": "test/req.range.js",
+"line": 64,
+"callee": "json",
+"target": "lib/response.js#res.json"
+},
+{
+"file": "test/req.range.js",
+"line": 64,
+"callee": "range",
+"target": "lib/request.js#req.range"
+},
+{
+"file": "test/req.range.js",
+"line": 77,
+"callee": "send",
+"target": "lib/response.js#res.send"
+},
+{
+"file": "test/req.range.js",
+"line": 77,
+"callee": "range",
+"target": "lib/request.js#req.range"
+},
+{
+"file": "test/config.js",
+"line": 97,
+"callee": "set",
+"target": "lib/application.js#app.set"
+},
+{
+"file": "test/config.js",
+"line": 98,
+"callee": "set",
+"target": "lib/application.js#app.set"
+},
+{
+"file": "test/config.js",
+"line": 109,
+"callee": "set",
+"target": "lib/application.js#app.set"
+},
+{
+"file": "test/config.js",
+"line": 126,
+"callee": "set",
+"target": "lib/application.js#app.set"
+},
+{
+"file": "test/config.js",
+"line": 130,
+"callee": "set",
+"target": "lib/application.js#app.set"
+},
+{
+"file": "test/config.js",
+"line": 100,
+"callee": "get",
+"target": "NOSYM:dynamic-definition (app[method] = ... in methods.forEach)"
+},
+{
+"file": "test/config.js",
+"line": 110,
+"callee": "get",
+"target": "NOSYM:dynamic-definition (app[method] = ... in methods.forEach)"
+},
+{
+"file": "test/config.js",
+"line": 111,
+"callee": "get",
+"target": "NOSYM:dynamic-definition (app[method] = ... in methods.forEach)"
+},
+{
+"file": "test/config.js",
+"line": 115,
+"callee": "get",
+"target": "NOSYM:dynamic-definition (app[method] = ... in methods.forEach)"
+},
+{
+"file": "test/config.js",
+"line": 116,
+"callee": "get",
+"target": "NOSYM:dynamic-definition (app[method] = ... in methods.forEach)"
+},
+{
+"file": "test/config.js",
+"line": 127,
+"callee": "get",
+"target": "NOSYM:dynamic-definition (app[method] = ... in methods.forEach)"
+},
+{
+"file": "test/config.js",
+"line": 128,
+"callee": "get",
+"target": "NOSYM:dynamic-definition (app[method] = ... in methods.forEach)"
+},
+{
+"file": "test/config.js",
+"line": 131,
+"callee": "get",
+"target": "NOSYM:dynamic-definition (app[method] = ... in methods.forEach)"
+},
+{
+"file": "test/config.js",
+"line": 132,
+"callee": "get",
+"target": "NOSYM:dynamic-definition (app[method] = ... in methods.forEach)"
+},
+{
+"file": "test/config.js",
+"line": 136,
+"callee": "get",
+"target": "NOSYM:dynamic-definition (app[method] = ... in methods.forEach)"
+},
+{
+"file": "test/config.js",
+"line": 104,
+"callee": "express",
+"target": "lib/express.js#createApplication"
+},
+{
+"file": "test/config.js",
+"line": 105,
+"callee": "express",
+"target": "lib/express.js#createApplication"
+},
+{
+"file": "test/config.js",
+"line": 120,
+"callee": "express",
+"target": "lib/express.js#createApplication"
+},
+{
+"file": "test/config.js",
+"line": 121,
+"callee": "express",
+"target": "lib/express.js#createApplication"
+},
+{
+"file": "test/config.js",
+"line": 113,
+"callee": "use",
+"target": "lib/application.js#app.use"
+},
+{
+"file": "test/config.js",
+"line": 134,
+"callee": "use",
+"target": "lib/application.js#app.use"
+},
+{
+"file": "test/req.fresh.js",
+"line": 52,
+"callee": "shouldSkipQuery",
+"target": "test/support/utils.js#shouldSkipQuery"
+},
+{
+"file": "test/req.fresh.js",
+"line": 71,
+"callee": "shouldSkipQuery",
+"target": "test/support/utils.js#shouldSkipQuery"
+},
+{
+"file": "test/req.fresh.js",
+"line": 55,
+"callee": "express",
+"target": "lib/express.js#createApplication"
+},
+{
+"file": "test/req.fresh.js",
+"line": 74,
+"callee": "express",
+"target": "lib/express.js#createApplication"
+},
+{
+"file": "test/req.fresh.js",
+"line": 89,
+"callee": "express",
+"target": "lib/express.js#createApplication"
+},
+{
+"file": "test/req.fresh.js",
+"line": 58,
+"callee": "use",
+"target": "lib/application.js#app.use"
+},
+{
+"file": "test/req.fresh.js",
+"line": 76,
+"callee": "use",
+"target": "lib/application.js#app.use"
+},
+{
+"file": "test/req.fresh.js",
+"line": 59,
+"callee": "set",
+"target": "lib/response.js#res.header"
+},
+{
+"file": "test/req.fresh.js",
+"line": 77,
+"callee": "set",
+"target": "lib/response.js#res.header"
+},
+{
+"file": "test/req.fresh.js",
+"line": 60,
+"callee": "send",
+"target": "lib/response.js#res.send"
+},
+{
+"file": "test/req.fresh.js",
+"line": 78,
+"callee": "send",
+"target": "lib/response.js#res.send"
+},
+{
+"file": "examples/cookies/index.js",
+"line": 8,
+"callee": "express",
+"target": "lib/express.js#createApplication"
+},
+{
+"file": "examples/cookies/index.js",
+"line": 13,
+"callee": "use",
+"target": "lib/application.js#app.use"
+},
+{
+"file": "examples/cookies/index.js",
+"line": 19,
+"callee": "use",
+"target": "lib/application.js#app.use"
+},
+{
+"file": "examples/cookies/index.js",
+"line": 22,
+"callee": "use",
+"target": "lib/application.js#app.use"
+},
+{
+"file": "examples/cookies/index.js",
+"line": 24,
+"callee": "get",
+"target": "NOSYM:dynamic-definition (app[method] = ... in methods.forEach)"
+},
+{
+"file": "examples/cookies/index.js",
+"line": 34,
+"callee": "get",
+"target": "NOSYM:dynamic-definition (app[method] = ... in methods.forEach)"
+},
+{
+"file": "examples/cookies/index.js",
+"line": 39,
+"callee": "post",
+"target": "NOSYM:dynamic-definition (app[method] = ... in methods.forEach)"
+},
+{
+"file": "examples/cookies/index.js",
+"line": 26,
+"callee": "send",
+"target": "lib/response.js#res.send"
+},
+{
+"file": "examples/cookies/index.js",
+"line": 28,
+"callee": "send",
+"target": "lib/response.js#res.send"
+},
+{
+"file": "examples/cookies/index.js",
+"line": 35,
+"callee": "clearCookie",
+"target": "lib/response.js#res.clearCookie"
+},
+{
+"file": "examples/cookies/index.js",
+"line": 36,
+"callee": "redirect",
+"target": "lib/response.js#res.redirect"
+},
+{
+"file": "examples/cookies/index.js",
+"line": 36,
+"callee": "get",
+"target": "lib/request.js#req.header"
+},
+{
+"file": "examples/route-map/index.js",
+"line": 33,
+"callee": "send",
+"target": "lib/response.js#res.send"
+},
+{
+"file": "examples/route-map/index.js",
+"line": 37,
+"callee": "send",
+"target": "lib/response.js#res.send"
+},
+{
+"file": "examples/route-map/index.js",
+"line": 41,
+"callee": "send",
+"target": "lib/response.js#res.send"
+},
+{
+"file": "examples/route-map/index.js",
+"line": 47,
+"callee": "send",
+"target": "lib/response.js#res.send"
+},
+{
+"file": "examples/route-map/index.js",
+"line": 51,
+"callee": "send",
+"target": "lib/response.js#res.send"
+},
+{
+"file": "examples/route-map/index.js",
+"line": 55,
+"callee": "map",
+"target": "examples/route-map/index.js#app.map"
+}
+]

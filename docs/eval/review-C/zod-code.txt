@@ -1,0 +1,588 @@
+
+===== W1 packages/zod/src/v3/types.ts:1585-1624
+ 1585    }
+ 1586  
+ 1587    get maxValue() {
+ 1588      let max: number | null = null;
+ 1589      for (const ch of this._def.checks) {
+ 1590        if (ch.kind === "max") {
+ 1591          if (max === null || ch.value < max) max = ch.value;
+ 1592        }
+ 1593      }
+ 1594      return max;
+ 1595    }
+ 1596  
+ 1597    get isInt() {
+ 1598      return !!this._def.checks.find((ch) => ch.kind === "int" || (ch.kind === "multipleOf" && util.isInteger(ch.value)));
+ 1599    }
+ 1600  
+ 1601    get isFinite() {
+ 1602      let max: number | null = null;
+ 1603      let min: number | null = null;
+ 1604      for (const ch of this._def.checks) {
+ 1605        if (ch.kind === "finite" || ch.kind === "int" || ch.kind === "multipleOf") {
+ 1606          return true;
+ 1607        } else if (ch.kind === "min") {
+ 1608          if (min === null || ch.value > min) min = ch.value;
+ 1609        } else if (ch.kind === "max") {
+ 1610          if (max === null || ch.value < max) max = ch.value;
+ 1611        }
+ 1612      }
+ 1613      return Number.isFinite(min) && Number.isFinite(max);
+ 1614    }
+ 1615  }
+ 1616  
+ 1617  /////////////////////////////////////////
+ 1618  /////////////////////////////////////////
+ 1619  //////////                     //////////
+ 1620  //////////      ZodBigInt      //////////
+ 1621  //////////                     //////////
+ 1622  /////////////////////////////////////////
+ 1623  /////////////////////////////////////////
+ 1624  export type ZodBigIntCheck =
+
+===== W2 packages/zod/src/v3/tests/recursive.test.ts:79-118
+   79    LinkedListSchema.parse(linkedListExample);
+   80  });
+   81  
+   82  // interface A {
+   83  //   val: number;
+   84  //   b: B;
+   85  // }
+   86  
+   87  // interface B {
+   88  //   val: number;
+   89  //   a: A;
+   90  // }
+   91  
+   92  // const A: z.ZodType<A> = z.late.object(() => ({
+   93  //   val: z.number(),
+   94  //   b: B,
+   95  // }));
+   96  
+   97  // const B: z.ZodType<B> = z.late.object(() => ({
+   98  //   val: z.number(),
+   99  //   a: A,
+  100  // }));
+  101  
+  102  // const Alazy: z.ZodType<A> = z.lazy(() => z.object({
+  103  //   val: z.number(),
+  104  //   b: B,
+  105  // }));
+  106  
+  107  // const Blazy: z.ZodType<B> = z.lazy(() => z.object({
+  108  //   val: z.number(),
+  109  //   a: A,
+  110  // }));
+  111  
+  112  // const a: any = { val: 1 };
+  113  // const b: any = { val: 2 };
+  114  // a.b = b;
+  115  // b.a = a;
+  116  
+  117  // test('valid check', () => {
+  118  //   A.parse(a);
+
+===== W3 packages/zod/src/v3/tests/catch.test.ts:77-116
+   77    const complex = z
+   78      .string()
+   79      .catch("asdf")
+   80      .transform((val) => val + "!")
+   81      .transform((val) => val.toUpperCase())
+   82      .catch("qwer")
+   83      .removeCatch()
+   84      .optional()
+   85      .catch("asdfasdf");
+   86  
+   87    expect(complex.parse("qwer")).toBe("QWER!");
+   88    expect(complex.parse(15)).toBe("ASDF!");
+   89    expect(complex.parse(true)).toBe("ASDF!");
+   90  });
+   91  
+   92  test("removeCatch", () => {
+   93    const stringWithRemovedDefault = z.string().catch("asdf").removeCatch();
+   94  
+   95    type out = z.output<typeof stringWithRemovedDefault>;
+   96    util.assertEqual<out, string>(true);
+   97  });
+   98  
+   99  test("nested", () => {
+  100    const inner = z.string().catch("asdf");
+  101    const outer = z.object({ inner }).catch({
+  102      inner: "asdf",
+  103    });
+  104    type input = z.input<typeof outer>;
+  105    util.assertEqual<input, unknown>(true);
+  106    type out = z.output<typeof outer>;
+  107    util.assertEqual<out, { inner: string }>(true);
+  108    expect(outer.parse(undefined)).toEqual({ inner: "asdf" });
+  109    expect(outer.parse({})).toEqual({ inner: "asdf" });
+  110    expect(outer.parse({ inner: undefined })).toEqual({ inner: "asdf" });
+  111  });
+  112  
+  113  test("chained catch", () => {
+  114    const stringWithDefault = z.string().catch("inner").catch("outer");
+  115    const result = stringWithDefault.parse(undefined);
+  116    expect(result).toEqual("inner");
+
+===== W4 packages/zod/src/v4/classic/schemas.ts:2214-2253
+ 2214  export function literal(value: any, params: any) {
+ 2215    return new ZodLiteral({
+ 2216      type: "literal",
+ 2217      values: Array.isArray(value) ? value : [value],
+ 2218      ...util.normalizeParams(params),
+ 2219    });
+ 2220  }
+ 2221  
+ 2222  // ZodFile
+ 2223  export interface ZodFile extends _ZodType<core.$ZodFileInternals>, core.$ZodFile {
+ 2224    "~standard": ZodStandardSchemaWithJSON<this>;
+ 2225    min(size: number, params?: string | core.$ZodCheckMinSizeParams): this;
+ 2226    max(size: number, params?: string | core.$ZodCheckMaxSizeParams): this;
+ 2227    mime(types: util.MimeTypes | Array<util.MimeTypes>, params?: string | core.$ZodCheckMimeTypeParams): this;
+ 2228  }
+ 2229  export const ZodFile: core.$constructor<ZodFile> = /*@__PURE__*/ core.$constructor("ZodFile", (inst, def) => {
+ 2230    core.$ZodFile.init(inst, def);
+ 2231    ZodType.init(inst, def);
+ 2232    inst._zod.processJSONSchema = (ctx, json, params) => processors.fileProcessor(inst, ctx, json, params);
+ 2233  
+ 2234    inst.min = (size, params) => inst.check(core._minSize(size, params));
+ 2235    inst.max = (size, params) => inst.check(core._maxSize(size, params));
+ 2236    inst.mime = (types, params) => inst.check(core._mime(Array.isArray(types) ? types : [types], params));
+ 2237  });
+ 2238  
+ 2239  export function file(params?: string | core.$ZodFileParams): ZodFile {
+ 2240    return core._file(ZodFile, params) as any;
+ 2241  }
+ 2242  
+ 2243  // ZodTransform
+ 2244  export interface ZodTransform<O = unknown, I = unknown>
+ 2245    extends _ZodType<core.$ZodTransformInternals<O, I>>,
+ 2246      core.$ZodTransform<O, I> {
+ 2247    "~standard": ZodStandardSchemaWithJSON<this>;
+ 2248  }
+ 2249  export const ZodTransform: core.$constructor<ZodTransform> = /*@__PURE__*/ core.$constructor(
+ 2250    "ZodTransform",
+ 2251    (inst, def) => {
+ 2252      _ensureDefaultMemoizer();
+ 2253      core.$ZodTransform.init(inst, def);
+
+===== W5 packages/zod/src/v4/classic/tests/nonoptional.test.ts:61-100
+   61        {
+   62          "code": "invalid_type",
+   63          "expected": "nonoptional",
+   64          "path": [
+   65            "hi"
+   66          ],
+   67          "message": "Invalid input: expected nonoptional, received undefined"
+   68        }
+   69      ]]
+   70    `);
+   71  
+   72    const r3 = schema.safeParse({});
+   73    expect(r3.success).toEqual(false);
+   74    expect(r3.error).toMatchInlineSnapshot(`
+   75      [ZodError: [
+   76        {
+   77          "code": "invalid_type",
+   78          "expected": "nonoptional",
+   79          "path": [
+   80            "hi"
+   81          ],
+   82          "message": "Invalid input: expected nonoptional, received undefined"
+   83        }
+   84      ]]
+   85    `);
+   86  });
+   87  
+   88  test("encoding", () => {
+   89    const schema = z.string().optional().nonoptional();
+   90    expect(z.encode(schema, "hello")).toEqual("hello");
+   91    expect(() => z.encode(schema, undefined as any)).toThrowErrorMatchingInlineSnapshot(`
+   92      [ZodError: [
+   93        {
+   94          "code": "invalid_type",
+   95          "expected": "nonoptional",
+   96          "path": [],
+   97          "message": "Invalid input: expected nonoptional, received undefined"
+   98        }
+   99      ]]
+  100    `);
+
+===== W6 packages/zod/src/v4/classic/tests/redos.test.ts:15-54
+   15      ["emoji()", regexes.emoji()],
+   16      ["mac()", regexes.mac()],
+   17      ["mac('-')", regexes.mac("-")],
+   18      ["uuid()", regexes.uuid()],
+   19      ["string()", regexes.string()],
+   20      ["string({min,max})", regexes.string({ minimum: 1, maximum: 10 })]
+   21    );
+   22    for (const version of [1, 2, 3, 4, 5, 6, 7, 8]) patterns.push([`uuid(${version})`, regexes.uuid(version)]);
+   23    for (const precision of [null, -1, 0, 3, 6]) {
+   24      patterns.push([`time(${precision})`, regexes.time({ precision })]);
+   25      for (const local of [false, true]) {
+   26        for (const offset of [false, true]) {
+   27          patterns.push([`datetime(${precision},${local},${offset})`, regexes.datetime({ precision, local, offset })]);
+   28        }
+   29      }
+   30    }
+   31    return patterns;
+   32  }
+   33  
+   34  test("no built-in pattern is ReDoS-vulnerable", () => {
+   35    const patterns = allPatterns();
+   36    // Guards against the reflection above silently going empty if the module layout changes.
+   37    expect(patterns.length).toBeGreaterThan(80);
+   38  
+   39    const vulnerable: string[] = [];
+   40    for (const [name, pattern] of patterns) {
+   41      // Flags are load-bearing. Without "u" the checker reads `\p{...}` as a literal `p{...}` and reports an exponential pattern as safe.
+   42      const result = checkSync(pattern.source, pattern.flags);
+   43      // "unknown" means the checker gave up, not that the pattern is vulnerable.
+   44      if (result.status !== "vulnerable") continue;
+   45      // The fuzz checker derives "vulnerable" from how long an attack string runs, so CPU contention from parallel test files can flip a safe pattern. Confirm with a budget large enough that only real backtracking can exhaust it.
+   46      const confirmed = checkSync(pattern.source, pattern.flags, { attackTimeout: 10_000 });
+   47      if (confirmed.status === "vulnerable") vulnerable.push(`${name}: ${pattern.source}`);
+   48    }
+   49    expect(vulnerable).toEqual([]);
+   50  }, 60000);
+   51  
+   52  test("emoji rejects a backtracking payload in linear time", () => {
+   53    // U+1F9B0-U+1F9B3 are the only code points in both \p{Extended_Pictographic} and \p{Emoji_Component}. A failing match over them used to backtrack exponentially: 26 of them took ~1.9s, and each additional character roughly doubled it.
+   54    const schema = z.emoji();
+
+===== W7 packages/zod/src/v4/classic/tests/prefault.test.ts:2-41
+    2  import { z } from "zod/v4";
+    3  
+    4  test.each([false, true])("undefined prefault preserves object keys (jitless: %s)", async (jitless) => {
+    5    const previous = z.config().jitless;
+    6    z.config({ jitless });
+    7    try {
+    8      let calls = 0;
+    9      const field = z.union([z.string(), z.undefined()]).prefault(() => {
+   10        calls++;
+   11        return undefined;
+   12      });
+   13      const schema = z.object({ a: field });
+   14      expectTypeOf<z.output<typeof field>>().toEqualTypeOf<string | undefined>();
+   15      expectTypeOf<z.input<typeof schema>>().toEqualTypeOf<{ a?: string | undefined }>();
+   16      expectTypeOf<z.output<typeof schema>>().toEqualTypeOf<{ a: string | undefined }>();
+   17      expect(schema.parse({})).toStrictEqual({ a: undefined });
+   18      expect(calls).toBe(1);
+   19      expect(schema.parse({ a: undefined })).toStrictEqual({ a: undefined });
+   20      expect(calls).toBe(2);
+   21      expect(await schema.parseAsync({})).toStrictEqual({ a: undefined });
+   22      expect(calls).toBe(3);
+   23      expect(schema.parse({ a: "value" })).toStrictEqual({ a: "value" });
+   24      expect(schema.safeParse({ a: 123 }).success).toBe(false);
+   25      expect(calls).toBe(3);
+   26  
+   27      const literal = z.prefault(z.string().optional(), undefined);
+   28      expect(z.core.compileFn(z.object({ a: literal }))({})).toStrictEqual({ a: undefined });
+   29      for (const wrapped of [literal, literal.readonly(), literal.nullable(), z.lazy(() => literal)]) {
+   30        expect(z.object({ a: wrapped }).parse({})).toStrictEqual({ a: undefined });
+   31      }
+   32      expect(z.object({ a: literal.optional() }).parse({})).toStrictEqual({});
+   33      expect(z.object({ a: literal.optional() }).parse({ a: undefined })).toStrictEqual({ a: undefined });
+   34      expect(z.tuple([literal]).parse([])).toStrictEqual([undefined]);
+   35    } finally {
+   36      z.config({ jitless: previous });
+   37    }
+   38  });
+   39  
+   40  test("prefault preserves transformed undefined output", async () => {
+   41    const field = z
+
+===== W8 packages/zod/src/v4/classic/tests/stringbool.test.ts:40-79
+   40    expect(z.parse(b, "y")).toEqual(true);
+   41    expect(z.parse(b, "Y")).toEqual(true);
+   42    expect(z.parse(b, "n")).toEqual(false);
+   43    expect(z.parse(b, "N")).toEqual(false);
+   44    expect(z.safeParse(b, "true")).toMatchObject({ success: false });
+   45    expect(z.safeParse(b, "false")).toMatchObject({ success: false });
+   46  });
+   47  
+   48  test("custom values - case sensitive", () => {
+   49    const c = z.stringbool({
+   50      truthy: ["y"],
+   51      falsy: ["N"],
+   52      case: "sensitive",
+   53    });
+   54    expect(z.parse(c, "y")).toEqual(true);
+   55    expect(z.safeParse(c, "Y")).toMatchObject({ success: false });
+   56    expect(z.parse(c, "N")).toEqual(false);
+   57    expect(z.safeParse(c, "n")).toMatchObject({ success: false });
+   58    expect(z.safeParse(c, "TRUE")).toMatchObject({ success: false });
+   59  });
+   60  
+   61  // test custom error messages
+   62  test("z.stringbool with custom error messages", () => {
+   63    const a = z.stringbool("wrong!");
+   64  
+   65    expect(() => a.parse("")).toThrowError("wrong!");
+   66  });
+   67  
+   68  test("z.stringbool codec encoding", () => {
+   69    const schema = z.stringbool();
+   70  
+   71    // Test encoding with default values
+   72    expect(z.encode(schema, true)).toEqual("true");
+   73    expect(z.encode(schema, false)).toEqual("false");
+   74  });
+   75  
+   76  test("z.stringbool codec encoding with custom values", () => {
+   77    const schema = z.stringbool({
+   78      truthy: ["yes", "on", "1"],
+   79      falsy: ["no", "off", "0"],
+
+===== W9 packages/zod/src/v4/core/tests/locales/ru.test.ts:78-117
+   78        { count: 5, expected: "5 элементов" },
+   79        { count: 11, expected: "11 элементов" },
+   80        { count: 21, expected: "21 элемент" },
+   81        { count: 22, expected: "22 элемента" },
+   82        { count: 25, expected: "25 элементов" },
+   83        { count: 101, expected: "101 элемент" },
+   84        { count: 111, expected: "111 элементов" },
+   85      ],
+   86    },
+   87    {
+   88      type: "set",
+   89      cases: [
+   90        { count: 1, expected: "1 элемент" },
+   91        { count: 2, expected: "2 элемента" },
+   92        { count: 5, expected: "5 элементов" },
+   93        { count: 11, expected: "11 элементов" },
+   94        { count: 21, expected: "21 элемент" },
+   95        { count: 22, expected: "22 элемента" },
+   96        { count: 25, expected: "25 элементов" },
+   97        { count: 101, expected: "101 элемент" },
+   98        { count: 111, expected: "111 элементов" },
+   99      ],
+  100    },
+  101    {
+  102      type: "string",
+  103      cases: [
+  104        { count: 1, expected: "1 символ" },
+  105        { count: 2, expected: "2 символа" },
+  106        { count: 5, expected: "5 символов" },
+  107        { count: 11, expected: "11 символов" },
+  108        { count: 21, expected: "21 символ" },
+  109        { count: 22, expected: "22 символа" },
+  110        { count: 25, expected: "25 символов" },
+  111      ],
+  112    },
+  113    {
+  114      type: "file",
+  115      cases: [
+  116        { count: 0, expected: "0 байт" },
+  117        { count: 1, expected: "1 байт" },
+
+===== W10 packages/zod/src/v4/core/doc.ts:5-44
+    5    /** Bindings the compiled function closes over, by name. */
+    6    closed: Record<string, unknown>;
+    7    content: string[] = [];
+    8    indent = 0;
+    9  
+   10    constructor(args: string[] = [], closed: Record<string, unknown> = {}) {
+   11      this.args = args;
+   12      this.closed = closed;
+   13    }
+   14  
+   15    // the compiler catches a child's throw and keeps writing into this doc, so the indent has to unwind with it
+   16    indented(fn: (doc: Doc) => void) {
+   17      this.indent += 1;
+   18      try {
+   19        fn(this);
+   20      } finally {
+   21        this.indent -= 1;
+   22      }
+   23    }
+   24  
+   25    write(fn: ModeWriter): void;
+   26    write(line: string): void;
+   27    write(arg: any) {
+   28      if (typeof arg === "function") {
+   29        (arg as ModeWriter)(this, { execution: "sync" });
+   30        (arg as ModeWriter)(this, { execution: "async" });
+   31        return;
+   32      }
+   33  
+   34      const content = arg as string;
+   35      const lines = content.split("\n").filter((x) => x);
+   36      const minIndent = Math.min(...lines.map((x) => x.length - x.trimStart().length));
+   37      const dedented = lines.map((x) => x.slice(minIndent)).map((x) => " ".repeat(this.indent * 2) + x);
+   38      for (const line of dedented) {
+   39        this.content.push(line);
+   40      }
+   41    }
+   42  
+   43    compile(): any {
+   44      const F = Function;
+
+===== W11 packages/zod/src/v4/core/schemas.ts:3285-3324
+ 3285            const result = def.valueType._zod.run({ value: input[key], issues: [] }, ctx);
+ 3286  
+ 3287            if (result instanceof Promise) {
+ 3288              proms.push(
+ 3289                result.then((result) => {
+ 3290                  if (result.issues.length) {
+ 3291                    payload.issues.push(...util.prefixIssues(key, result.issues));
+ 3292                  }
+ 3293                  payload.value[outKey] = result.value;
+ 3294                })
+ 3295              );
+ 3296            } else {
+ 3297              if (result.issues.length) {
+ 3298                payload.issues.push(...util.prefixIssues(key, result.issues));
+ 3299              }
+ 3300              payload.value[outKey] = result.value;
+ 3301            }
+ 3302          }
+ 3303        }
+ 3304  
+ 3305        let unrecognized!: string[];
+ 3306        for (const key in input) {
+ 3307          if (!recordKeys.has(key)) {
+ 3308            if (def.mode === "loose") {
+ 3309              // skip __proto__ so it can't replace the result prototype via the assignment setter on the plain {} we build into
+ 3310              if (key === "__proto__") continue;
+ 3311              payload.value[key] = input[key];
+ 3312            } else {
+ 3313              unrecognized = unrecognized ?? [];
+ 3314              unrecognized.push(key);
+ 3315            }
+ 3316          }
+ 3317        }
+ 3318        if (unrecognized && unrecognized.length > 0) {
+ 3319          payload.issues.push({
+ 3320            code: "unrecognized_keys",
+ 3321  
+ 3322            input,
+ 3323            inst,
+ 3324            keys: unrecognized,
+
+===== W12 packages/zod/src/v4/mini/tests/number.test.ts:39-78
+   39  
+   40  test("z.float64", () => {
+   41    const a = z.float64();
+   42    expect(z.parse(a, 123.45)).toEqual(123.45);
+   43    expect(() => z.parse(a, "123.45")).toThrow();
+   44    expect(() => z.parse(a, false)).toThrow();
+   45    expect(() => z.parse(a, 1.7976931348623157e308 * 2)).toThrow(); // Exceeds max
+   46    expect(() => z.parse(a, -1.7976931348623157e308 * 2)).toThrow(); // Exceeds min
+   47  });
+   48  
+   49  test("z.int32", () => {
+   50    const a = z.int32();
+   51    expect(z.parse(a, 123)).toEqual(123);
+   52    expect(() => z.parse(a, 123.45)).toThrow();
+   53    expect(() => z.parse(a, "123")).toThrow();
+   54    expect(() => z.parse(a, false)).toThrow();
+   55    expect(() => z.parse(a, 2147483648)).toThrow(); // Exceeds max
+   56    expect(() => z.parse(a, -2147483649)).toThrow(); // Exceeds min
+   57  });
+   58  
+   59  test("z.uint32", () => {
+   60    const a = z.uint32();
+   61    expect(z.parse(a, 123)).toEqual(123);
+   62    expect(() => z.parse(a, -123)).toThrow();
+   63    expect(() => z.parse(a, 123.45)).toThrow();
+   64    expect(() => z.parse(a, "123")).toThrow();
+   65    expect(() => z.parse(a, false)).toThrow();
+   66    expect(() => z.parse(a, 4294967296)).toThrow(); // Exceeds max
+   67    expect(() => z.parse(a, -1)).toThrow(); // Below min
+   68  });
+   69  
+   70  test("z.int64", () => {
+   71    const a = z.int64();
+   72    expect(z.parse(a, BigInt(123))).toEqual(BigInt(123));
+   73    expect(() => z.parse(a, 123)).toThrow();
+   74    expect(() => z.parse(a, 123.45)).toThrow();
+   75    expect(() => z.parse(a, "123")).toThrow();
+   76    expect(() => z.parse(a, false)).toThrow();
+   77    expect(() => z.parse(a, BigInt("9223372036854775808"))).toThrow();
+   78    expect(() => z.parse(a, BigInt("-9223372036854775809"))).toThrow();
+
+===== W13 packages/zod/src/v4/mini/tests/index.test.ts:622-661
+  622  
+  623  test("z.transform", () => {
+  624    const a = z.pipe(
+  625      z.string(),
+  626      z.transform((val) => val.toUpperCase())
+  627    );
+  628    type a = z.output<typeof a>;
+  629    expectTypeOf<a>().toEqualTypeOf<string>();
+  630    expect(z.parse(a, "hello")).toEqual("HELLO");
+  631    expect(() => z.parse(a, 123)).toThrow();
+  632  });
+  633  
+  634  test("z.transform async", async () => {
+  635    const a = z.pipe(
+  636      z.string(),
+  637      z.transform(async (val) => val.toUpperCase())
+  638    );
+  639    type a = z.output<typeof a>;
+  640    expectTypeOf<a>().toEqualTypeOf<string>();
+  641    expect(await z.parseAsync(a, "hello")).toEqual("HELLO");
+  642    await expect(() => z.parseAsync(a, 123)).rejects.toThrow();
+  643  });
+  644  
+  645  test("z.preprocess", () => {
+  646    const a = z.pipe(
+  647      z.transform((val) => String(val).toUpperCase()),
+  648      z.string()
+  649    );
+  650    type a = z.output<typeof a>;
+  651    expectTypeOf<a>().toEqualTypeOf<string>();
+  652    expect(z.parse(a, 123)).toEqual("123");
+  653    expect(z.parse(a, true)).toEqual("TRUE");
+  654    expect(z.parse(a, BigInt(1234))).toEqual("1234");
+  655    // expect(() => z.parse(a, Symbol("asdf"))).toThrow();
+  656  });
+  657  
+  658  // test("z.preprocess async", () => {
+  659  //   const a = z.preprocess(async (val) => String(val), z.string());
+  660  //   type a = z.output<typeof a>;
+  661  //   expectTypeOf<a>().toEqualTypeOf<string>();
+
+===== W14 packages/zod/src/v4/mini/tests/apply.test.ts:17-56
+   17  
+   18  test("The callback's return value becomes the apply's return value.", () => {
+   19    const symbol = Symbol();
+   20    const result = z.number().apply(() => symbol);
+   21  
+   22    expect(result).toBe(symbol);
+   23    expectTypeOf<typeof result>().toEqualTypeOf<symbol>();
+   24  });
+   25  
+   26  test("apply forwards extra args to the callback", () => {
+   27    const calls: unknown[] = [];
+   28    const capture = (schema: z.ZodMiniString, ...args: unknown[]) => {
+   29      calls.push(schema, ...args);
+   30      return schema;
+   31    };
+   32  
+   33    const schema = z.string();
+   34    const result = schema.apply(capture, "id", 42);
+   35  
+   36    expect(calls[0]).toBe(schema);
+   37    expect(calls[1]).toBe("id");
+   38    expect(calls[2]).toBe(42);
+   39    expect(z.parse(result, "value")).toBe("value");
+   40    expectTypeOf<z.infer<typeof result>>().toEqualTypeOf<string>();
+   41  });
+   42  
+   43  test("apply type-checks the extra args", () => {
+   44    const withMin = (schema: z.ZodMiniString, n: number) => schema.check(z.minLength(n));
+   45  
+   46    expect(z.parse(z.string().apply(withMin, 3), "abcd")).toBe("abcd");
+   47    expectTypeOf(
+   48      z.number().apply<z.ZodMiniNumber>((schema) => schema.check(z.minimum(0)))
+   49    ).toEqualTypeOf<z.ZodMiniNumber>();
+   50  
+   51    // @ts-expect-error wrong arg type
+   52    z.string().apply(withMin, "3");
+   53    // @ts-expect-error missing arg
+   54    z.string().apply(withMin);
+   55    // @ts-expect-error extra arg for a single-parameter callback
+   56    z.string().apply((schema: z.ZodMiniString) => schema, 3);

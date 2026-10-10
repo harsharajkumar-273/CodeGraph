@@ -13,6 +13,11 @@ export interface SymbolFact {
   className?: string;
   /** Base classes as written in source (`Base`, `ns.Base`). */
   bases?: string[];
+  /**
+   * Method attached to a local object inside an anonymous callback (`schema.parse = ...` in a test body).
+   * Only code in the same file can plausibly call it, so name-based matching never offers it to other files.
+   */
+  local?: boolean;
 }
 
 export interface ImportBinding {

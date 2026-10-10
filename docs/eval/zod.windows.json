@@ -1,0 +1,72 @@
+[
+ {
+  "file": "packages/zod/src/v3/types.ts",
+  "start": 2548,
+  "end": 2587
+ },
+ {
+  "file": "packages/zod/src/v3/tests/all-errors.test.ts",
+  "start": 25,
+  "end": 64
+ },
+ {
+  "file": "packages/zod/src/v3/tests/readonly.test.ts",
+  "start": 9,
+  "end": 48
+ },
+ {
+  "file": "packages/zod/src/v4/classic/schemas.ts",
+  "start": 1064,
+  "end": 1103
+ },
+ {
+  "file": "packages/zod/src/v4/classic/tests/template-literal.test.ts",
+  "start": 745,
+  "end": 784
+ },
+ {
+  "file": "packages/zod/src/v4/classic/tests/error.test.ts",
+  "start": 360,
+  "end": 399
+ },
+ {
+  "file": "packages/zod/src/v4/classic/tests/pickomit.test.ts",
+  "start": 137,
+  "end": 176
+ },
+ {
+  "file": "packages/zod/src/v4/classic/tests/codec.test.ts",
+  "start": 215,
+  "end": 254
+ },
+ {
+  "file": "packages/zod/src/v4/core/standard-schema.ts",
+  "start": 69,
+  "end": 108
+ },
+ {
+  "file": "packages/zod/src/v4/core/tests/email-regex.test.ts",
+  "start": 76,
+  "end": 115
+ },
+ {
+  "file": "packages/zod/src/v4/core/compile.ts",
+  "start": 486,
+  "end": 525
+ },
+ {
+  "file": "packages/zod/src/v4/mini/tests/cyclic-data.test.ts",
+  "start": 35,
+  "end": 74
+ },
+ {
+  "file": "packages/zod/src/v4/mini/tests/deep-partial.test.ts",
+  "start": 5,
+  "end": 44
+ },
+ {
+  "file": "packages/zod/src/v4/mini/tests/object.test.ts",
+  "start": 84,
+  "end": 123
+ }
+]
