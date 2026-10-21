@@ -3,7 +3,7 @@
 // stay real npm dependencies rather than being bundled) script, and copies the
 // built web UI alongside it so `codegraph serve` works out of the box.
 import { build } from 'esbuild';
-import { chmodSync, existsSync, rmSync, mkdirSync } from 'node:fs';
+import { chmodSync, copyFileSync, existsSync, rmSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { execFileSync } from 'node:child_process';
@@ -25,6 +25,9 @@ await build({
   logLevel: 'info',
 });
 chmodSync(outfile, 0o755);
+
+// npm only picks up a README/LICENSE from the package's own directory; without these the npm page is empty.
+for (const f of ['README.md', 'LICENSE']) copyFileSync(resolve(here, '../..', f), resolve(here, f));
 
 const webDist = resolve(here, '../web/dist');
 if (existsSync(webDist)) {
