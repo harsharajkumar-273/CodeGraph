@@ -34,6 +34,9 @@ tuned on, was checked against the TypeScript compiler; see [`docs/ORACLE-EVAL.md
 | `probable` | 58.6% | 69.1% |
 | `ambiguous` | 12.4% | 32.1% |
 
+Python, against Jedi on Requests, HTTPX and Rich (first measured in this release): `resolved` 99.8%, `probable`
+84.1%, `ambiguous` 19.0%.
+
 ## 0.1.0
 
 First release.
