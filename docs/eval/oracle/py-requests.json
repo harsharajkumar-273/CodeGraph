@@ -1,0 +1,327 @@
+{
+ "all": {
+  "sites": {
+   "internal": 1076,
+   "nosym": 9,
+   "external": 1107,
+   "abstract": 0,
+   "unknown": 492
+  },
+  "internal": {
+   "found": 1033,
+   "wrongOnly": 0,
+   "unresolved": 35,
+   "notExtracted": 8
+  },
+  "nosym": {
+   "clean": 9,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 1033,
+   "falseEdge": 74
+  },
+  "edges": {
+   "correct": 1033,
+   "incorrect": 202,
+   "byTier": {
+    "resolved": {
+     "correct": 927,
+     "incorrect": 0,
+     "precision": 100
+    },
+    "ambiguous": {
+     "correct": 72,
+     "incorrect": 200,
+     "precision": 26.5
+    },
+    "probable": {
+     "correct": 34,
+     "incorrect": 2,
+     "precision": 94.4
+    }
+   }
+  },
+  "emitted": 1235,
+  "precision": 83.6,
+  "recall": 96,
+  "externalFalseEdgeRate": 6.7,
+  "nosymFalseEdgeRate": 0
+ },
+ "src": {
+  "sites": {
+   "internal": 292,
+   "nosym": 8,
+   "external": 616,
+   "abstract": 0,
+   "unknown": 76
+  },
+  "internal": {
+   "found": 279,
+   "wrongOnly": 0,
+   "unresolved": 5,
+   "notExtracted": 8
+  },
+  "nosym": {
+   "clean": 8,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 575,
+   "falseEdge": 41
+  },
+  "edges": {
+   "correct": 279,
+   "incorrect": 81,
+   "byTier": {
+    "resolved": {
+     "correct": 273,
+     "incorrect": 0,
+     "precision": 100
+    },
+    "ambiguous": {
+     "correct": 4,
+     "incorrect": 79,
+     "precision": 4.8
+    },
+    "probable": {
+     "correct": 2,
+     "incorrect": 2,
+     "precision": 50
+    }
+   }
+  },
+  "emitted": 360,
+  "precision": 77.5,
+  "recall": 95.5,
+  "externalFalseEdgeRate": 6.7,
+  "nosymFalseEdgeRate": 0
+ },
+ "test": {
+  "sites": {
+   "internal": 784,
+   "nosym": 1,
+   "external": 491,
+   "abstract": 0,
+   "unknown": 416
+  },
+  "internal": {
+   "found": 754,
+   "wrongOnly": 0,
+   "unresolved": 30,
+   "notExtracted": 0
+  },
+  "nosym": {
+   "clean": 1,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 458,
+   "falseEdge": 33
+  },
+  "edges": {
+   "correct": 754,
+   "incorrect": 121,
+   "byTier": {
+    "resolved": {
+     "correct": 654,
+     "incorrect": 0,
+     "precision": 100
+    },
+    "ambiguous": {
+     "correct": 68,
+     "incorrect": 121,
+     "precision": 36
+    },
+    "probable": {
+     "correct": 32,
+     "incorrect": 0,
+     "precision": 100
+    }
+   }
+  },
+  "emitted": 875,
+  "precision": 86.2,
+  "recall": 96.2,
+  "externalFalseEdgeRate": 6.7,
+  "nosymFalseEdgeRate": 0
+ },
+ "examples": {
+  "wrongOnly": [],
+  "falseEdgeExternal": [
+   {
+    "at": "src/requests/adapters.py:232",
+    "callee": "items",
+    "want": "/tmp/claude-0/-home-user-CodeGraph/df3ce567-4aec-5cb3-837b-57ef53906f0a/scratchpad/pyenv/lib/python3.13/site-packages/jedi/third_party/typeshed/stdlib/3/builtins.pyi",
+    "got": [
+     "src/requests/_types.py#SupportsItems.items (ambiguous)",
+     "src/requests/cookies.py#RequestsCookieJar.items (ambiguous)"
+    ]
+   },
+   {
+    "at": "src/requests/adapters.py:562",
+    "callee": "values",
+    "want": "/tmp/claude-0/-home-user-CodeGraph/df3ce567-4aec-5cb3-837b-57ef53906f0a/scratchpad/pyenv/lib/python3.13/site-packages/jedi/third_party/typeshed/stdlib/3/builtins.pyi",
+    "got": [
+     "src/requests/cookies.py#RequestsCookieJar.values (ambiguous)"
+    ]
+   },
+   {
+    "at": "src/requests/auth.py:291",
+    "callee": "get",
+    "want": "/tmp/claude-0/-home-user-CodeGraph/df3ce567-4aec-5cb3-837b-57ef53906f0a/scratchpad/pyenv/lib/python3.13/site-packages/jedi/third_party/typeshed/stdlib/3/typing.pyi",
+    "got": [
+     "src/requests/cookies.py#RequestsCookieJar.get (ambiguous)"
+    ]
+   },
+   {
+    "at": "src/requests/cookies.py:161",
+    "callee": "get",
+    "want": "/tmp/claude-0/-home-user-CodeGraph/df3ce567-4aec-5cb3-837b-57ef53906f0a/scratchpad/pyenv/lib/python3.13/site-packages/jedi/third_party/typeshed/stdlib/3/typing.pyi",
+    "got": [
+     "src/requests/cookies.py#RequestsCookieJar.get (ambiguous)"
+    ]
+   },
+   {
+    "at": "src/requests/cookies.py:522",
+    "callee": "update",
+    "want": "/tmp/claude-0/-home-user-CodeGraph/df3ce567-4aec-5cb3-837b-57ef53906f0a/scratchpad/pyenv/lib/python3.13/site-packages/jedi/third_party/typeshed/stdlib/3/builtins.pyi",
+    "got": [
+     "src/requests/cookies.py#RequestsCookieJar.update (ambiguous)"
+    ]
+   },
+   {
+    "at": "src/requests/cookies.py:87",
+    "callee": "get",
+    "want": "/tmp/claude-0/-home-user-CodeGraph/df3ce567-4aec-5cb3-837b-57ef53906f0a/scratchpad/pyenv/lib/python3.13/site-packages/jedi/third_party/typeshed/stdlib/3/typing.pyi",
+    "got": [
+     "src/requests/cookies.py#RequestsCookieJar.get (ambiguous)"
+    ]
+   },
+   {
+    "at": "src/requests/cookies.py:87",
+    "callee": "get",
+    "want": "/tmp/claude-0/-home-user-CodeGraph/df3ce567-4aec-5cb3-837b-57ef53906f0a/scratchpad/pyenv/lib/python3.13/site-packages/jedi/third_party/typeshed/stdlib/3/typing.pyi",
+    "got": [
+     "src/requests/cookies.py#RequestsCookieJar.get (ambiguous)"
+    ]
+   },
+   {
+    "at": "src/requests/cookies.py:456",
+    "callee": "copy",
+    "want": "/tmp/claude-0/-home-user-CodeGraph/df3ce567-4aec-5cb3-837b-57ef53906f0a/scratchpad/pyenv/lib/python3.13/site-packages/jedi/third_party/typeshed/stdlib/3/builtins.pyi",
+    "got": [
+     "src/requests/cookies.py#RequestsCookieJar.copy (ambiguous)",
+     "src/requests/models.py#PreparedRequest.copy (ambiguous)"
+    ]
+   },
+   {
+    "at": "src/requests/cookies.py:463",
+    "callee": "update",
+    "want": "/tmp/claude-0/-home-user-CodeGraph/df3ce567-4aec-5cb3-837b-57ef53906f0a/scratchpad/pyenv/lib/python3.13/site-packages/jedi/third_party/typeshed/stdlib/3/builtins.pyi",
+    "got": [
+     "src/requests/cookies.py#RequestsCookieJar.update (ambiguous)"
+    ]
+   },
+   {
+    "at": "src/requests/cookies.py:490",
+    "callee": "set_cookie",
+    "want": "/usr/lib/python3.13/http/cookiejar.py",
+    "got": [
+     "src/requests/cookies.py#RequestsCookieJar.set_cookie (probable)"
+    ]
+   },
+   {
+    "at": "src/requests/cookies.py:239",
+    "callee": "get",
+    "want": "/tmp/claude-0/-home-user-CodeGraph/df3ce567-4aec-5cb3-837b-57ef53906f0a/scratchpad/pyenv/lib/python3.13/site-packages/jedi/third_party/typeshed/stdlib/3/typing.pyi",
+    "got": [
+     "src/requests/cookies.py#RequestsCookieJar.get (ambiguous)"
+    ]
+   },
+   {
+    "at": "src/requests/cookies.py:239",
+    "callee": "get",
+    "want": "/tmp/claude-0/-home-user-CodeGraph/df3ce567-4aec-5cb3-837b-57ef53906f0a/scratchpad/pyenv/lib/python3.13/site-packages/jedi/third_party/typeshed/stdlib/3/typing.pyi",
+    "got": [
+     "src/requests/cookies.py#RequestsCookieJar.get (ambiguous)"
+    ]
+   }
+  ],
+  "falseEdgeNosym": [],
+  "unresolved": [
+   {
+    "at": "src/requests/auth.py:224",
+    "callee": "hash_utf8",
+    "want": "src/requests/auth.py#HTTPDigestAuth.build_digest_header.md5_utf8",
+    "got": []
+   },
+   {
+    "at": "src/requests/auth.py:225",
+    "callee": "hash_utf8",
+    "want": "src/requests/auth.py#HTTPDigestAuth.build_digest_header.md5_utf8",
+    "got": []
+   },
+   {
+    "at": "src/requests/auth.py:211",
+    "callee": "hash_utf8",
+    "want": "src/requests/auth.py#HTTPDigestAuth.build_digest_header.md5_utf8",
+    "got": []
+   },
+   {
+    "at": "src/requests/auth.py:239",
+    "callee": "hash_utf8",
+    "want": "src/requests/auth.py#HTTPDigestAuth.build_digest_header.md5_utf8",
+    "got": []
+   },
+   {
+    "at": "src/requests/auth.py:312",
+    "callee": "send",
+    "want": "src/requests/adapters.py#HTTPAdapter.send",
+    "got": []
+   },
+   {
+    "at": "tests/test_adapters.py:7",
+    "callee": "Request",
+    "want": "src/requests/models.py#Request",
+    "got": []
+   },
+   {
+    "at": "tests/test_lowlevel.py:150",
+    "callee": "HTTPDigestAuth",
+    "want": "src/requests/auth.py#HTTPDigestAuth",
+    "got": []
+   },
+   {
+    "at": "tests/test_lowlevel.py:206",
+    "callee": "HTTPDigestAuth",
+    "want": "src/requests/auth.py#HTTPDigestAuth",
+    "got": []
+   },
+   {
+    "at": "tests/test_lowlevel.py:249",
+    "callee": "HTTPDigestAuth",
+    "want": "src/requests/auth.py#HTTPDigestAuth",
+    "got": []
+   },
+   {
+    "at": "tests/test_requests.py:3088",
+    "callee": "JSONDecodeError",
+    "want": "src/requests/exceptions.py#JSONDecodeError",
+    "got": []
+   },
+   {
+    "at": "tests/test_requests.py:1305",
+    "callee": "RequestsCookieJar",
+    "want": "src/requests/cookies.py#RequestsCookieJar",
+    "got": []
+   },
+   {
+    "at": "tests/test_requests.py:1323",
+    "callee": "RequestsCookieJar",
+    "want": "src/requests/cookies.py#RequestsCookieJar",
+    "got": []
+   }
+  ]
+ }
+}
