@@ -138,3 +138,24 @@ describe('Built-in receivers (fixtures/ts-natives)', () => {
     expect(targets('app.ts', 'text', 20)).toContain('store.ts#Store.text');
   });
 });
+
+describe('Declared return types (fixtures/ts-returns, fixtures/py-returns)', () => {
+  it('a variable initialised from a call takes the callee\'s declared (awaited) return type', async () => {
+    const { at, targets } = await sites('ts-returns');
+    expect(at('app.ts', 'fetchPage')[0].targets).toEqual([{ file: 'client.ts', qname: 'Client.fetchPage', confidence: 'resolved' }]);
+    expect(at('app.ts', 'text', 6)[0].targets).toEqual([{ file: 'client.ts', qname: 'Page.text', confidence: 'resolved' }]);
+    expect(targets('app.ts', 'text', 8)).toEqual([]); // `Response | Promise<Response>` awaited: a built-in
+  });
+
+  it('works for Python `-> T` annotations, including built-ins and string annotations', async () => {
+    const { at, targets } = await sites('py-returns');
+    expect(at('app.py', 'get', 6)[0].targets).toEqual([{ file: 'client.py', qname: 'Client.get', confidence: 'resolved' }]);
+    expect(at('app.py', 'text', 7)[0].targets).toEqual([{ file: 'client.py', qname: 'Page.text', confidence: 'resolved' }]);
+    expect(targets('app.py', 'upper', 9)).toEqual([]);
+  });
+
+  it('a variable that also has another definition (a parameter reassigned in one branch) is not typed by the call', async () => {
+    const { at } = await sites('py-returns');
+    expect(at('app.py', 'get', 15)[0].targets.every((t) => t.confidence !== 'resolved')).toBe(true);
+  });
+});

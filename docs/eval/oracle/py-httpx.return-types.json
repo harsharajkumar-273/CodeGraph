@@ -1,0 +1,390 @@
+{
+ "all": {
+  "sites": {
+   "internal": 2071,
+   "nosym": 1,
+   "external": 1541,
+   "abstract": 0,
+   "unknown": 575
+  },
+  "internal": {
+   "found": 1973,
+   "wrongOnly": 75,
+   "unresolved": 16,
+   "notExtracted": 7
+  },
+  "nosym": {
+   "clean": 1,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 1387,
+   "falseEdge": 154
+  },
+  "edges": {
+   "correct": 1975,
+   "incorrect": 309,
+   "byTier": {
+    "resolved": {
+     "correct": 1839,
+     "incorrect": 10,
+     "precision": 99.5
+    },
+    "probable": {
+     "correct": 124,
+     "incorrect": 71,
+     "precision": 63.6
+    },
+    "ambiguous": {
+     "correct": 12,
+     "incorrect": 228,
+     "precision": 5
+    }
+   }
+  },
+  "emitted": 2284,
+  "precision": 86.5,
+  "recall": 95.3,
+  "externalFalseEdgeRate": 10,
+  "nosymFalseEdgeRate": 0
+ },
+ "src": {
+  "sites": {
+   "internal": 496,
+   "nosym": 1,
+   "external": 852,
+   "abstract": 0,
+   "unknown": 209
+  },
+  "internal": {
+   "found": 474,
+   "wrongOnly": 6,
+   "unresolved": 9,
+   "notExtracted": 7
+  },
+  "nosym": {
+   "clean": 1,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 781,
+   "falseEdge": 71
+  },
+  "edges": {
+   "correct": 476,
+   "incorrect": 125,
+   "byTier": {
+    "resolved": {
+     "correct": 446,
+     "incorrect": 8,
+     "precision": 98.2
+    },
+    "probable": {
+     "correct": 22,
+     "incorrect": 2,
+     "precision": 91.7
+    },
+    "ambiguous": {
+     "correct": 8,
+     "incorrect": 115,
+     "precision": 6.5
+    }
+   }
+  },
+  "emitted": 601,
+  "precision": 79.2,
+  "recall": 95.6,
+  "externalFalseEdgeRate": 8.3,
+  "nosymFalseEdgeRate": 0
+ },
+ "test": {
+  "sites": {
+   "internal": 1575,
+   "nosym": 0,
+   "external": 689,
+   "abstract": 0,
+   "unknown": 366
+  },
+  "internal": {
+   "found": 1499,
+   "wrongOnly": 69,
+   "unresolved": 7,
+   "notExtracted": 0
+  },
+  "nosym": {
+   "clean": 0,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 606,
+   "falseEdge": 83
+  },
+  "edges": {
+   "correct": 1499,
+   "incorrect": 184,
+   "byTier": {
+    "resolved": {
+     "correct": 1393,
+     "incorrect": 2,
+     "precision": 99.9
+    },
+    "probable": {
+     "correct": 102,
+     "incorrect": 69,
+     "precision": 59.6
+    },
+    "ambiguous": {
+     "correct": 4,
+     "incorrect": 113,
+     "precision": 3.4
+    }
+   }
+  },
+  "emitted": 1683,
+  "precision": 89.1,
+  "recall": 95.2,
+  "externalFalseEdgeRate": 12,
+  "nosymFalseEdgeRate": null
+ },
+ "examples": {
+  "wrongOnly": [
+   {
+    "at": "httpx/_client.py:1287",
+    "callee": "__enter__",
+    "want": "httpx/_transports/base.py#BaseTransport.__enter__",
+    "got": [
+     "tests/client/test_client.py#test_context_managed_transport.Transport.__enter__ (ambiguous)",
+     "tests/client/test_client.py#test_context_managed_transport_and_mount.Transport.__enter__ (ambiguous)"
+    ]
+   },
+   {
+    "at": "httpx/_client.py:1301",
+    "callee": "__exit__",
+    "want": "httpx/_transports/base.py#BaseTransport.__exit__",
+    "got": [
+     "tests/client/test_client.py#test_context_managed_transport.Transport.__exit__ (ambiguous)",
+     "tests/client/test_client.py#test_context_managed_transport_and_mount.Transport.__exit__ (ambiguous)"
+    ]
+   },
+   {
+    "at": "httpx/_client.py:1270",
+    "callee": "close",
+    "want": "httpx/_transports/base.py#BaseTransport.close",
+    "got": [
+     "tests/client/test_client.py#test_context_managed_transport.Transport.close (ambiguous)",
+     "tests/client/test_client.py#test_context_managed_transport_and_mount.Transport.close (ambiguous)"
+    ]
+   },
+   {
+    "at": "httpx/_client.py:2002",
+    "callee": "__aenter__",
+    "want": "httpx/_transports/base.py#AsyncBaseTransport.__aenter__",
+    "got": [
+     "tests/client/test_async_client.py#test_context_managed_transport.Transport.__aenter__ (ambiguous)",
+     "tests/client/test_async_client.py#test_context_managed_transport_and_mount.Transport.__aenter__ (ambiguous)"
+    ]
+   },
+   {
+    "at": "httpx/_client.py:2016",
+    "callee": "__aexit__",
+    "want": "httpx/_transports/base.py#AsyncBaseTransport.__aexit__",
+    "got": [
+     "tests/client/test_async_client.py#test_context_managed_transport.Transport.__aexit__ (ambiguous)",
+     "tests/client/test_async_client.py#test_context_managed_transport_and_mount.Transport.__aexit__ (ambiguous)"
+    ]
+   },
+   {
+    "at": "httpx/_client.py:1985",
+    "callee": "aclose",
+    "want": "httpx/_transports/base.py#AsyncBaseTransport.aclose",
+    "got": [
+     "tests/client/test_async_client.py#test_context_managed_transport.Transport.aclose (ambiguous)",
+     "tests/client/test_async_client.py#test_context_managed_transport_and_mount.Transport.aclose (ambiguous)"
+    ]
+   },
+   {
+    "at": "tests/client/test_async_client.py:15",
+    "callee": "get",
+    "want": "httpx/_client.py#AsyncClient.get",
+    "got": [
+     "httpx/_client.py#Client.get (probable)"
+    ]
+   },
+   {
+    "at": "tests/client/test_async_client.py:46",
+    "callee": "send",
+    "want": "httpx/_client.py#AsyncClient.send",
+    "got": [
+     "httpx/_client.py#Client.send (probable)"
+    ]
+   },
+   {
+    "at": "tests/client/test_async_client.py:58",
+    "callee": "post",
+    "want": "httpx/_client.py#AsyncClient.post",
+    "got": [
+     "httpx/_client.py#Client.post (probable)"
+    ]
+   },
+   {
+    "at": "tests/client/test_async_client.py:66",
+    "callee": "post",
+    "want": "httpx/_client.py#AsyncClient.post",
+    "got": [
+     "httpx/_client.py#Client.post (probable)"
+    ]
+   }
+  ],
+  "falseEdgeExternal": [
+   {
+    "at": "httpx/_auth.py:245",
+    "callee": "get",
+    "want": "/tmp/claude-0/-home-user-CodeGraph/df3ce567-4aec-5cb3-837b-57ef53906f0a/scratchpad/pyenv/lib/python3.13/site-packages/jedi/third_party/typeshed/stdlib/3/typing.pyi",
+    "got": [
+     "httpx/_models.py#Headers.get (ambiguous)",
+     "httpx/_models.py#Cookies.get (ambiguous)"
+    ]
+   },
+   {
+    "at": "httpx/_auth.py:317",
+    "callee": "items",
+    "want": "/tmp/claude-0/-home-user-CodeGraph/df3ce567-4aec-5cb3-837b-57ef53906f0a/scratchpad/pyenv/lib/python3.13/site-packages/jedi/third_party/typeshed/stdlib/3/builtins.pyi",
+    "got": [
+     "httpx/_models.py#Headers.items (ambiguous)"
+    ]
+   },
+   {
+    "at": "httpx/_client.py:120",
+    "callee": "join",
+    "want": "/tmp/claude-0/-home-user-CodeGraph/df3ce567-4aec-5cb3-837b-57ef53906f0a/scratchpad/pyenv/lib/python3.13/site-packages/jedi/third_party/typeshed/stdlib/3/builtins.pyi",
+    "got": [
+     "httpx/_urls.py#URL.join (ambiguous)"
+    ]
+   },
+   {
+    "at": "httpx/_client.py:765",
+    "callee": "items",
+    "want": "/tmp/claude-0/-home-user-CodeGraph/df3ce567-4aec-5cb3-837b-57ef53906f0a/scratchpad/pyenv/lib/python3.13/site-packages/jedi/third_party/typeshed/stdlib/3/builtins.pyi",
+    "got": [
+     "httpx/_models.py#Headers.items (ambiguous)",
+     "httpx/_urls.py#QueryParams.items (ambiguous)"
+    ]
+   },
+   {
+    "at": "httpx/_client.py:1025",
+    "callee": "info",
+    "want": "/usr/lib/python3.13/logging/__init__.py",
+    "got": [
+     "httpx/_models.py#Cookies._CookieCompatResponse.info (ambiguous)"
+    ]
+   },
+   {
+    "at": "httpx/_client.py:1288",
+    "callee": "values",
+    "want": "/tmp/claude-0/-home-user-CodeGraph/df3ce567-4aec-5cb3-837b-57ef53906f0a/scratchpad/pyenv/lib/python3.13/site-packages/jedi/third_party/typeshed/stdlib/3/builtins.pyi",
+    "got": [
+     "httpx/_models.py#Headers.values (ambiguous)",
+     "httpx/_urls.py#QueryParams.values (ambiguous)"
+    ]
+   },
+   {
+    "at": "httpx/_client.py:1302",
+    "callee": "values",
+    "want": "/tmp/claude-0/-home-user-CodeGraph/df3ce567-4aec-5cb3-837b-57ef53906f0a/scratchpad/pyenv/lib/python3.13/site-packages/jedi/third_party/typeshed/stdlib/3/builtins.pyi",
+    "got": [
+     "httpx/_models.py#Headers.values (ambiguous)",
+     "httpx/_urls.py#QueryParams.values (ambiguous)"
+    ]
+   },
+   {
+    "at": "httpx/_client.py:1479",
+    "callee": "items",
+    "want": "/tmp/claude-0/-home-user-CodeGraph/df3ce567-4aec-5cb3-837b-57ef53906f0a/scratchpad/pyenv/lib/python3.13/site-packages/jedi/third_party/typeshed/stdlib/3/builtins.pyi",
+    "got": [
+     "httpx/_models.py#Headers.items (ambiguous)",
+     "httpx/_urls.py#QueryParams.items (ambiguous)"
+    ]
+   },
+   {
+    "at": "httpx/_client.py:1740",
+    "callee": "info",
+    "want": "/usr/lib/python3.13/logging/__init__.py",
+    "got": [
+     "httpx/_models.py#Cookies._CookieCompatResponse.info (ambiguous)"
+    ]
+   },
+   {
+    "at": "httpx/_client.py:2003",
+    "callee": "values",
+    "want": "/tmp/claude-0/-home-user-CodeGraph/df3ce567-4aec-5cb3-837b-57ef53906f0a/scratchpad/pyenv/lib/python3.13/site-packages/jedi/third_party/typeshed/stdlib/3/builtins.pyi",
+    "got": [
+     "httpx/_models.py#Headers.values (ambiguous)",
+     "httpx/_urls.py#QueryParams.values (ambiguous)"
+    ]
+   }
+  ],
+  "falseEdgeNosym": [],
+  "unresolved": [
+   {
+    "at": "httpx/_client.py:159",
+    "callee": "close",
+    "want": "httpx/_types.py#SyncByteStream.close",
+    "got": []
+   },
+   {
+    "at": "httpx/_client.py:182",
+    "callee": "aclose",
+    "want": "httpx/_types.py#AsyncByteStream.aclose",
+    "got": []
+   },
+   {
+    "at": "httpx/_decoders.py:218",
+    "callee": "decode",
+    "want": "httpx/_decoders.py#ContentDecoder.decode",
+    "got": []
+   },
+   {
+    "at": "httpx/_decoders.py:224",
+    "callee": "decode",
+    "want": "httpx/_decoders.py#ContentDecoder.decode",
+    "got": []
+   },
+   {
+    "at": "httpx/_decoders.py:224",
+    "callee": "flush",
+    "want": "httpx/_decoders.py#ContentDecoder.flush",
+    "got": []
+   },
+   {
+    "at": "httpx/_models.py:1105",
+    "callee": "_CookieCompatResponse",
+    "want": "httpx/_models.py#Cookies._CookieCompatResponse",
+    "got": []
+   },
+   {
+    "at": "httpx/_models.py:1106",
+    "callee": "_CookieCompatRequest",
+    "want": "httpx/_models.py#Cookies._CookieCompatRequest",
+    "got": []
+   },
+   {
+    "at": "httpx/_models.py:1114",
+    "callee": "_CookieCompatRequest",
+    "want": "httpx/_models.py#Cookies._CookieCompatRequest",
+    "got": []
+   },
+   {
+    "at": "httpx/_models.py:711",
+    "callee": "decoder_cls",
+    "want": "httpx/_decoders.py#IdentityDecoder",
+    "got": []
+   },
+   {
+    "at": "tests/client/test_client.py:19",
+    "callee": "get",
+    "want": "httpx/_client.py#Client.get",
+    "got": []
+   }
+  ]
+ }
+}

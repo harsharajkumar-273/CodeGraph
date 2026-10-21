@@ -151,6 +151,33 @@ Pooled over the three fresh repos after both fixes: `resolved` 21,828 / 22,241 (
 What is left is mostly untyped receivers. Hono's `const res = await app.request(…)` followed by `res.text()` (868
 false edges) can only be told apart from `Context.text` with return-type inference, which CodeGraph does not attempt.
 
+## Fix 3: declared return types
+
+`const res = await app.request('/')` followed by `res.text()` was the largest remaining TypeScript error: nothing
+said what `res` is, so `text` was name-matched to `Context.text`. CodeGraph now records each function's declared
+return type (`): Promise<Page>`, `-> Response`). A variable initialised from a call that resolves with certainty
+gets that type, with `Promise<X>` unwrapped when the call is awaited. The type is resolved in the callee's file,
+where the name is in scope. A built-in result (`Response`, `str`) means no repo edge at all.
+
+Types are not flow-sensitive, so a variable is typed only when every definition of it in its scope is such a call
+and they all agree. The first version typed a variable from any one call, and the Python re-run caught it: in
+Requests' `merge_cookies`, a `CookieJar` parameter reassigned in one branch was typed as `RequestsCookieJar`
+everywhere. That produced one new wrong `resolved` edge, which the stricter rule removes.
+
+Re-run on all eight repos (TypeScript compiler / Jedi), before → after:
+
+| | correct edges found | wrong edges | `resolved` | `probable` | `ambiguous` |
+|---|---|---|---|---|---|
+| TypeScript, fresh (Hono, Immer, NestJS) | 23,858 → 23,860 | 3,270 → **2,829** | 21,828/22,241 → 21,957/22,370 (98.2%) | 862/1,247 → 768/1,111 (69.1%) | 1,168/3,640 → 1,135/3,208 (35.4%) |
+| Python, fresh (Requests, HTTPX, Rich) | 9,051 → 9,067 | 922 → **874** | 8,251/8,267 → 8,456/8,472 (99.8%) | 617/734 → 468/585 (80.0%) | 185/974 → 145/886 (16.4%) |
+
+No repo gained a wrong `resolved` edge, and no repo lost a correct edge. Most of the gain is correct edges moving up
+from `probable`/`ambiguous` to `resolved`, plus Hono's `res.text()` → `Context.text` errors disappearing (wrong
+edges at external calls: 1,199 → 960). That shift is also why Python's `probable` percentage falls from 84.1% to
+80.0%. Its errors are unchanged (117), but 149 correct edges left the tier for `resolved`. The totals (fewer wrong
+edges, more `resolved` edges at the same precision) are the measure that matters. `*.return-types.json` holds the
+re-run; the tests are in `fixtures/ts-returns` and `fixtures/py-returns`.
+
 ## Python (Jedi as the oracle)
 
 The same method for Python, with [Jedi](https://github.com/davidhalter/jedi) 0.19.2 as the oracle
