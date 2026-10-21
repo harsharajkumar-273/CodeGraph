@@ -25,8 +25,8 @@ Every edge is labelled **resolved / probable / ambiguous**, so you can see *how 
 
 | | `resolved` | `probable` | `ambiguous` |
 |---|---|---|---|
-| TypeScript: Hono, Immer, NestJS (vs. the TypeScript compiler) | 98% | 69% | 32% |
-| Python: Requests, HTTPX, Rich (vs. Jedi) | 99.8% | 84% | 19% |
+| TypeScript: Hono, Immer, NestJS (vs. the TypeScript compiler) | 98% | 69% | 35% |
+| Python: Requests, HTTPX, Rich (vs. Jedi) | 99.8% | 80% | 16% |
 
 Trust `resolved`; treat `probable` as a lead to check and `ambiguous` as a list of name matches. See [`docs/ORACLE-EVAL.md`](docs/ORACLE-EVAL.md) for the numbers and their limits (no JavaScript-only repos yet, no adoption or independent-user evidence yet). The earlier LLM-labeled samples are in [`docs/PRECISION.md`](docs/PRECISION.md) and [`docs/EVALUATION.md`](docs/EVALUATION.md).
 

@@ -23,6 +23,11 @@ tuned on, was checked against the TypeScript compiler; see [`docs/ORACLE-EVAL.md
 - `require('..')` now resolves to the root `index.js`, and `module.exports = require('./x')` forwarding is followed.
 - When duplicate edges are merged, the surviving edge reports the call site that earned its confidence.
 
+- **Declared return types:** `const res = await app.request('/')` / `resp = client.get(url)` now types the variable
+  from the callee's declared return type (`Promise<X>` unwrapped when awaited), but only when every definition of the
+  variable is such a call. 2,829 wrong TypeScript edges instead of 3,270, and 874 instead of 922 in Python, with no
+  correct edge lost.
+
 ### Added
 - `codegraph serve` listens on `$PORT` when `--port` is not given (for Cloud Run and similar hosts).
 - A Dockerfile for a read-only hosted demo; see [`docs/DEPLOY.md`](docs/DEPLOY.md).
@@ -30,12 +35,12 @@ tuned on, was checked against the TypeScript compiler; see [`docs/ORACLE-EVAL.md
 ### Accuracy (TypeScript, against the compiler, pooled over Hono, Immer and NestJS)
 | Tier | first evaluation (before the parse and built-in fixes) | 0.2.0 |
 |---|---|---|
-| `resolved` | 98.1% | 98.1% |
+| `resolved` | 98.1% | 98.2% |
 | `probable` | 58.6% | 69.1% |
-| `ambiguous` | 12.4% | 32.1% |
+| `ambiguous` | 12.4% | 35.4% |
 
 Python, against Jedi on Requests, HTTPX and Rich (first measured in this release): `resolved` 99.8%, `probable`
-84.1%, `ambiguous` 19.0%.
+80.0%, `ambiguous` 16.4%.
 
 ## 0.1.0
 
