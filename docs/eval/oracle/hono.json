@@ -1,0 +1,461 @@
+{
+ "all": {
+  "sites": {
+   "internal": 7750,
+   "nosym": 2514,
+   "external": 7959,
+   "abstract": 3461,
+   "unknown": 21216
+  },
+  "internal": {
+   "found": 7689,
+   "wrongOnly": 11,
+   "unresolved": 43,
+   "notExtracted": 7
+  },
+  "nosym": {
+   "clean": 1095,
+   "falseEdge": 1419
+  },
+  "external": {
+   "clean": 7010,
+   "falseEdge": 949
+  },
+  "edges": {
+   "correct": 7689,
+   "incorrect": 2423,
+   "byTier": {
+    "resolved": {
+     "correct": 7261,
+     "incorrect": 96,
+     "precision": 98.7
+    },
+    "probable": {
+     "correct": 100,
+     "incorrect": 249,
+     "precision": 28.7
+    },
+    "ambiguous": {
+     "correct": 328,
+     "incorrect": 2078,
+     "precision": 13.6
+    }
+   }
+  },
+  "emitted": 10112,
+  "precision": 76,
+  "recall": 99.2,
+  "externalFalseEdgeRate": 11.9,
+  "nosymFalseEdgeRate": 56.4
+ },
+ "src": {
+  "sites": {
+   "internal": 1136,
+   "nosym": 118,
+   "external": 2269,
+   "abstract": 295,
+   "unknown": 310
+  },
+  "internal": {
+   "found": 1130,
+   "wrongOnly": 3,
+   "unresolved": 0,
+   "notExtracted": 3
+  },
+  "nosym": {
+   "clean": 81,
+   "falseEdge": 37
+  },
+  "external": {
+   "clean": 2229,
+   "falseEdge": 40
+  },
+  "edges": {
+   "correct": 1130,
+   "incorrect": 101,
+   "byTier": {
+    "resolved": {
+     "correct": 1063,
+     "incorrect": 4,
+     "precision": 99.6
+    },
+    "probable": {
+     "correct": 11,
+     "incorrect": 12,
+     "precision": 47.8
+    },
+    "ambiguous": {
+     "correct": 56,
+     "incorrect": 85,
+     "precision": 39.7
+    }
+   }
+  },
+  "emitted": 1231,
+  "precision": 91.8,
+  "recall": 99.5,
+  "externalFalseEdgeRate": 1.8,
+  "nosymFalseEdgeRate": 31.4
+ },
+ "test": {
+  "sites": {
+   "internal": 6614,
+   "nosym": 2396,
+   "external": 5690,
+   "abstract": 3166,
+   "unknown": 20906
+  },
+  "internal": {
+   "found": 6559,
+   "wrongOnly": 8,
+   "unresolved": 43,
+   "notExtracted": 4
+  },
+  "nosym": {
+   "clean": 1014,
+   "falseEdge": 1382
+  },
+  "external": {
+   "clean": 4781,
+   "falseEdge": 909
+  },
+  "edges": {
+   "correct": 6559,
+   "incorrect": 2322,
+   "byTier": {
+    "resolved": {
+     "correct": 6198,
+     "incorrect": 92,
+     "precision": 98.5
+    },
+    "probable": {
+     "correct": 89,
+     "incorrect": 237,
+     "precision": 27.3
+    },
+    "ambiguous": {
+     "correct": 272,
+     "incorrect": 1993,
+     "precision": 12
+    }
+   }
+  },
+  "emitted": 8881,
+  "precision": 73.9,
+  "recall": 99.2,
+  "externalFalseEdgeRate": 16,
+  "nosymFalseEdgeRate": 57.7
+ },
+ "examples": {
+  "wrongOnly": [
+   {
+    "at": "src/jsx/hooks/index.ts:216",
+    "callee": "update",
+    "want": "src/jsx/dom/render.ts#update",
+    "got": [
+     "src/jsx/hooks/index.ts#update (resolved)"
+    ]
+   },
+   {
+    "at": "src/jsx/hooks/index.ts:231",
+    "callee": "update",
+    "want": "src/jsx/dom/render.ts#update",
+    "got": [
+     "src/jsx/hooks/index.ts#update (resolved)"
+    ]
+   },
+   {
+    "at": "src/jsx/hooks/index.ts:238",
+    "callee": "update",
+    "want": "src/jsx/dom/render.ts#update",
+    "got": [
+     "src/jsx/hooks/index.ts#update (resolved)"
+    ]
+   },
+   {
+    "at": "src/hono.test.ts:258",
+    "callee": "basePath",
+    "want": "src/hono-base.ts#Hono.basePath",
+    "got": [
+     "src/hono.test.ts#ExtendedHono.basePath (probable)"
+    ]
+   },
+   {
+    "at": "src/hono.test.ts:493",
+    "callee": "basePath",
+    "want": "src/hono-base.ts#Hono.basePath",
+    "got": [
+     "src/hono.test.ts#ExtendedHono.basePath (probable)"
+    ]
+   },
+   {
+    "at": "src/hono.test.ts:539",
+    "callee": "basePath",
+    "want": "src/hono-base.ts#Hono.basePath",
+    "got": [
+     "src/hono.test.ts#ExtendedHono.basePath (probable)"
+    ]
+   },
+   {
+    "at": "src/hono.test.ts:563",
+    "callee": "route",
+    "want": "src/hono-base.ts#Hono.route",
+    "got": [
+     "src/hono.test.ts#ExtendedHono.route (probable)"
+    ]
+   },
+   {
+    "at": "src/hono.test.ts:579",
+    "callee": "route",
+    "want": "src/hono-base.ts#Hono.route",
+    "got": [
+     "src/hono.test.ts#ExtendedHono.route (probable)"
+    ]
+   },
+   {
+    "at": "src/hono.test.ts:1809",
+    "callee": "basePath",
+    "want": "src/hono-base.ts#Hono.basePath",
+    "got": [
+     "src/hono.test.ts#ExtendedHono.basePath (probable)"
+    ]
+   },
+   {
+    "at": "src/hono.test.ts:2690",
+    "callee": "basePath",
+    "want": "src/hono-base.ts#Hono.basePath",
+    "got": [
+     "src/hono.test.ts#ExtendedHono.basePath (probable)"
+    ]
+   }
+  ],
+  "falseEdgeExternal": [
+   {
+    "at": "adapters/aws-lambda/src/handler.ts:363",
+    "callee": "arrayBuffer",
+    "want": "typescript/lib/lib.dom.d.ts",
+    "got": [
+     "src/request.ts#HonoRequest.arrayBuffer (probable)"
+    ]
+   },
+   {
+    "at": "adapters/aws-lambda/src/handler.ts:363",
+    "callee": "text",
+    "want": "typescript/lib/lib.dom.d.ts",
+    "got": [
+     "src/request.ts#HonoRequest.text (probable)"
+    ]
+   },
+   {
+    "at": "adapters/aws-lambda/src/handler.test.ts:406",
+    "callee": "text",
+    "want": "typescript/lib/lib.dom.d.ts",
+    "got": [
+     "src/request.ts#HonoRequest.text (probable)"
+    ]
+   },
+   {
+    "at": "adapters/cloudflare-workers/src/websocket.ts:22",
+    "callee": "close",
+    "want": "typescript/lib/lib.dom.d.ts",
+    "got": [
+     "src/helper/websocket/index.ts#WSContext.close (ambiguous)"
+    ]
+   },
+   {
+    "at": "adapters/cloudflare-workers/src/websocket.ts:31",
+    "callee": "send",
+    "want": "typescript/lib/lib.dom.d.ts",
+    "got": [
+     "src/helper/websocket/index.ts#WSContext.send (ambiguous)"
+    ]
+   },
+   {
+    "at": "adapters/lambda-edge/src/handler.ts:154",
+    "callee": "arrayBuffer",
+    "want": "typescript/lib/lib.dom.d.ts",
+    "got": [
+     "src/request.ts#HonoRequest.arrayBuffer (probable)"
+    ]
+   },
+   {
+    "at": "adapters/lambda-edge/src/handler.ts:154",
+    "callee": "text",
+    "want": "typescript/lib/lib.dom.d.ts",
+    "got": [
+     "src/request.ts#HonoRequest.text (probable)"
+    ]
+   },
+   {
+    "at": "adapters/lambda-edge/src/handler.test.ts:319",
+    "callee": "arrayBuffer",
+    "want": "typescript/lib/lib.dom.d.ts",
+    "got": [
+     "src/request.ts#HonoRequest.arrayBuffer (probable)"
+    ]
+   },
+   {
+    "at": "adapters/lambda-edge/src/handler.test.ts:339",
+    "callee": "text",
+    "want": "typescript/lib/lib.dom.d.ts",
+    "got": [
+     "src/request.ts#HonoRequest.text (probable)"
+    ]
+   },
+   {
+    "at": "adapters/service-worker/src/handler.test.ts:43",
+    "callee": "json",
+    "want": "typescript/lib/lib.dom.d.ts",
+    "got": [
+     "src/request.ts#HonoRequest.json (probable)"
+    ]
+   }
+  ],
+  "falseEdgeNosym": [
+   {
+    "at": "src/router/reg-exp-router/matcher.ts:32",
+    "callee": "match",
+    "want": "src/router/reg-exp-router/matcher.ts:14",
+    "got": [
+     "src/router/reg-exp-router/matcher.ts#match (resolved)"
+    ]
+   },
+   {
+    "at": "benchmarks/routers/src/bench-includes-init.mts:66",
+    "callee": "match",
+    "want": "src/router/reg-exp-router/router.ts:129",
+    "got": [
+     "src/router/linear-router/router.ts#LinearRouter.match (ambiguous)",
+     "src/router/trie-router/router.ts#TrieRouter.match (ambiguous)"
+    ]
+   },
+   {
+    "at": "benchmarks/routers/src/bench-includes-init.mts:73",
+    "callee": "match",
+    "want": "src/router/reg-exp-router/prepared-router.ts:92",
+    "got": [
+     "src/router/linear-router/router.ts#LinearRouter.match (ambiguous)",
+     "src/router/trie-router/router.ts#TrieRouter.match (ambiguous)"
+    ]
+   },
+   {
+    "at": "src/hono-base.ts:32",
+    "callee": "text",
+    "want": "src/context.ts:699",
+    "got": [
+     "src/request.ts#HonoRequest.text (ambiguous)"
+    ]
+   },
+   {
+    "at": "src/hono-base.ts:41",
+    "callee": "text",
+    "want": "src/context.ts:699",
+    "got": [
+     "src/request.ts#HonoRequest.text (ambiguous)"
+    ]
+   },
+   {
+    "at": "src/helper/streaming/sse.ts:93",
+    "callee": "header",
+    "want": "src/context.ts:519",
+    "got": [
+     "src/request.ts#HonoRequest.header (ambiguous)"
+    ]
+   },
+   {
+    "at": "src/helper/streaming/sse.ts:94",
+    "callee": "header",
+    "want": "src/context.ts:519",
+    "got": [
+     "src/request.ts#HonoRequest.header (ambiguous)"
+    ]
+   },
+   {
+    "at": "src/helper/streaming/sse.ts:95",
+    "callee": "header",
+    "want": "src/context.ts:519",
+    "got": [
+     "src/request.ts#HonoRequest.header (ambiguous)"
+    ]
+   },
+   {
+    "at": "src/helper/streaming/sse.ts:96",
+    "callee": "header",
+    "want": "src/context.ts:519",
+    "got": [
+     "src/request.ts#HonoRequest.header (ambiguous)"
+    ]
+   },
+   {
+    "at": "src/helper/streaming/text.ts:11",
+    "callee": "header",
+    "want": "src/context.ts:519",
+    "got": [
+     "src/request.ts#HonoRequest.header (ambiguous)"
+    ]
+   }
+  ],
+  "unresolved": [
+   {
+    "at": "runtime-tests/bun/index.test.tsx:164",
+    "callee": "onAbort",
+    "want": "src/utils/stream.ts#StreamingApi.onAbort",
+    "got": []
+   },
+   {
+    "at": "runtime-tests/bun/index.test.tsx:168",
+    "callee": "onAbort",
+    "want": "src/utils/stream.ts#StreamingApi.onAbort",
+    "got": []
+   },
+   {
+    "at": "runtime-tests/bun/index.test.tsx:174",
+    "callee": "onAbort",
+    "want": "src/utils/stream.ts#StreamingApi.onAbort",
+    "got": []
+   },
+   {
+    "at": "runtime-tests/bun/index.test.tsx:177",
+    "callee": "write",
+    "want": "src/utils/stream.ts#StreamingApi.write",
+    "got": []
+   },
+   {
+    "at": "runtime-tests/bun/index.test.tsx:182",
+    "callee": "onAbort",
+    "want": "src/utils/stream.ts#StreamingApi.onAbort",
+    "got": []
+   },
+   {
+    "at": "runtime-tests/bun/index.test.tsx:186",
+    "callee": "onAbort",
+    "want": "src/utils/stream.ts#StreamingApi.onAbort",
+    "got": []
+   },
+   {
+    "at": "runtime-tests/bun/index.test.tsx:192",
+    "callee": "onAbort",
+    "want": "src/utils/stream.ts#StreamingApi.onAbort",
+    "got": []
+   },
+   {
+    "at": "runtime-tests/bun/index.test.tsx:195",
+    "callee": "write",
+    "want": "src/utils/stream.ts#StreamingApi.write",
+    "got": []
+   },
+   {
+    "at": "runtime-tests/deno/stream.test.ts:12",
+    "callee": "onAbort",
+    "want": "src/utils/stream.ts#StreamingApi.onAbort",
+    "got": []
+   },
+   {
+    "at": "runtime-tests/deno/stream.test.ts:16",
+    "callee": "onAbort",
+    "want": "src/utils/stream.ts#StreamingApi.onAbort",
+    "got": []
+   }
+  ]
+ }
+}

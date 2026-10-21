@@ -1,0 +1,427 @@
+{
+ "all": {
+  "sites": {
+   "internal": 16773,
+   "nosym": 2938,
+   "external": 5477,
+   "abstract": 7327,
+   "unknown": 21701
+  },
+  "internal": {
+   "found": 16338,
+   "wrongOnly": 3,
+   "unresolved": 432,
+   "notExtracted": 0
+  },
+  "nosym": {
+   "clean": 2899,
+   "falseEdge": 39
+  },
+  "external": {
+   "clean": 5271,
+   "falseEdge": 206
+  },
+  "edges": {
+   "correct": 16338,
+   "incorrect": 492,
+   "byTier": {
+    "resolved": {
+     "correct": 14277,
+     "incorrect": 25,
+     "precision": 99.8
+    },
+    "ambiguous": {
+     "correct": 292,
+     "incorrect": 414,
+     "precision": 41.4
+    },
+    "probable": {
+     "correct": 1769,
+     "incorrect": 53,
+     "precision": 97.1
+    }
+   }
+  },
+  "emitted": 16830,
+  "precision": 97.1,
+  "recall": 97.4,
+  "externalFalseEdgeRate": 3.8,
+  "nosymFalseEdgeRate": 1.3
+ },
+ "src": {
+  "sites": {
+   "internal": 4343,
+   "nosym": 325,
+   "external": 3541,
+   "abstract": 1003,
+   "unknown": 2122
+  },
+  "internal": {
+   "found": 4194,
+   "wrongOnly": 0,
+   "unresolved": 149,
+   "notExtracted": 0
+  },
+  "nosym": {
+   "clean": 325,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 3367,
+   "falseEdge": 174
+  },
+  "edges": {
+   "correct": 4194,
+   "incorrect": 187,
+   "byTier": {
+    "resolved": {
+     "correct": 3965,
+     "incorrect": 0,
+     "precision": 100
+    },
+    "ambiguous": {
+     "correct": 116,
+     "incorrect": 157,
+     "precision": 42.5
+    },
+    "probable": {
+     "correct": 113,
+     "incorrect": 30,
+     "precision": 79
+    }
+   }
+  },
+  "emitted": 4381,
+  "precision": 95.7,
+  "recall": 96.6,
+  "externalFalseEdgeRate": 4.9,
+  "nosymFalseEdgeRate": 0
+ },
+ "test": {
+  "sites": {
+   "internal": 12430,
+   "nosym": 2613,
+   "external": 1936,
+   "abstract": 6324,
+   "unknown": 19579
+  },
+  "internal": {
+   "found": 12144,
+   "wrongOnly": 3,
+   "unresolved": 283,
+   "notExtracted": 0
+  },
+  "nosym": {
+   "clean": 2574,
+   "falseEdge": 39
+  },
+  "external": {
+   "clean": 1904,
+   "falseEdge": 32
+  },
+  "edges": {
+   "correct": 12144,
+   "incorrect": 305,
+   "byTier": {
+    "resolved": {
+     "correct": 10312,
+     "incorrect": 25,
+     "precision": 99.8
+    },
+    "ambiguous": {
+     "correct": 176,
+     "incorrect": 257,
+     "precision": 40.6
+    },
+    "probable": {
+     "correct": 1656,
+     "incorrect": 23,
+     "precision": 98.6
+    }
+   }
+  },
+  "emitted": 12449,
+  "precision": 97.6,
+  "recall": 97.7,
+  "externalFalseEdgeRate": 1.7,
+  "nosymFalseEdgeRate": 1.5
+ },
+ "examples": {
+  "wrongOnly": [
+   {
+    "at": "packages/zod/src/v4/core/tests/url-no-canparse.test.ts:86",
+    "callee": "compile",
+    "want": "packages/zod/src/v4/core/compile.ts#compile",
+    "got": [
+     "packages/zod/src/v4/core/doc.ts#Doc.compile (ambiguous)"
+    ]
+   },
+   {
+    "at": "packages/zod/src/v4/core/tests/url-no-canparse.test.ts:105",
+    "callee": "compile",
+    "want": "packages/zod/src/v4/core/compile.ts#compile",
+    "got": [
+     "packages/zod/src/v4/core/doc.ts#Doc.compile (ambiguous)"
+    ]
+   },
+   {
+    "at": "packages/zod/src/v4/core/tests/url-no-canparse.test.ts:124",
+    "callee": "compile",
+    "want": "packages/zod/src/v4/core/compile.ts#compile",
+    "got": [
+     "packages/zod/src/v4/core/doc.ts#Doc.compile (ambiguous)"
+    ]
+   }
+  ],
+  "falseEdgeExternal": [
+   {
+    "at": "packages/zod/src/v4/core/registries.ts:52",
+    "callee": "get",
+    "want": "typescript/lib/lib.es2015.collection.d.ts",
+    "got": [
+     "packages/zod/src/v4/core/registries.ts#$ZodRegistry.get (ambiguous)"
+    ]
+   },
+   {
+    "at": "packages/zod/src/v4/core/registries.ts:68",
+    "callee": "get",
+    "want": "typescript/lib/lib.es2015.collection.d.ts",
+    "got": [
+     "packages/zod/src/v4/core/registries.ts#$ZodRegistry.get (ambiguous)"
+    ]
+   },
+   {
+    "at": "packages/zod/src/v4/core/registries.ts:71",
+    "callee": "get",
+    "want": "typescript/lib/lib.es2015.collection.d.ts",
+    "got": [
+     "packages/zod/src/v4/core/registries.ts#$ZodRegistry.get (ambiguous)"
+    ]
+   },
+   {
+    "at": "packages/zod/src/v4/core/registries.ts:75",
+    "callee": "has",
+    "want": "typescript/lib/lib.es2015.collection.d.ts",
+    "got": [
+     "packages/zod/src/v4/core/registries.ts#$ZodRegistry.has (ambiguous)"
+    ]
+   },
+   {
+    "at": "packages/zod/src/v4/core/to-json-schema.ts:221",
+    "callee": "get",
+    "want": "typescript/lib/lib.es2015.collection.d.ts",
+    "got": [
+     "packages/zod/src/v4/core/registries.ts#$ZodRegistry.get (ambiguous)"
+    ]
+   },
+   {
+    "at": "packages/zod/src/v4/core/to-json-schema.ts:269",
+    "callee": "get",
+    "want": "typescript/lib/lib.es2015.collection.d.ts",
+    "got": [
+     "packages/zod/src/v4/core/registries.ts#$ZodRegistry.get (ambiguous)"
+    ]
+   },
+   {
+    "at": "packages/zod/src/v4/core/to-json-schema.ts:288",
+    "callee": "get",
+    "want": "typescript/lib/lib.es2015.collection.d.ts",
+    "got": [
+     "packages/zod/src/v4/core/registries.ts#$ZodRegistry.get (ambiguous)"
+    ]
+   },
+   {
+    "at": "packages/zod/src/v4/core/to-json-schema.ts:307",
+    "callee": "get",
+    "want": "typescript/lib/lib.es2015.collection.d.ts",
+    "got": [
+     "packages/zod/src/v4/core/registries.ts#$ZodRegistry.get (ambiguous)"
+    ]
+   },
+   {
+    "at": "packages/zod/src/v4/core/to-json-schema.ts:319",
+    "callee": "get",
+    "want": "typescript/lib/lib.es2015.collection.d.ts",
+    "got": [
+     "packages/zod/src/v4/core/registries.ts#$ZodRegistry.get (ambiguous)"
+    ]
+   },
+   {
+    "at": "packages/zod/src/v4/core/to-json-schema.ts:487",
+    "callee": "has",
+    "want": "typescript/lib/lib.es2015.collection.d.ts",
+    "got": [
+     "packages/zod/src/v4/core/registries.ts#$ZodRegistry.has (ambiguous)"
+    ]
+   }
+  ],
+  "falseEdgeNosym": [
+   {
+    "at": "packages/zod/src/v3/tests/bigint.test.ts:50",
+    "callee": "min",
+    "want": "packages/zod/src/v3/types.ts:1719",
+    "got": [
+     "packages/zod/src/v3/types.ts#ZodString.min (ambiguous)",
+     "packages/zod/src/v3/types.ts#ZodDate.min (ambiguous)",
+     "packages/zod/src/v3/types.ts#ZodArray.min (ambiguous)",
+     "packages/zod/src/v3/types.ts#ZodSet.min (ambiguous)"
+    ]
+   },
+   {
+    "at": "packages/zod/src/v3/tests/bigint.test.ts:51",
+    "callee": "min",
+    "want": "packages/zod/src/v3/types.ts:1719",
+    "got": [
+     "packages/zod/src/v3/types.ts#ZodString.min (ambiguous)",
+     "packages/zod/src/v3/types.ts#ZodDate.min (ambiguous)",
+     "packages/zod/src/v3/types.ts#ZodArray.min (ambiguous)",
+     "packages/zod/src/v3/types.ts#ZodSet.min (ambiguous)"
+    ]
+   },
+   {
+    "at": "packages/zod/src/v3/tests/bigint.test.ts:51",
+    "callee": "min",
+    "want": "packages/zod/src/v3/types.ts:1719",
+    "got": [
+     "packages/zod/src/v3/types.ts#ZodString.min (ambiguous)",
+     "packages/zod/src/v3/types.ts#ZodDate.min (ambiguous)",
+     "packages/zod/src/v3/types.ts#ZodArray.min (ambiguous)",
+     "packages/zod/src/v3/types.ts#ZodSet.min (ambiguous)"
+    ]
+   },
+   {
+    "at": "packages/zod/src/v3/tests/bigint.test.ts:53",
+    "callee": "max",
+    "want": "packages/zod/src/v3/types.ts:1728",
+    "got": [
+     "packages/zod/src/v3/types.ts#ZodString.max (ambiguous)",
+     "packages/zod/src/v3/types.ts#ZodDate.max (ambiguous)",
+     "packages/zod/src/v3/types.ts#ZodArray.max (ambiguous)",
+     "packages/zod/src/v3/types.ts#ZodSet.max (ambiguous)"
+    ]
+   },
+   {
+    "at": "packages/zod/src/v3/tests/bigint.test.ts:54",
+    "callee": "max",
+    "want": "packages/zod/src/v3/types.ts:1728",
+    "got": [
+     "packages/zod/src/v3/types.ts#ZodString.max (ambiguous)",
+     "packages/zod/src/v3/types.ts#ZodDate.max (ambiguous)",
+     "packages/zod/src/v3/types.ts#ZodArray.max (ambiguous)",
+     "packages/zod/src/v3/types.ts#ZodSet.max (ambiguous)"
+    ]
+   },
+   {
+    "at": "packages/zod/src/v3/tests/bigint.test.ts:54",
+    "callee": "max",
+    "want": "packages/zod/src/v3/types.ts:1728",
+    "got": [
+     "packages/zod/src/v3/types.ts#ZodString.max (ambiguous)",
+     "packages/zod/src/v3/types.ts#ZodDate.max (ambiguous)",
+     "packages/zod/src/v3/types.ts#ZodArray.max (ambiguous)",
+     "packages/zod/src/v3/types.ts#ZodSet.max (ambiguous)"
+    ]
+   },
+   {
+    "at": "packages/zod/src/v3/tests/function.test.ts:150",
+    "callee": "checker",
+    "want": "packages/zod/src/v3/tests/function.test.ts:146",
+    "got": [
+     "packages/zod/src/v3/tests/function.test.ts#checker (resolved)"
+    ]
+   },
+   {
+    "at": "packages/zod/src/v3/tests/function.test.ts:160",
+    "callee": "checker",
+    "want": "packages/zod/src/v3/tests/function.test.ts:146",
+    "got": [
+     "packages/zod/src/v3/tests/function.test.ts#checker (resolved)"
+    ]
+   },
+   {
+    "at": "packages/zod/src/v3/tests/number.test.ts:8",
+    "callee": "min",
+    "want": "packages/zod/src/v3/types.ts:1467",
+    "got": [
+     "packages/zod/src/v3/types.ts#ZodString.min (ambiguous)",
+     "packages/zod/src/v3/types.ts#ZodDate.min (ambiguous)",
+     "packages/zod/src/v3/types.ts#ZodArray.min (ambiguous)",
+     "packages/zod/src/v3/types.ts#ZodSet.min (ambiguous)"
+    ]
+   },
+   {
+    "at": "packages/zod/src/v3/tests/number.test.ts:8",
+    "callee": "min",
+    "want": "packages/zod/src/v3/types.ts:1467",
+    "got": [
+     "packages/zod/src/v3/types.ts#ZodString.min (ambiguous)",
+     "packages/zod/src/v3/types.ts#ZodDate.min (ambiguous)",
+     "packages/zod/src/v3/types.ts#ZodArray.min (ambiguous)",
+     "packages/zod/src/v3/types.ts#ZodSet.min (ambiguous)"
+    ]
+   }
+  ],
+  "unresolved": [
+   {
+    "at": "packages/zod/src/v4/core/parse.ts:27",
+    "callee": "$ZodAsyncError",
+    "want": "packages/zod/src/v4/core/core.ts#$ZodAsyncError",
+    "got": []
+   },
+   {
+    "at": "packages/zod/src/v4/core/parse.ts:75",
+    "callee": "$ZodAsyncError",
+    "want": "packages/zod/src/v4/core/core.ts#$ZodAsyncError",
+    "got": []
+   },
+   {
+    "at": "packages/zod/src/v4/core/parse.ts:169",
+    "callee": "$ZodAsyncError",
+    "want": "packages/zod/src/v4/core/core.ts#$ZodAsyncError",
+    "got": []
+   },
+   {
+    "at": "packages/zod/src/v4/core/schemas.ts:255",
+    "callee": "$ZodAsyncError",
+    "want": "packages/zod/src/v4/core/core.ts#$ZodAsyncError",
+    "got": []
+   },
+   {
+    "at": "packages/zod/src/v4/core/schemas.ts:291",
+    "callee": "$ZodAsyncError",
+    "want": "packages/zod/src/v4/core/core.ts#$ZodAsyncError",
+    "got": []
+   },
+   {
+    "at": "packages/zod/src/v4/core/schemas.ts:317",
+    "callee": "$ZodAsyncError",
+    "want": "packages/zod/src/v4/core/core.ts#$ZodAsyncError",
+    "got": []
+   },
+   {
+    "at": "packages/zod/src/v4/core/schemas.ts:3880",
+    "callee": "$ZodEncodeError",
+    "want": "packages/zod/src/v4/core/core.ts#$ZodEncodeError",
+    "got": []
+   },
+   {
+    "at": "packages/zod/src/v4/core/schemas.ts:3893",
+    "callee": "$ZodAsyncError",
+    "want": "packages/zod/src/v4/core/core.ts#$ZodAsyncError",
+    "got": []
+   },
+   {
+    "at": "packages/zod/src/v4/core/schemas.ts:4300",
+    "callee": "$ZodEncodeError",
+    "want": "packages/zod/src/v4/core/core.ts#$ZodEncodeError",
+    "got": []
+   },
+   {
+    "at": "packages/zod/src/v4/classic/schemas.ts:188",
+    "callee": "mergeDefs",
+    "want": "packages/zod/src/v4/core/util.ts#mergeDefs",
+    "got": []
+   }
+  ]
+ }
+}
