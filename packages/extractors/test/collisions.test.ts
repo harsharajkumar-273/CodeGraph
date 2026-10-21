@@ -106,3 +106,35 @@ describe('receiver-name affinity must not fire on imported modules (fixtures/py-
     expect(targets('tests/test_views.py', 'make_response')).toEqual([]);
   });
 });
+
+describe('TypeScript grammar (fixtures/ts-grammar)', () => {
+  it('a file with unseparated generic call signatures still yields its class and class-field arrow methods', async () => {
+    const { graph, targets } = await sites('ts-grammar');
+    const names = graph.nodes().filter((n) => n.file === 'context.ts').map((n) => n.qualifiedName);
+    expect(names).toEqual(expect.arrayContaining(['Context', 'Context.text', 'Context.render']));
+    expect(targets('app.ts', 'text')).toEqual(['context.ts#Context.text']);
+    expect(new Set(targets('context.ts', 'render'))).toEqual(new Set(['context.ts#Context.render']));
+  });
+});
+
+describe('Built-in receivers (fixtures/ts-natives)', () => {
+  it('calls on JS globals and on Map/Set-typed receivers are not name-matched to repo methods', async () => {
+    const { targets } = await sites('ts-natives');
+    expect(targets('app.ts', 'get', 5)).toEqual([]);
+    expect(targets('app.ts', 'has', 7)).toEqual([]);
+    expect(targets('app.ts', 'parse', 8)).toEqual([]);
+    expect(targets('app.ts', 'resolve', 9)).toEqual([]);
+    expect(targets('app.ts', 'get', 11)).toEqual(['store.ts#Store.get']);
+  });
+
+  it('a global name shadowed by a local variable, and a repo class named like a built-in, still resolve', async () => {
+    const { targets } = await sites('ts-natives');
+    expect(targets('app.ts', 'parse', 16)).toEqual(['store.ts#Store.parse']);
+    expect(targets('web.ts', 'text')).toEqual(['web.ts#Response.text']);
+  });
+
+  it('a union type is not read as its last member', async () => {
+    const { targets } = await sites('ts-natives');
+    expect(targets('app.ts', 'text', 20)).toContain('store.ts#Store.text');
+  });
+});

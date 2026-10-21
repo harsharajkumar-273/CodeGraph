@@ -58,5 +58,44 @@ export async function parse(lang: LangId, source: string): Promise<Tree> {
   const parser = await getParser(lang);
   const tree = parser.parse(source);
   if (!tree) throw new Error(`tree-sitter failed to parse ${lang} source`);
-  return tree;
+  if (!tree.rootNode.hasError || (lang !== 'typescript' && lang !== 'tsx')) return tree;
+  // Retry once with explicit separators between overloaded call signatures (see separateSignatures), and keep
+  // whichever tree has fewer lines inside ERROR/missing nodes. Only lines' ends change, so positions stay valid.
+  const retry = parser.parse(separateSignatures(source));
+  if (!retry || errorLines(retry.rootNode) >= errorLines(tree.rootNode)) {
+    retry?.delete();
+    return tree;
+  }
+  tree.delete();
+  return retry;
+}
+
+/**
+ * tree-sitter-typescript reads
+ *
+ *     ): Response
+ *     <T extends null>(data: T): Response
+ *
+ * (two call signatures of an interface, no `;` between them) as `Response<T extends …`, and in larger interfaces the
+ * error swallows the whole file: every class and function in it disappears from the graph (Hono's context.ts,
+ * Immer's types-external.ts). Appends `;` to the line before a line that starts with `<`, when that line (skipping
+ * blank and comment lines) ends like a type. Line numbers are unchanged.
+ */
+export function separateSignatures(source: string): string {
+  const lines = source.split('\n');
+  const skip = (l: string) => /^\s*$/.test(l) || /^\s*(\/\/|\/\*|\*)/.test(l);
+  for (let i = 1; i < lines.length; i++) {
+    if (!/^\s*</.test(lines[i])) continue;
+    let j = i - 1;
+    while (j >= 0 && skip(lines[j])) j--;
+    if (j >= 0 && /[\w)\]>'"]\s*$/.test(lines[j])) lines[j] += ';';
+  }
+  return lines.join('\n');
+}
+
+function errorLines(node: Node): number {
+  if (node.type === 'ERROR' || node.isMissing) return node.endPosition.row - node.startPosition.row + 1;
+  let n = 0;
+  for (const c of node.children) if (c) n += errorLines(c);
+  return n;
 }

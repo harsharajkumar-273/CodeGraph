@@ -68,8 +68,16 @@ function typeName(n: Node | null | undefined): string | null {
     case 'generic_type':
       return typeName(n.childForFieldName('name'));
     case 'union_type': {
-      const names = named(n).map(typeName).filter((x): x is string => !!x);
-      return names.length === 1 ? names[0] : null;
+      // `Foo | null | undefined` is a Foo; any other member we can't name (`string`, a second class, a nested
+      // union of two classes) makes the whole union unknown rather than "the one member we could name".
+      const names: string[] = [];
+      for (const m of named(n)) {
+        if (/^(null|undefined|void)$/.test(m.text)) continue;
+        const t = typeName(m);
+        if (!t) return null;
+        names.push(t);
+      }
+      return new Set(names).size === 1 ? names[0] : null;
     }
     default:
       return null;
