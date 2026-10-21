@@ -34,6 +34,24 @@ const COMMON = new Set([
   '__iter__', '__new__',
 ]);
 
+/**
+ * JS globals whose methods are never repo code (`JSON.parse`, `Promise.resolve`, `Object.assign`, `console.log`): a
+ * member call on one is not a name-match candidate unless the file declares or imports that name itself.
+ * (`window`/`globalThis`/`document` are left out: apps do hang their own objects off them.)
+ */
+const JS_GLOBALS = new Set([
+  'JSON', 'Promise', 'Object', 'Math', 'Number', 'Reflect', 'Array', 'String', 'Date', 'Symbol', 'console', 'Intl',
+  'BigInt', 'Boolean', 'RegExp', 'Atomics', 'URL', 'Buffer', 'process',
+]);
+
+/** Built-in JS / Web types: a receiver typed as one (and not as a repo class of that name) has no repo method. */
+const JS_BUILTIN_TYPES = new Set([
+  'Map', 'Set', 'WeakMap', 'WeakSet', 'Promise', 'Array', 'ReadonlyArray', 'String', 'Number', 'Date', 'RegExp',
+  'Error', 'URL', 'URLSearchParams', 'Headers', 'Request', 'Response', 'FormData', 'Blob', 'File', 'ReadableStream',
+  'WritableStream', 'TransformStream', 'AbortController', 'AbortSignal', 'TextEncoder', 'TextDecoder', 'ArrayBuffer',
+  'Uint8Array', 'DataView', 'WebSocket', 'Buffer',
+]);
+
 export function parseJsonc(text: string): any {
   try {
     return JSON.parse(text);
@@ -819,6 +837,8 @@ class Resolver {
         const cls = this.resolveClassName(entry, T, call.caller);
         const m = cls && this.findMethod(cls.file, cls.sym.qname, call.callee);
         if (m) return one(m.file, m.sym, 'resolved');
+        // `const seen = new Map()` -> `seen.get(k)` is Map#get, not some repo class's `get`.
+        if (!cls && entry.facts.family === 'js' && JS_BUILTIN_TYPES.has(T)) return [];
       }
       // local class (static call)
       const localCls = this.scopeLookup(entry, call.caller, recv);
@@ -857,6 +877,18 @@ class Resolver {
         if (t?.type === 'symbol') return this.nameFallback(entry, call.callee, new Set([t.file]));
       }
     }
+    if (recv && this.isJsGlobal(entry, call.caller, recv.split('.')[0])) return [];
     return this.nameFallback(entry, call.callee, undefined, recv);
+  }
+
+  /** `name` is a JS global (JSON, Promise, ...) not shadowed by an import, symbol or variable of this file. */
+  private isJsGlobal(entry: Entry, caller: string | null, name: string): boolean {
+    return (
+      entry.facts.family === 'js' &&
+      JS_GLOBALS.has(name) &&
+      !entry.bindings.has(name) &&
+      !this.scopeLookup(entry, caller, name) &&
+      !entry.facts.vars.some((v) => v.name === name)
+    );
   }
 }

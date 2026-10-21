@@ -1,0 +1,462 @@
+{
+ "all": {
+  "sites": {
+   "internal": 9824,
+   "nosym": 440,
+   "external": 7959,
+   "abstract": 3461,
+   "unknown": 21216
+  },
+  "internal": {
+   "found": 9668,
+   "wrongOnly": 55,
+   "unresolved": 96,
+   "notExtracted": 5
+  },
+  "nosym": {
+   "clean": 332,
+   "falseEdge": 108
+  },
+  "external": {
+   "clean": 6681,
+   "falseEdge": 1278
+  },
+  "edges": {
+   "correct": 9668,
+   "incorrect": 2524,
+   "byTier": {
+    "resolved": {
+     "correct": 8132,
+     "incorrect": 93,
+     "precision": 98.9
+    },
+    "probable": {
+     "correct": 490,
+     "incorrect": 378,
+     "precision": 56.5
+    },
+    "ambiguous": {
+     "correct": 1046,
+     "incorrect": 2053,
+     "precision": 33.8
+    }
+   }
+  },
+  "emitted": 12192,
+  "precision": 79.3,
+  "recall": 98.4,
+  "externalFalseEdgeRate": 16.1,
+  "nosymFalseEdgeRate": 24.5
+ },
+ "src": {
+  "sites": {
+   "internal": 1209,
+   "nosym": 45,
+   "external": 2269,
+   "abstract": 295,
+   "unknown": 310
+  },
+  "internal": {
+   "found": 1191,
+   "wrongOnly": 17,
+   "unresolved": 0,
+   "notExtracted": 1
+  },
+  "nosym": {
+   "clean": 42,
+   "falseEdge": 3
+  },
+  "external": {
+   "clean": 2193,
+   "falseEdge": 76
+  },
+  "edges": {
+   "correct": 1191,
+   "incorrect": 140,
+   "byTier": {
+    "resolved": {
+     "correct": 1107,
+     "incorrect": 1,
+     "precision": 99.9
+    },
+    "probable": {
+     "correct": 29,
+     "incorrect": 22,
+     "precision": 56.9
+    },
+    "ambiguous": {
+     "correct": 55,
+     "incorrect": 117,
+     "precision": 32
+    }
+   }
+  },
+  "emitted": 1331,
+  "precision": 89.5,
+  "recall": 98.5,
+  "externalFalseEdgeRate": 3.3,
+  "nosymFalseEdgeRate": 6.7
+ },
+ "test": {
+  "sites": {
+   "internal": 8615,
+   "nosym": 395,
+   "external": 5690,
+   "abstract": 3166,
+   "unknown": 20906
+  },
+  "internal": {
+   "found": 8477,
+   "wrongOnly": 38,
+   "unresolved": 96,
+   "notExtracted": 4
+  },
+  "nosym": {
+   "clean": 290,
+   "falseEdge": 105
+  },
+  "external": {
+   "clean": 4488,
+   "falseEdge": 1202
+  },
+  "edges": {
+   "correct": 8477,
+   "incorrect": 2384,
+   "byTier": {
+    "resolved": {
+     "correct": 7025,
+     "incorrect": 92,
+     "precision": 98.7
+    },
+    "probable": {
+     "correct": 461,
+     "incorrect": 356,
+     "precision": 56.4
+    },
+    "ambiguous": {
+     "correct": 991,
+     "incorrect": 1936,
+     "precision": 33.9
+    }
+   }
+  },
+  "emitted": 10861,
+  "precision": 78,
+  "recall": 98.4,
+  "externalFalseEdgeRate": 21.1,
+  "nosymFalseEdgeRate": 26.6
+ },
+ "examples": {
+  "wrongOnly": [
+   {
+    "at": "src/adapter/aws-lambda/conninfo.ts:61",
+    "callee": "header",
+    "want": "src/request.ts#HonoRequest.header",
+    "got": [
+     "src/context.ts#Context.header (probable)"
+    ]
+   },
+   {
+    "at": "src/middleware/serve-static/index.ts:108",
+    "callee": "header",
+    "want": "src/request.ts#HonoRequest.header",
+    "got": [
+     "src/context.ts#Context.header (probable)"
+    ]
+   },
+   {
+    "at": "src/validator/validator.ts:91",
+    "callee": "header",
+    "want": "src/request.ts#HonoRequest.header",
+    "got": [
+     "src/context.ts#Context.header (probable)"
+    ]
+   },
+   {
+    "at": "src/validator/validator.ts:99",
+    "callee": "json",
+    "want": "src/request.ts#HonoRequest.json",
+    "got": [
+     "src/context.ts#Context.json (probable)"
+    ]
+   },
+   {
+    "at": "src/validator/validator.ts:155",
+    "callee": "header",
+    "want": "src/request.ts#HonoRequest.header",
+    "got": [
+     "src/context.ts#Context.header (probable)"
+    ]
+   },
+   {
+    "at": "src/compose.test.ts:102",
+    "callee": "header",
+    "want": "src/request.ts#HonoRequest.header",
+    "got": [
+     "src/context.ts#Context.header (probable)"
+    ]
+   },
+   {
+    "at": "src/compose.test.ts:214",
+    "callee": "header",
+    "want": "src/request.ts#HonoRequest.header",
+    "got": [
+     "src/context.ts#Context.header (probable)"
+    ]
+   },
+   {
+    "at": "src/helper/accepts/accepts.ts:88",
+    "callee": "header",
+    "want": "src/request.ts#HonoRequest.header",
+    "got": [
+     "src/context.ts#Context.header (probable)"
+    ]
+   },
+   {
+    "at": "src/hono.test.ts:258",
+    "callee": "basePath",
+    "want": "src/hono-base.ts#Hono.basePath",
+    "got": [
+     "src/hono.test.ts#ExtendedHono.basePath (probable)"
+    ]
+   },
+   {
+    "at": "src/hono.test.ts:493",
+    "callee": "basePath",
+    "want": "src/hono-base.ts#Hono.basePath",
+    "got": [
+     "src/hono.test.ts#ExtendedHono.basePath (probable)"
+    ]
+   }
+  ],
+  "falseEdgeExternal": [
+   {
+    "at": "adapters/aws-lambda/src/handler.ts:342",
+    "callee": "set",
+    "want": "typescript/lib/lib.dom.d.ts",
+    "got": [
+     "src/context.ts#Context.set (ambiguous)"
+    ]
+   },
+   {
+    "at": "adapters/aws-lambda/src/handler.ts:354",
+    "callee": "get",
+    "want": "typescript/lib/lib.dom.d.ts",
+    "got": [
+     "src/context.ts#Context.get (ambiguous)"
+    ]
+   },
+   {
+    "at": "adapters/aws-lambda/src/handler.ts:359",
+    "callee": "get",
+    "want": "typescript/lib/lib.dom.d.ts",
+    "got": [
+     "src/context.ts#Context.get (ambiguous)"
+    ]
+   },
+   {
+    "at": "adapters/aws-lambda/src/handler.ts:363",
+    "callee": "arrayBuffer",
+    "want": "typescript/lib/lib.dom.d.ts",
+    "got": [
+     "src/request.ts#HonoRequest.arrayBuffer (probable)"
+    ]
+   },
+   {
+    "at": "adapters/aws-lambda/src/handler.ts:363",
+    "callee": "text",
+    "want": "typescript/lib/lib.dom.d.ts",
+    "got": [
+     "src/context.ts#Context.text (ambiguous)",
+     "src/request.ts#HonoRequest.text (ambiguous)"
+    ]
+   },
+   {
+    "at": "adapters/aws-lambda/src/handler.ts:423",
+    "callee": "set",
+    "want": "typescript/lib/lib.dom.d.ts",
+    "got": [
+     "src/context.ts#Context.set (ambiguous)"
+    ]
+   },
+   {
+    "at": "adapters/aws-lambda/src/handler.ts:437",
+    "callee": "set",
+    "want": "typescript/lib/lib.dom.d.ts",
+    "got": [
+     "src/context.ts#Context.set (ambiguous)"
+    ]
+   },
+   {
+    "at": "adapters/aws-lambda/src/handler.ts:491",
+    "callee": "set",
+    "want": "typescript/lib/lib.dom.d.ts",
+    "got": [
+     "src/context.ts#Context.set (ambiguous)"
+    ]
+   },
+   {
+    "at": "adapters/aws-lambda/src/handler.ts:517",
+    "callee": "set",
+    "want": "typescript/lib/lib.dom.d.ts",
+    "got": [
+     "src/context.ts#Context.set (ambiguous)"
+    ]
+   },
+   {
+    "at": "adapters/aws-lambda/src/handler.ts:523",
+    "callee": "set",
+    "want": "typescript/lib/lib.dom.d.ts",
+    "got": [
+     "src/context.ts#Context.set (ambiguous)"
+    ]
+   }
+  ],
+  "falseEdgeNosym": [
+   {
+    "at": "src/router/reg-exp-router/matcher.ts:32",
+    "callee": "match",
+    "want": "src/router/reg-exp-router/matcher.ts:14",
+    "got": [
+     "src/router/reg-exp-router/matcher.ts#match (resolved)"
+    ]
+   },
+   {
+    "at": "benchmarks/routers/src/bench-includes-init.mts:66",
+    "callee": "match",
+    "want": "src/router/reg-exp-router/router.ts:129",
+    "got": [
+     "src/router/linear-router/router.ts#LinearRouter.match (ambiguous)",
+     "src/router/trie-router/router.ts#TrieRouter.match (ambiguous)"
+    ]
+   },
+   {
+    "at": "benchmarks/routers/src/bench-includes-init.mts:73",
+    "callee": "match",
+    "want": "src/router/reg-exp-router/prepared-router.ts:92",
+    "got": [
+     "src/router/linear-router/router.ts#LinearRouter.match (ambiguous)",
+     "src/router/trie-router/router.ts#TrieRouter.match (ambiguous)"
+    ]
+   },
+   {
+    "at": "runtime-tests/node/index.test.ts:29",
+    "callee": "get",
+    "want": "runtime-tests/node/index.test.ts:280",
+    "got": [
+     "src/context.ts#Context.get (ambiguous)"
+    ]
+   },
+   {
+    "at": "runtime-tests/node/index.test.ts:35",
+    "callee": "get",
+    "want": "runtime-tests/node/index.test.ts:280",
+    "got": [
+     "src/context.ts#Context.get (ambiguous)"
+    ]
+   },
+   {
+    "at": "runtime-tests/node/index.test.ts:67",
+    "callee": "get",
+    "want": "runtime-tests/node/index.test.ts:280",
+    "got": [
+     "src/context.ts#Context.get (ambiguous)"
+    ]
+   },
+   {
+    "at": "runtime-tests/node/index.test.ts:74",
+    "callee": "get",
+    "want": "runtime-tests/node/index.test.ts:280",
+    "got": [
+     "src/context.ts#Context.get (ambiguous)"
+    ]
+   },
+   {
+    "at": "runtime-tests/node/index.test.ts:89",
+    "callee": "get",
+    "want": "runtime-tests/node/index.test.ts:280",
+    "got": [
+     "src/context.ts#Context.get (ambiguous)"
+    ]
+   },
+   {
+    "at": "runtime-tests/node/index.test.ts:97",
+    "callee": "get",
+    "want": "runtime-tests/node/index.test.ts:280",
+    "got": [
+     "src/context.ts#Context.get (ambiguous)"
+    ]
+   },
+   {
+    "at": "runtime-tests/node/index.test.ts:135",
+    "callee": "get",
+    "want": "runtime-tests/node/index.test.ts:280",
+    "got": [
+     "src/context.ts#Context.get (ambiguous)"
+    ]
+   }
+  ],
+  "unresolved": [
+   {
+    "at": "runtime-tests/bun/index.test.tsx:164",
+    "callee": "onAbort",
+    "want": "src/utils/stream.ts#StreamingApi.onAbort",
+    "got": []
+   },
+   {
+    "at": "runtime-tests/bun/index.test.tsx:168",
+    "callee": "onAbort",
+    "want": "src/utils/stream.ts#StreamingApi.onAbort",
+    "got": []
+   },
+   {
+    "at": "runtime-tests/bun/index.test.tsx:174",
+    "callee": "onAbort",
+    "want": "src/utils/stream.ts#StreamingApi.onAbort",
+    "got": []
+   },
+   {
+    "at": "runtime-tests/bun/index.test.tsx:177",
+    "callee": "write",
+    "want": "src/utils/stream.ts#StreamingApi.write",
+    "got": []
+   },
+   {
+    "at": "runtime-tests/bun/index.test.tsx:182",
+    "callee": "onAbort",
+    "want": "src/utils/stream.ts#StreamingApi.onAbort",
+    "got": []
+   },
+   {
+    "at": "runtime-tests/bun/index.test.tsx:186",
+    "callee": "onAbort",
+    "want": "src/utils/stream.ts#StreamingApi.onAbort",
+    "got": []
+   },
+   {
+    "at": "runtime-tests/bun/index.test.tsx:192",
+    "callee": "onAbort",
+    "want": "src/utils/stream.ts#StreamingApi.onAbort",
+    "got": []
+   },
+   {
+    "at": "runtime-tests/bun/index.test.tsx:195",
+    "callee": "write",
+    "want": "src/utils/stream.ts#StreamingApi.write",
+    "got": []
+   },
+   {
+    "at": "runtime-tests/deno/middleware.test.tsx:70",
+    "callee": "get",
+    "want": "src/context.ts#Context.get",
+    "got": []
+   },
+   {
+    "at": "runtime-tests/deno/middleware.test.tsx:74",
+    "callee": "set",
+    "want": "src/context.ts#Context.set",
+    "got": []
+   }
+  ]
+ }
+}
