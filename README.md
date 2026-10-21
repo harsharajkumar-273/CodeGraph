@@ -21,7 +21,7 @@ Impact   3 symbols in 6 files  (3 resolved · 0 probable · 0 ambiguous)
   d3  resolved  src/flask/app.py#Flask.__call__
 ```
 
-Every edge is labelled **resolved / probable / ambiguous**, so you can see *how much* of a blast radius is proven vs. guessed, and filter accordingly. `resolved`/`probable` are 97% accurate on a 99-edge hand-verified sample across three unrelated codebases (Python, JS, TS) — see [`docs/PRECISION.md`](docs/PRECISION.md) for the numbers, methodology, and known limitations.
+Every edge is labelled **resolved / probable / ambiguous**, so you can see *how much* of a blast radius is proven vs. guessed, and filter accordingly. Against the TypeScript compiler as an independent oracle on three repos CodeGraph was never tuned on (Hono, Immer, NestJS — every call site, not a sample), `resolved` edges are 98% correct (100% outside test code), but `probable` is only 59% and `ambiguous` 12%. Treat `probable` as a lead to check, not a fact. See [`docs/ORACLE-EVAL.md`](docs/ORACLE-EVAL.md) for the numbers and their limits (TypeScript only, no adoption or independent-user evidence yet). The earlier LLM-labeled samples are in [`docs/PRECISION.md`](docs/PRECISION.md) and [`docs/EVALUATION.md`](docs/EVALUATION.md).
 
 ## Install
 
