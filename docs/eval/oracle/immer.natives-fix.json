@@ -1,0 +1,306 @@
+{
+ "all": {
+  "sites": {
+   "internal": 576,
+   "nosym": 146,
+   "external": 245,
+   "abstract": 27,
+   "unknown": 252
+  },
+  "internal": {
+   "found": 576,
+   "wrongOnly": 0,
+   "unresolved": 0,
+   "notExtracted": 0
+  },
+  "nosym": {
+   "clean": 138,
+   "falseEdge": 8
+  },
+  "external": {
+   "clean": 184,
+   "falseEdge": 61
+  },
+  "edges": {
+   "correct": 576,
+   "incorrect": 112,
+   "byTier": {
+    "resolved": {
+     "correct": 573,
+     "incorrect": 8,
+     "precision": 98.6
+    },
+    "ambiguous": {
+     "correct": 0,
+     "incorrect": 104,
+     "precision": 0
+    },
+    "probable": {
+     "correct": 3,
+     "incorrect": 0,
+     "precision": 100
+    }
+   }
+  },
+  "emitted": 688,
+  "precision": 83.7,
+  "recall": 100,
+  "externalFalseEdgeRate": 24.9,
+  "nosymFalseEdgeRate": 5.5
+ },
+ "src": {
+  "sites": {
+   "internal": 322,
+   "nosym": 15,
+   "external": 193,
+   "abstract": 21,
+   "unknown": 28
+  },
+  "internal": {
+   "found": 322,
+   "wrongOnly": 0,
+   "unresolved": 0,
+   "notExtracted": 0
+  },
+  "nosym": {
+   "clean": 15,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 148,
+   "falseEdge": 45
+  },
+  "edges": {
+   "correct": 322,
+   "incorrect": 76,
+   "byTier": {
+    "resolved": {
+     "correct": 320,
+     "incorrect": 0,
+     "precision": 100
+    },
+    "ambiguous": {
+     "correct": 0,
+     "incorrect": 76,
+     "precision": 0
+    },
+    "probable": {
+     "correct": 2,
+     "incorrect": 0,
+     "precision": 100
+    }
+   }
+  },
+  "emitted": 398,
+  "precision": 80.9,
+  "recall": 100,
+  "externalFalseEdgeRate": 23.3,
+  "nosymFalseEdgeRate": 0
+ },
+ "test": {
+  "sites": {
+   "internal": 254,
+   "nosym": 131,
+   "external": 52,
+   "abstract": 6,
+   "unknown": 224
+  },
+  "internal": {
+   "found": 254,
+   "wrongOnly": 0,
+   "unresolved": 0,
+   "notExtracted": 0
+  },
+  "nosym": {
+   "clean": 123,
+   "falseEdge": 8
+  },
+  "external": {
+   "clean": 36,
+   "falseEdge": 16
+  },
+  "edges": {
+   "correct": 254,
+   "incorrect": 36,
+   "byTier": {
+    "resolved": {
+     "correct": 253,
+     "incorrect": 8,
+     "precision": 96.9
+    },
+    "ambiguous": {
+     "correct": 0,
+     "incorrect": 28,
+     "precision": 0
+    },
+    "probable": {
+     "correct": 1,
+     "incorrect": 0,
+     "precision": 100
+    }
+   }
+  },
+  "emitted": 290,
+  "precision": 87.6,
+  "recall": 100,
+  "externalFalseEdgeRate": 30.8,
+  "nosymFalseEdgeRate": 6.1
+ },
+ "examples": {
+  "wrongOnly": [],
+  "falseEdgeExternal": [
+   {
+    "at": "src/core/finalize.ts:151",
+    "callee": "set",
+    "want": "typescript/lib/lib.es2015.collection.d.ts",
+    "got": [
+     "src/core/proxy.ts#arrayTraps.set (ambiguous)"
+    ]
+   },
+   {
+    "at": "src/core/proxy.ts:214",
+    "callee": "set",
+    "want": "typescript/lib/lib.es2015.collection.d.ts",
+    "got": [
+     "src/core/proxy.ts#arrayTraps.set (ambiguous)"
+    ]
+   },
+   {
+    "at": "src/core/proxy.ts:223",
+    "callee": "set",
+    "want": "typescript/lib/lib.es2015.collection.d.ts",
+    "got": [
+     "src/core/proxy.ts#arrayTraps.set (ambiguous)"
+    ]
+   },
+   {
+    "at": "src/plugins/patches.ts:83",
+    "callee": "keys",
+    "want": "typescript/lib/lib.es2015.iterable.d.ts",
+    "got": [
+     "src/plugins/mapset.ts#enableMapSet.DraftMap.keys (ambiguous)",
+     "src/plugins/mapset.ts#enableMapSet.DraftSet.keys (ambiguous)"
+    ]
+   },
+   {
+    "at": "src/plugins/patches.ts:149",
+    "callee": "has",
+    "want": "typescript/lib/lib.es2015.collection.d.ts",
+    "got": [
+     "src/plugins/mapset.ts#enableMapSet.DraftMap.has (ambiguous)",
+     "src/plugins/mapset.ts#enableMapSet.DraftSet.has (ambiguous)"
+    ]
+   },
+   {
+    "at": "src/plugins/patches.ts:153",
+    "callee": "add",
+    "want": "typescript/lib/lib.es2015.collection.d.ts",
+    "got": [
+     "src/plugins/mapset.ts#enableMapSet.DraftSet.add (ambiguous)"
+    ]
+   },
+   {
+    "at": "src/plugins/patches.ts:206",
+    "callee": "get",
+    "want": "typescript/lib/lib.es2015.collection.d.ts",
+    "got": [
+     "src/plugins/mapset.ts#enableMapSet.DraftMap.get (ambiguous)"
+    ]
+   },
+   {
+    "at": "src/plugins/patches.ts:287",
+    "callee": "forEach",
+    "want": "typescript/lib/lib.es2015.collection.d.ts",
+    "got": [
+     "src/plugins/mapset.ts#enableMapSet.DraftMap.forEach (ambiguous)",
+     "src/plugins/mapset.ts#enableMapSet.DraftSet.forEach (ambiguous)"
+    ]
+   },
+   {
+    "at": "src/plugins/patches.ts:288",
+    "callee": "has",
+    "want": "typescript/lib/lib.es2015.collection.d.ts",
+    "got": [
+     "src/plugins/mapset.ts#enableMapSet.DraftMap.has (ambiguous)",
+     "src/plugins/mapset.ts#enableMapSet.DraftSet.has (ambiguous)"
+    ]
+   },
+   {
+    "at": "src/plugins/patches.ts:304",
+    "callee": "forEach",
+    "want": "typescript/lib/lib.es2015.collection.d.ts",
+    "got": [
+     "src/plugins/mapset.ts#enableMapSet.DraftMap.forEach (ambiguous)",
+     "src/plugins/mapset.ts#enableMapSet.DraftSet.forEach (ambiguous)"
+    ]
+   }
+  ],
+  "falseEdgeNosym": [
+   {
+    "at": "__tests__/produce.ts:88",
+    "callee": "foo",
+    "want": "__tests__/produce.ts:83",
+    "got": [
+     "__tests__/produce.ts#foo (resolved)"
+    ]
+   },
+   {
+    "at": "__tests__/produce.ts:89",
+    "callee": "foo",
+    "want": "__tests__/produce.ts:83",
+    "got": [
+     "__tests__/produce.ts#foo (resolved)"
+    ]
+   },
+   {
+    "at": "__tests__/produce.ts:189",
+    "callee": "foo",
+    "want": "__tests__/produce.ts:187",
+    "got": [
+     "__tests__/produce.ts#foo (resolved)"
+    ]
+   },
+   {
+    "at": "__tests__/produce.ts:192",
+    "callee": "foo",
+    "want": "__tests__/produce.ts:187",
+    "got": [
+     "__tests__/produce.ts#foo (resolved)"
+    ]
+   },
+   {
+    "at": "__tests__/produce.ts:238",
+    "callee": "foo",
+    "want": "__tests__/produce.ts:236",
+    "got": [
+     "__tests__/produce.ts#foo (resolved)"
+    ]
+   },
+   {
+    "at": "__tests__/produce.ts:582",
+    "callee": "useState",
+    "want": "__tests__/produce.ts:574",
+    "got": [
+     "__tests__/produce.ts#useState (resolved)"
+    ]
+   },
+   {
+    "at": "__tests__/produce.ts:840",
+    "callee": "reducer",
+    "want": "__tests__/produce.ts:833",
+    "got": [
+     "__tests__/produce.ts#reducer (resolved)"
+    ]
+   },
+   {
+    "at": "__tests__/produce.ts:841",
+    "callee": "reducer",
+    "want": "__tests__/produce.ts:833",
+    "got": [
+     "__tests__/produce.ts#reducer (resolved)"
+    ]
+   }
+  ],
+  "unresolved": []
+ }
+}

@@ -1,7 +1,7 @@
 # Precision check
 
 > **Superseded for TypeScript by [`ORACLE-EVAL.md`](ORACLE-EVAL.md):** scored against the compiler on every call site
-> of three fresh repos, `resolved` holds (98%) but `probable` drops to 65% and `ambiguous` to 27%.
+> of three fresh repos, `resolved` holds (98%) but `probable` drops to 69% and `ambiguous` to 32%.
 
 A hand-verified precision check of 99 call edges (33 per repo, stratified: 11 resolved
 + 11 probable + 11 ambiguous), sampled with a fixed seed across three real, unrelated

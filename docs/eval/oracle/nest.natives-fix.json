@@ -1,0 +1,459 @@
+{
+ "all": {
+  "sites": {
+   "internal": 13839,
+   "nosym": 793,
+   "external": 7601,
+   "abstract": 1350,
+   "unknown": 51042
+  },
+  "internal": {
+   "found": 13614,
+   "wrongOnly": 19,
+   "unresolved": 15,
+   "notExtracted": 191
+  },
+  "nosym": {
+   "clean": 495,
+   "falseEdge": 298
+  },
+  "external": {
+   "clean": 7360,
+   "falseEdge": 241
+  },
+  "edges": {
+   "correct": 13614,
+   "incorrect": 732,
+   "byTier": {
+    "resolved": {
+     "correct": 13123,
+     "incorrect": 312,
+     "precision": 97.7
+    },
+    "ambiguous": {
+     "correct": 122,
+     "incorrect": 393,
+     "precision": 23.7
+    },
+    "probable": {
+     "correct": 369,
+     "incorrect": 27,
+     "precision": 93.2
+    }
+   }
+  },
+  "emitted": 14346,
+  "precision": 94.9,
+  "recall": 98.4,
+  "externalFalseEdgeRate": 3.2,
+  "nosymFalseEdgeRate": 37.6
+ },
+ "src": {
+  "sites": {
+   "internal": 3590,
+   "nosym": 102,
+   "external": 3233,
+   "abstract": 595,
+   "unknown": 6958
+  },
+  "internal": {
+   "found": 3545,
+   "wrongOnly": 0,
+   "unresolved": 6,
+   "notExtracted": 39
+  },
+  "nosym": {
+   "clean": 100,
+   "falseEdge": 2
+  },
+  "external": {
+   "clean": 3128,
+   "falseEdge": 105
+  },
+  "edges": {
+   "correct": 3545,
+   "incorrect": 158,
+   "byTier": {
+    "resolved": {
+     "correct": 3434,
+     "incorrect": 0,
+     "precision": 100
+    },
+    "ambiguous": {
+     "correct": 36,
+     "incorrect": 146,
+     "precision": 19.8
+    },
+    "probable": {
+     "correct": 75,
+     "incorrect": 12,
+     "precision": 86.2
+    }
+   }
+  },
+  "emitted": 3703,
+  "precision": 95.7,
+  "recall": 98.7,
+  "externalFalseEdgeRate": 3.2,
+  "nosymFalseEdgeRate": 2
+ },
+ "test": {
+  "sites": {
+   "internal": 10249,
+   "nosym": 691,
+   "external": 4368,
+   "abstract": 755,
+   "unknown": 44084
+  },
+  "internal": {
+   "found": 10069,
+   "wrongOnly": 19,
+   "unresolved": 9,
+   "notExtracted": 152
+  },
+  "nosym": {
+   "clean": 395,
+   "falseEdge": 296
+  },
+  "external": {
+   "clean": 4232,
+   "falseEdge": 136
+  },
+  "edges": {
+   "correct": 10069,
+   "incorrect": 574,
+   "byTier": {
+    "resolved": {
+     "correct": 9689,
+     "incorrect": 312,
+     "precision": 96.9
+    },
+    "ambiguous": {
+     "correct": 86,
+     "incorrect": 247,
+     "precision": 25.8
+    },
+    "probable": {
+     "correct": 294,
+     "incorrect": 15,
+     "precision": 95.1
+    }
+   }
+  },
+  "emitted": 10643,
+  "precision": 94.6,
+  "recall": 98.2,
+  "externalFalseEdgeRate": 3.1,
+  "nosymFalseEdgeRate": 42.8
+ },
+ "examples": {
+  "wrongOnly": [
+   {
+    "at": "integration/injector/e2e/parallel-request-scoped-resolution.spec.ts:64",
+    "callee": "waitForOverlap",
+    "want": "integration/injector/e2e/parallel-request-scoped-resolution.spec.ts#ResolveInflightGate.waitForOverlap",
+    "got": [
+     "integration/injector/e2e/request-scoped-factory-provider.spec.ts#InflightGate.waitForOverlap (probable)"
+    ]
+   },
+   {
+    "at": "packages/common/test/services/logger.service.spec.ts:581",
+    "callee": "log",
+    "want": "packages/common/services/logger.service.ts#Logger.log",
+    "got": [
+     "packages/common/services/console-logger.service.ts#ConsoleLogger.log (resolved)"
+    ]
+   },
+   {
+    "at": "packages/common/test/services/logger.service.spec.ts:593",
+    "callee": "log",
+    "want": "packages/common/services/logger.service.ts#Logger.log",
+    "got": [
+     "packages/common/services/console-logger.service.ts#ConsoleLogger.log (resolved)"
+    ]
+   },
+   {
+    "at": "packages/common/test/services/logger.service.spec.ts:603",
+    "callee": "log",
+    "want": "packages/common/services/logger.service.ts#Logger.log",
+    "got": [
+     "packages/common/services/console-logger.service.ts#ConsoleLogger.log (resolved)"
+    ]
+   },
+   {
+    "at": "packages/common/test/services/logger.service.spec.ts:626",
+    "callee": "error",
+    "want": "packages/common/services/logger.service.ts#Logger.error",
+    "got": [
+     "packages/common/services/console-logger.service.ts#ConsoleLogger.error (resolved)"
+    ]
+   },
+   {
+    "at": "packages/common/test/services/logger.service.spec.ts:639",
+    "callee": "error",
+    "want": "packages/common/services/logger.service.ts#Logger.error",
+    "got": [
+     "packages/common/services/console-logger.service.ts#ConsoleLogger.error (resolved)"
+    ]
+   },
+   {
+    "at": "packages/common/test/services/logger.service.spec.ts:650",
+    "callee": "error",
+    "want": "packages/common/services/logger.service.ts#Logger.error",
+    "got": [
+     "packages/common/services/console-logger.service.ts#ConsoleLogger.error (resolved)"
+    ]
+   },
+   {
+    "at": "packages/common/test/services/logger.service.spec.ts:661",
+    "callee": "error",
+    "want": "packages/common/services/logger.service.ts#Logger.error",
+    "got": [
+     "packages/common/services/console-logger.service.ts#ConsoleLogger.error (resolved)"
+    ]
+   },
+   {
+    "at": "packages/common/test/services/logger.service.spec.ts:678",
+    "callee": "error",
+    "want": "packages/common/services/logger.service.ts#Logger.error",
+    "got": [
+     "packages/common/services/console-logger.service.ts#ConsoleLogger.error (resolved)"
+    ]
+   },
+   {
+    "at": "packages/common/test/services/logger.service.spec.ts:718",
+    "callee": "log",
+    "want": "packages/common/services/logger.service.ts#Logger.log",
+    "got": [
+     "packages/common/services/console-logger.service.ts#ConsoleLogger.log (resolved)"
+    ]
+   }
+  ],
+  "falseEdgeExternal": [
+   {
+    "at": "integration/cookies/e2e/cookies.spec.ts:367",
+    "callee": "filter",
+    "want": "typescript/lib/lib.es5.d.ts",
+    "got": [
+     "packages/testing/services/capturing-logger.service.ts#CapturingLogger.filter (ambiguous)"
+    ]
+   },
+   {
+    "at": "integration/file-upload/src/upload.module.ts:57",
+    "callee": "digest",
+    "want": "@types/node/crypto.d.ts",
+    "got": [
+     "packages/core/helpers/cookies/cookie-signer.ts#CookieSigner.digest (ambiguous)"
+    ]
+   },
+   {
+    "at": "integration/file-upload/src/upload.module.ts:68",
+    "callee": "digest",
+    "want": "@types/node/crypto.d.ts",
+    "got": [
+     "packages/core/helpers/cookies/cookie-signer.ts#CookieSigner.digest (ambiguous)"
+    ]
+   },
+   {
+    "at": "integration/file-upload/e2e/parity.spec.ts:717",
+    "callee": "digest",
+    "want": "@types/node/crypto.d.ts",
+    "got": [
+     "packages/core/helpers/cookies/cookie-signer.ts#CookieSigner.digest (ambiguous)"
+    ]
+   },
+   {
+    "at": "integration/graceful-shutdown/e2e/fastify.spec.ts:82",
+    "callee": "once",
+    "want": "@types/node/http.d.ts",
+    "got": [
+     "packages/microservices/helpers/tcp-socket.ts#TcpSocket.once (ambiguous)"
+    ]
+   },
+   {
+    "at": "packages/core/helpers/cookies/cookie-signer.ts:78",
+    "callee": "digest",
+    "want": "@types/node/crypto.d.ts",
+    "got": [
+     "packages/core/helpers/cookies/cookie-signer.ts#CookieSigner.digest (probable)"
+    ]
+   },
+   {
+    "at": "packages/core/injector/instance-wrapper.ts:185",
+    "callee": "get",
+    "want": "typescript/lib/lib.es2015.collection.d.ts",
+    "got": [
+     "packages/core/inspector/uuid-factory.ts#UuidFactory.get (ambiguous)"
+    ]
+   },
+   {
+    "at": "packages/core/injector/instance-wrapper.ts:240",
+    "callee": "get",
+    "want": "typescript/lib/lib.es2015.collection.d.ts",
+    "got": [
+     "packages/core/inspector/uuid-factory.ts#UuidFactory.get (ambiguous)"
+    ]
+   },
+   {
+    "at": "packages/core/helpers/handler-metadata-storage.ts:60",
+    "callee": "get",
+    "want": "typescript/lib/lib.es2015.collection.d.ts",
+    "got": [
+     "packages/core/helpers/handler-metadata-storage.ts#HandlerMetadataStorage.get (ambiguous)"
+    ]
+   },
+   {
+    "at": "packages/core/helpers/handler-metadata-storage.ts:63",
+    "callee": "set",
+    "want": "typescript/lib/lib.es2015.collection.d.ts",
+    "got": [
+     "packages/core/helpers/handler-metadata-storage.ts#HandlerMetadataStorage.set (ambiguous)"
+    ]
+   }
+  ],
+  "falseEdgeNosym": [
+   {
+    "at": "integration/hello-world/e2e/middleware-fastify.spec.ts:1284",
+    "callee": "createApp",
+    "want": "integration/hello-world/e2e/middleware-fastify.spec.ts:1268",
+    "got": [
+     "integration/hello-world/e2e/middleware-fastify.spec.ts#createApp (resolved)"
+    ]
+   },
+   {
+    "at": "integration/hello-world/e2e/middleware-fastify.spec.ts:1292",
+    "callee": "createApp",
+    "want": "integration/hello-world/e2e/middleware-fastify.spec.ts:1268",
+    "got": [
+     "integration/hello-world/e2e/middleware-fastify.spec.ts#createApp (resolved)"
+    ]
+   },
+   {
+    "at": "integration/hello-world/e2e/middleware-fastify.spec.ts:1300",
+    "callee": "createApp",
+    "want": "integration/hello-world/e2e/middleware-fastify.spec.ts:1268",
+    "got": [
+     "integration/hello-world/e2e/middleware-fastify.spec.ts#createApp (resolved)"
+    ]
+   },
+   {
+    "at": "integration/hello-world/e2e/middleware-fastify.spec.ts:1314",
+    "callee": "createApp",
+    "want": "integration/hello-world/e2e/middleware-fastify.spec.ts:1268",
+    "got": [
+     "integration/hello-world/e2e/middleware-fastify.spec.ts#createApp (resolved)"
+    ]
+   },
+   {
+    "at": "integration/hello-world/e2e/middleware-fastify.spec.ts:1326",
+    "callee": "createApp",
+    "want": "integration/hello-world/e2e/middleware-fastify.spec.ts:1268",
+    "got": [
+     "integration/hello-world/e2e/middleware-fastify.spec.ts#createApp (resolved)"
+    ]
+   },
+   {
+    "at": "integration/hello-world/e2e/middleware-fastify.spec.ts:1455",
+    "callee": "createApp",
+    "want": "integration/hello-world/e2e/middleware-fastify.spec.ts:1422",
+    "got": [
+     "integration/hello-world/e2e/middleware-fastify.spec.ts#createApp (resolved)"
+    ]
+   },
+   {
+    "at": "integration/hello-world/e2e/middleware-fastify.spec.ts:1466",
+    "callee": "createApp",
+    "want": "integration/hello-world/e2e/middleware-fastify.spec.ts:1422",
+    "got": [
+     "integration/hello-world/e2e/middleware-fastify.spec.ts#createApp (resolved)"
+    ]
+   },
+   {
+    "at": "integration/hello-world/e2e/middleware-fastify.spec.ts:1477",
+    "callee": "createApp",
+    "want": "integration/hello-world/e2e/middleware-fastify.spec.ts:1422",
+    "got": [
+     "integration/hello-world/e2e/middleware-fastify.spec.ts#createApp (resolved)"
+    ]
+   },
+   {
+    "at": "integration/hello-world/e2e/middleware-fastify.spec.ts:1483",
+    "callee": "createApp",
+    "want": "integration/hello-world/e2e/middleware-fastify.spec.ts:1422",
+    "got": [
+     "integration/hello-world/e2e/middleware-fastify.spec.ts#createApp (resolved)"
+    ]
+   },
+   {
+    "at": "integration/hello-world/e2e/middleware-fastify.spec.ts:1489",
+    "callee": "createApp",
+    "want": "integration/hello-world/e2e/middleware-fastify.spec.ts:1422",
+    "got": [
+     "integration/hello-world/e2e/middleware-fastify.spec.ts#createApp (resolved)"
+    ]
+   }
+  ],
+  "unresolved": [
+   {
+    "at": "packages/core/injector/module.ts:628",
+    "callee": "find",
+    "want": "packages/core/injector/abstract-instance-resolver.ts#AbstractInstanceResolver.find",
+    "got": []
+   },
+   {
+    "at": "packages/core/injector/module.ts:647",
+    "callee": "resolvePerContext",
+    "want": "packages/core/injector/abstract-instance-resolver.ts#AbstractInstanceResolver.resolvePerContext",
+    "got": []
+   },
+   {
+    "at": "packages/core/injector/module.ts:662",
+    "callee": "instantiateClass",
+    "want": "packages/core/injector/module-ref.ts#ModuleRef.instantiateClass",
+    "got": []
+   },
+   {
+    "at": "packages/common/test/decorators/route-params.decorator.spec.ts:1110",
+    "callee": "Res",
+    "want": "packages/common/decorators/http/route-params.decorator.ts#Response",
+    "got": []
+   },
+   {
+    "at": "packages/common/test/decorators/route-params.decorator.spec.ts:1125",
+    "callee": "Res",
+    "want": "packages/common/decorators/http/route-params.decorator.ts#Response",
+    "got": []
+   },
+   {
+    "at": "packages/common/test/utils/shared.utils.spec.ts:76",
+    "callee": "Foo",
+    "want": "packages/common/test/utils/shared.utils.spec.ts#Foo",
+    "got": []
+   },
+   {
+    "at": "packages/common/test/utils/shared.utils.spec.ts:80",
+    "callee": "CustomObject",
+    "want": "packages/common/test/utils/shared.utils.spec.ts#CustomObject",
+    "got": []
+   },
+   {
+    "at": "packages/core/nest-factory.ts:204",
+    "callee": "init",
+    "want": "packages/core/nest-application-context.ts#NestApplicationContext.init",
+    "got": []
+   },
+   {
+    "at": "packages/microservices/test/json-socket/listener-chaining.spec.ts:15",
+    "callee": "on",
+    "want": "packages/microservices/helpers/tcp-socket.ts#TcpSocket.on",
+    "got": []
+   },
+   {
+    "at": "packages/microservices/test/json-socket/listener-chaining.spec.ts:18",
+    "callee": "on",
+    "want": "packages/microservices/helpers/tcp-socket.ts#TcpSocket.on",
+    "got": []
+   }
+  ]
+ }
+}

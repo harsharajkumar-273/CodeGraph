@@ -121,6 +121,36 @@ Pooled over the three fresh repos after the fix: `resolved` 21,828 / 22,241 (98.
 (65.1%), `ambiguous` 1,168 / 4,320 (27.0%). Hono's non-test `resolved` edges are 1,107 / 1,108. `hono.parse-fix.json`
 holds the re-run.
 
+## Fix 2: built-in receivers
+
+Most of the remaining false edges were member calls on built-ins that got name-matched to a repo method:
+`Promise.resolve`, `JSON.parse`, `Object.assign` and `console.log` on NestJS, and `seen.get()` on a `new Map()` in Zod.
+For JS/TS files, the resolver no longer offers a name match in two cases:
+
+- **Global receivers:** the receiver is a JS global (`JSON`, `Promise`, `Object`, `Math`, `Number`, `Reflect`,
+  `console`, …) that the file does not import, declare or use as a variable name.
+- **Built-in typed receivers:** the receiver's recorded type is a built-in (`Map`, `Set`, `Response`, `Promise`,
+  `Headers`, …) and no repo class of that name exists.
+
+Both rules only remove edges. The first re-run lost one correct Hono edge, which exposed a pre-existing bug: a nested
+union `A | B | Promise<…>` was recorded as type `Promise`, its last member. Unions now get a type only if every
+non-null member agrees. After that change, no correct edge is lost in any repo:
+
+| Repo | `probable` before → after | `ambiguous` before → after | false edges at external calls | correct edges |
+|---|---|---|---|---|
+| Hono | 490/868 (56.5%) → 490/848 (57.8%) | 1,046/3,099 → 1,046/3,021 | 1,278 → 1,199 | 9,668 → 9,668 |
+| Immer | 3/3 → 3/3 | 0/109 → 0/104 | 65 → 61 | unchanged |
+| NestJS | 369/453 (81.5%) → 369/396 (**93.2%**) | 122/1,112 (11.0%) → 122/515 (23.7%) | 682 → **241** | unchanged |
+| Zod | 1,769/1,822 (97.1%) → 1,769/1,782 (99.3%) | 292/706 → 292/633 | 206 → 94 | unchanged |
+
+Pooled over the three fresh repos after both fixes: `resolved` 21,828 / 22,241 (98.1%), `probable` 862 / 1,247
+(**69.1%**), `ambiguous` 1,168 / 3,640 (32.1%). The `*.natives-fix.json` files hold the re-run. Tests in
+`fixtures/ts-natives` cover the rules, the shadowing cases (a local `process` variable, a repo class named
+`Response`) and the nested union.
+
+What is left is mostly untyped receivers. Hono's `const res = await app.request(…)` followed by `res.text()` (868
+false edges) can only be told apart from `Context.text` with return-type inference, which CodeGraph does not attempt.
+
 ## Limits of this evaluation
 
 - **Scope.** Only TypeScript is covered: no JavaScript (Express, Immer's JS tests) and no Python (Flask). Only the
