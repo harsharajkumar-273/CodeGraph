@@ -106,3 +106,13 @@ describe('receiver-name affinity must not fire on imported modules (fixtures/py-
     expect(targets('tests/test_views.py', 'make_response')).toEqual([]);
   });
 });
+
+describe('TypeScript grammar (fixtures/ts-grammar)', () => {
+  it('a file with unseparated generic call signatures still yields its class and class-field arrow methods', async () => {
+    const { graph, targets } = await sites('ts-grammar');
+    const names = graph.nodes().filter((n) => n.file === 'context.ts').map((n) => n.qualifiedName);
+    expect(names).toEqual(expect.arrayContaining(['Context', 'Context.text', 'Context.render']));
+    expect(targets('app.ts', 'text')).toEqual(['context.ts#Context.text']);
+    expect(new Set(targets('context.ts', 'render'))).toEqual(new Set(['context.ts#Context.render']));
+  });
+});

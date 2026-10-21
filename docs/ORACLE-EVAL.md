@@ -59,7 +59,8 @@ Pooled over the three fresh repos:
 | `probable` | 472 / 805 | 58.6% |
 | `ambiguous` | 450 / 3,627 | 12.4% |
 
-Per-repo JSON, with example errors in each category, is in `docs/eval/oracle/`.
+Per-repo JSON, with example errors in each category, is in `docs/eval/oracle/`. These tables are from the code at
+the time of the evaluation; for the effect of the parse fix found by it, see [below](#fix-1-files-the-parser-silently-dropped).
 
 ### What changes relative to the earlier claims
 
@@ -69,8 +70,9 @@ Per-repo JSON, with example errors in each category, is in `docs/eval/oracle/`.
 - **`probable` does not hold up in general.** PRECISION.md reported 97%, from 33 LLM-labeled edges. On fresh repos it
   ranges from 29% (Hono) to 82% (Nest), with Zod's 97% being the tuned case. For Hono, every sampled error falls into
   two categories:
-  - Class-field arrow methods (`Context.text = (…) => …`, `json`, `header`) are not extracted, so `c.text()` falls
-    back to the only other `text` method, `HonoRequest.text`.
+  - `Context.text/json/header` had no graph node, so `c.text()` fell back to the only other `text` method,
+    `HonoRequest.text`. The cause turned out not to be the class-field arrows themselves but a parse failure that
+    dropped all of `src/context.ts`; see [Fix 1](#fix-1-files-the-parser-silently-dropped).
   - Web-platform `Response.text()/json()` calls collide with those same internal names.
 
   The README's "resolved/probable are 97% accurate" therefore holds for `resolved` but overstates `probable`.
@@ -81,6 +83,43 @@ Per-repo JSON, with example errors in each category, is in `docs/eval/oracle/`.
 - **Recall is high (97–100%), but only on calls the type checker can resolve.** That set is biased toward easy,
   statically-typed calls. Interface-dispatched and untyped calls are excluded, and they are where CodeGraph is
   weakest.
+
+## Fix 1: files the parser silently dropped
+
+The Hono errors led to a tree-sitter-typescript bug. In an interface of overloaded call signatures with no `;`
+between them,
+
+```ts
+  ): Response
+  <T extends null>(data: T): Response
+```
+
+the line break is read as `Response<T extends …`. In large interfaces the resulting error spreads to the end of the
+file, so every class and function after it vanishes from the graph, with no warning. That is what happened to all of
+Hono's `src/context.ts`, as well as `src/types.ts`, `src/helper/factory/index.ts` and Immer's
+`src/types/types-external.ts`. The newer 0.23 grammar has the same bug; it just recovers better on some files.
+
+`parse()` now retries a TS/TSX file that has errors with a `;` appended to lines that end a type and are followed by
+a line starting with `<`. Line numbers are unchanged, and the retry is kept only if it has fewer error lines. The
+`fixtures/ts-grammar` test fails without the retry. It is still a heuristic: one Nest test file (a parenthesized
+decorator, `@((…))`) still has parse errors.
+
+Re-run on the same commits:
+
+| Repo | | oracle-resolved calls | correct edges found | `resolved` | `probable` | `ambiguous` | all edges | false edge at external call |
+|---|---|---|---|---|---|---|---|---|
+| Hono | before | 7,750 | 7,689 | 7,261/7,357 (98.7%) | 100/349 (28.7%) | 328/2,406 (13.6%) | 76.0% | 949 / 7,959 |
+| | after | 9,824 | 9,668 | 8,132/8,225 (98.9%) | 490/868 (56.5%) | 1,046/3,099 (33.8%) | 79.3% | 1,278 / 7,959 |
+| Immer, NestJS, Zod | | unchanged | | | | | | |
+
+About 2,000 calls into `Context` now have a target to find, and 1,979 more correct edges are emitted. Most of the
+remaining `probable`/`ambiguous` errors are native-API collisions: now that `Context.text`/`json` exist, Web
+`Response.text()/json()` calls get linked to them, which raised false edges at external calls from 949 to 1,278.
+Those collisions are the next problem to fix.
+
+Pooled over the three fresh repos after the fix: `resolved` 21,828 / 22,241 (98.1%), `probable` 862 / 1,324
+(65.1%), `ambiguous` 1,168 / 4,320 (27.0%). Hono's non-test `resolved` edges are 1,107 / 1,108. `hono.parse-fix.json`
+holds the re-run.
 
 ## Limits of this evaluation
 
