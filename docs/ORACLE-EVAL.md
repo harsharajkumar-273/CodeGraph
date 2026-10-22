@@ -3,8 +3,15 @@
 The earlier evaluations ([`PRECISION.md`](PRECISION.md), [`EVALUATION.md`](EVALUATION.md)) were labeled by the
 analyzer author's LLM on a few hundred call sites. They were also partly on repos the resolver was tuned against.
 That shows CodeGraph working; it is not independent evidence that it is accurate. This evaluation swaps the labeler
-for the **TypeScript compiler's own type checker**, scores **every** call site in each repo instead of a sample, and
-runs on three repos that were **picked before any result was seen and never used during development**.
+for the **TypeScript compiler's own type checker** (and, for Python, Jedi), and scores **every** call site in each
+repo instead of a sample. The first measurement (the tables under "Results") was on repos that were **picked before
+any result was seen and not used during development**.
+
+**Read the later numbers with this in mind.** The errors that first measurement exposed on those same repos drove
+the fixes described in "Fix 1", "Fix 2" and "Fix 3", and Python's first run drove the return-type change. The
+numbers after each fix are therefore not a blind test: they show that a fix removed the errors it targeted without
+losing correct edges, and they overstate how a fresh repository would score. Run the scripts on a repo you care about
+for a number that isn't tainted by this.
 
 What this is not: evidence of adoption. Nobody outside the project has used or reviewed these results, and the
 human-labeled sample C ([`EVALUATION.md`](EVALUATION.md#human-reviewed-validation-sample-c--pending)) is still
