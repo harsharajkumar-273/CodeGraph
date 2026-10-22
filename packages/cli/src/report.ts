@@ -1,5 +1,5 @@
 import type { CodeGraph, Confidence } from '@codegraph/core';
-import { summarizeImpact, type ImpactResult } from '@codegraph/analysis';
+import { isTestPath, summarizeImpact, type ImpactResult } from '@codegraph/analysis';
 
 export const COMMENT_MARKER = '<!-- codegraph-impact -->';
 
@@ -8,6 +8,9 @@ export const symbolLabel = (g: CodeGraph, id: string) => {
   if (!n) return id;
   return n.kind === 'file' ? n.file! : `${n.file}#${n.qualifiedName}`;
 };
+
+/** A symbol, or for a file node the code that runs when the file loads. */
+const refLabel = (g: CodeGraph, id: string) => (g.node(id)?.kind === 'file' ? `\`${g.node(id)!.file}\` (top-level code)` : `\`${symbolLabel(g, id)}\``);
 
 const DOT: Record<Confidence, string> = { resolved: '🟢', probable: '🟡', ambiguous: '🔴' };
 
@@ -65,10 +68,25 @@ export function impactMarkdown(g: CodeGraph, r: ImpactResult, opts: MarkdownOpti
       `**${outside.length} symbols in ${files.size} files** you did not edit could be affected by the ${changed} existing symbol${changed === 1 ? '' : 's'} this change edits ` +
         `(🟢 ${by.resolved} proven · 🟡 ${by.probable} probable · 🔴 ${by.ambiguous} guessed by name).`,
     );
-    const shown = outside.slice(0, limit);
-    out.push('', '<details open><summary>Callers outside this change</summary>', '', '| | Hops | Symbol |', '|---|---|---|');
-    for (const i of shown) out.push(`| ${DOT[i.confidence]} | ${i.depth} | \`${symbolLabel(g, i.id)}\` |`);
-    if (outside.length > shown.length) out.push(`| | | …and ${outside.length - shown.length} more |`);
+    // Each caller is listed under the edit that reaches it, riskiest edit (most callers) first.
+    const via = new Map(r.impacted.map((i) => [i.id, i.via]));
+    const seeds = new Set(r.seeds);
+    const groups = new Map<string, typeof outside>();
+    for (const i of outside) {
+      let root = i.id;
+      for (let n = 0; n < 30 && !seeds.has(root) && via.get(root); n++) root = via.get(root)!;
+      groups.set(root, [...(groups.get(root) ?? []), i]);
+    }
+    const ranked = [...groups].sort((x, y) => y[1].length - x[1].length || x[0].localeCompare(y[0]));
+    out.push('', '<details open><summary>Which edit reaches whom</summary>', '');
+    for (const [root, callers] of ranked.slice(0, 6)) {
+      const fs = new Set(callers.map((c) => g.node(c.id)?.file));
+      const worst = callers.some((c) => c.confidence !== 'resolved') ? ' (includes unproven links)' : '';
+      out.push(`- ${refLabel(g, root)} is reached by **${callers.length}** in ${fs.size} file${fs.size === 1 ? '' : 's'}${worst}`);
+      const nearest = [...callers].sort((x, y) => x.depth - y.depth).slice(0, 4);
+      out.push(`  - ${nearest.map((c) => `${DOT[c.confidence]} ${refLabel(g, c.id)}`).join(', ')}${callers.length > nearest.length ? `, and ${callers.length - nearest.length} more` : ''}`);
+    }
+    if (ranked.length > 6) out.push(`- …and ${ranked.length - 6} more edited symbols with callers elsewhere`);
     out.push('', '</details>');
   }
   const notes: string[] = [];
@@ -79,10 +97,13 @@ export function impactMarkdown(g: CodeGraph, r: ImpactResult, opts: MarkdownOpti
 
   if (r.tests.length) {
     const cmds = testCommands(r.tests, opts.jsRunner);
-    out.push('', `<details><summary>${r.tests.length} test file${r.tests.length === 1 ? '' : 's'} to run</summary>`, '');
-    if (cmds.length) out.push('```bash', ...cmds, '```', '');
-    out.push(...r.tests.slice(0, 30).map((t) => `- \`${t}\``));
-    if (r.tests.length > 30) out.push(`- …and ${r.tests.length - 30} more`);
+    const total = g.nodes('file').filter((n) => n.file && isTestPath(n.file)).length;
+    const broad = total >= 5 && r.tests.length / total > 0.7 ? ' That is most of the suite: this change touches widely used code.' : '';
+    out.push('', `<details><summary>${r.tests.length}${total ? ` of ${total}` : ''} test file${r.tests.length === 1 ? '' : 's'} to run</summary>`, '');
+    if (broad) out.push(broad.trim(), '');
+    if (cmds.length) out.push('```bash', ...cmds, '```');
+    // With a command above, the file list only repeats it; keep it when it is short or there is no command.
+    if (!cmds.length || r.tests.length <= 8) out.push(...r.tests.slice(0, 30).map((t) => `- \`${t}\``), ...(r.tests.length > 30 ? [`- …and ${r.tests.length - 30} more`] : []));
     out.push('', '</details>');
   }
   out.push('', `<sub>Static analysis of calls and imports (TypeScript, JavaScript, Python, Go). 🟡 and 🔴 links are name matches, so check them before relying on them. Dynamic calls are invisible to it. [CodeGraph](https://github.com/harsharajkumar-273/CodeGraph)</sub>`);
