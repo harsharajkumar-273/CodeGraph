@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { GraphJSON } from '@codegraph/core';
 import { analyze, sessionFromGraph, type Session } from './session';
 import { loadGithub } from './sources/github';
+import { getToken } from './sources/token';
 import { loadFolder, type Picked } from './sources/local';
 import { parseRepoInput, repoLabel, type RepoRef } from './sources/parse-repo';
 import { LoadError, type LoadProgress } from './sources/types';
@@ -58,7 +59,7 @@ export function App() {
         setScreen({ kind: 'landing', prefill: input, error: { message: "That doesn't look like a GitHub repository.", hint: 'Use owner/repo, a github.com link, or owner/repo@branch.' } });
         return;
       }
-      void run(repoLabel(ref), async (signal, progress) => analyze(await loadGithub(ref, { signal, onProgress: progress }), { signal, onProgress: progress }), shareUrlFor(ref), input);
+      void run(repoLabel(ref), async (signal, progress) => analyze(await loadGithub(ref, { signal, onProgress: progress, token: getToken() || undefined }), { signal, onProgress: progress }), shareUrlFor(ref), input);
     },
     [run],
   );

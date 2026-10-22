@@ -7,13 +7,13 @@ branding:
 
 inputs:
   github-token:
-    description: Token used to post the comment. The default needs `pull-requests: write` on the workflow.
+    description: "Token used to post the comment. The default needs `pull-requests: write` on the workflow."
     default: ${{ github.token }}
   min-confidence:
-    description: Weakest link to count (resolved, probable or ambiguous).
+    description: "Weakest link to count (resolved, probable or ambiguous)."
     default: probable
   fail-above:
-    description: Fail the check when more than this many symbols are affected. Leave empty to only comment.
+    description: "Fail the check when more than this many symbols are affected. Leave empty to only comment."
     default: ''
 
 runs:
