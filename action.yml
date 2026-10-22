@@ -43,7 +43,8 @@ runs:
         npx tsx packages/cli/src/bin.ts impact --diff --range "$BASE_SHA...HEAD" --repo "$WORKSPACE" \
           --min-confidence "$MIN" --format markdown > "$OUT"
         # The headline number in the comment is "**N symbols in M files**"; no match means nothing was affected.
-        echo "symbols=$(grep -oE '\*\*[0-9]+ symbols' "$OUT" | grep -oE '[0-9]+' | head -1 || true)" >> "$GITHUB_OUTPUT"
+        N=$(grep -oE '\*\*[0-9]+ symbols' "$OUT" | grep -oE '[0-9]+' | head -1 || true)
+        echo "symbols=${N:-0}" >> "$GITHUB_OUTPUT"
         echo "file=$OUT" >> "$GITHUB_OUTPUT"
     - name: Post or update the comment
       if: steps.impact.outputs.file != ''
