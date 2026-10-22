@@ -1,46 +1,20 @@
 import { promises as fs } from 'node:fs';
-import { join, posix, relative, sep } from 'node:path';
-import ignore from 'ignore';
-import type { CodeGraph } from '@codegraph/core';
-import { SUPPORTED_EXTENSIONS } from '@codegraph/parser';
-import { extractFile } from './extract';
-import { buildGraph, type BuildStats, type CallTrace } from './resolve';
-import type { FileFacts } from './types';
+import { join, relative, sep } from 'node:path';
+import { createFilter } from './filter';
+import { indexFiles, type IndexOptions, type IndexResult } from './index-files';
 
-export interface IndexOptions {
-  /** Extra gitignore-style patterns to skip. */
-  exclude?: string[];
-  maxFileBytes?: number;
-  onProgress?: (done: number, total: number) => void;
-  /** Receives the resolver's verdict for every call site (the graph itself dedups edges per caller/callee pair). */
-  trace?: (t: CallTrace) => void;
-}
-
-export interface IndexResult {
-  graph: CodeGraph;
-  stats: BuildStats & { skipped: number; parseErrors: number; ms: number };
-  warnings: string[];
-}
-
-const DEFAULT_IGNORES = [
-  'node_modules', '.git', 'dist', 'build', 'out', '.next', '.nuxt', '.venv', 'venv', 'env', '__pycache__',
-  'coverage', '.tox', 'target', 'vendor', '.cache', '.codegraph', '.turbo', '*.timestamp-*.mjs', '*.min.js', '*.d.ts', '*.map', '*.bundle.js',
-];
-const CONFIG_NAMES = new Set(['package.json', 'tsconfig.json', 'jsconfig.json']);
+export { indexFiles, type IndexOptions, type IndexResult };
 
 async function walk(root: string, opts: IndexOptions) {
-  const ig = ignore().add(DEFAULT_IGNORES).add(opts.exclude ?? []);
-  try {
-    ig.add(await fs.readFile(join(root, '.gitignore'), 'utf8'));
-  } catch {
-    /* no .gitignore */
-  }
-  try {
-    // project-specific exclusions that should not affect git, e.g. `fixtures/` or `docs/examples/`
-    ig.add(await fs.readFile(join(root, '.codegraphignore'), 'utf8'));
-  } catch {
-    /* no .codegraphignore */
-  }
+  const read = async (name: string) => {
+    try {
+      return await fs.readFile(join(root, name), 'utf8');
+    } catch {
+      return undefined; // no such file
+    }
+  };
+  // `.codegraphignore`: project-specific exclusions that should not affect git, e.g. `fixtures/` or `docs/examples/`
+  const filter = createFilter({ gitignore: await read('.gitignore'), codegraphignore: await read('.codegraphignore'), exclude: opts.exclude });
   const sources: string[] = [];
   const configs: string[] = [];
   async function rec(dir: string) {
@@ -54,11 +28,10 @@ async function walk(root: string, opts: IndexOptions) {
       const abs = join(dir, e.name);
       const rel = relative(root, abs).split(sep).join('/');
       if (e.isDirectory()) {
-        if (!ig.ignores(rel + '/')) await rec(abs);
-      } else if (e.isFile() && !ig.ignores(rel)) {
-        if (CONFIG_NAMES.has(e.name)) configs.push(rel);
-        const dot = e.name.lastIndexOf('.');
-        if (dot >= 0 && SUPPORTED_EXTENSIONS.includes(e.name.slice(dot).toLowerCase())) sources.push(rel);
+        if (!filter.ignoresDir(rel)) await rec(abs);
+      } else if (e.isFile() && !filter.ignoresFile(rel)) {
+        if (filter.isConfig(e.name)) configs.push(rel);
+        if (filter.isSource(e.name)) sources.push(rel);
       }
     }
   }
@@ -88,32 +61,4 @@ export async function indexRepo(root: string, opts: IndexOptions = {}): Promise<
   res.stats.skipped = skipped;
   res.stats.ms = Date.now() - t0;
   return res;
-}
-
-/** Index an in-memory set of files (used by tests and browser-side demos). */
-export async function indexFiles(
-  files: Map<string, string> | Record<string, string>,
-  configs: Map<string, string> | Record<string, string> = new Map(),
-  root = '.',
-  opts: IndexOptions = {},
-): Promise<IndexResult> {
-  const t0 = Date.now();
-  const fm = files instanceof Map ? files : new Map(Object.entries(files));
-  const cm = configs instanceof Map ? configs : new Map(Object.entries(configs));
-  const facts: FileFacts[] = [];
-  const warnings: string[] = [];
-  let parseErrors = 0;
-  let done = 0;
-  for (const [path, src] of fm) {
-    try {
-      const f = await extractFile(posix.normalize(path), src);
-      if (f) facts.push(f);
-    } catch (e) {
-      parseErrors++;
-      warnings.push(`${path}: ${(e as Error).message}`);
-    }
-    opts.onProgress?.(++done, fm.size);
-  }
-  const { graph, stats } = buildGraph(facts, cm, root, opts.trace);
-  return { graph, stats: { ...stats, skipped: 0, parseErrors, ms: Date.now() - t0 }, warnings };
 }
