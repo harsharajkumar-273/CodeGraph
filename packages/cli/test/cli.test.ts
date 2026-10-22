@@ -117,6 +117,19 @@ describe('grouping by edited symbol', () => {
   });
 });
 
+describe('wording', () => {
+  it('uses singular and plural correctly and keeps the headline the action reads', () => {
+    const seeds = resolveTargets(graph, 'src/math.ts#add').map((n) => n.id);
+    const r = blastRadius(graph, seeds, { minConfidence: 'probable' });
+    const one = { ...r, impacted: r.impacted.slice(0, 1), tests: ['t/a.test.ts'] };
+    const md = impactMarkdown(graph, one, { changedFiles: new Set(['src/math.ts']), jsRunner: 'vitest' });
+    expect(md).toMatch(/\*\*1 symbol in 1 file\*\*/);
+    expect(md).toMatch(/\d+ test files? to run|1 of \d+ test files to run|1 test file to run/);
+    expect(md).not.toMatch(/1 symbols|1 files/);
+    expect(md).toMatch(/```\n\n- `t\/a\.test\.ts`/); // a blank line between the command and the list
+  });
+});
+
 describe('test commands', () => {
   it('gives one command per ecosystem, and Go packages rather than files', () => {
     expect(testCommands(['a/x_test.go', 'a/y_test.go', 'b/z_test.go', 'tests/test_a.py', 'web/a.test.ts'], 'vitest')).toEqual([

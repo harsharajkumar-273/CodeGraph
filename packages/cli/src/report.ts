@@ -65,7 +65,7 @@ export function impactMarkdown(g: CodeGraph, r: ImpactResult, opts: MarkdownOpti
     out.push(`This change edits ${changed} existing symbol${changed === 1 ? '' : 's'}, and nothing outside the files it edits calls ${changed === 1 ? 'it' : 'them'}.`);
   } else {
     out.push(
-      `**${outside.length} symbols in ${files.size} files** you did not edit could be affected by the ${changed} existing symbol${changed === 1 ? '' : 's'} this change edits ` +
+      `**${outside.length} symbol${outside.length === 1 ? '' : 's'} in ${files.size} file${files.size === 1 ? '' : 's'}** you did not edit could be affected by the ${changed} existing symbol${changed === 1 ? '' : 's'} this change edits ` +
         `(🟢 ${by.resolved} proven · 🟡 ${by.probable} probable · 🔴 ${by.ambiguous} guessed by name).`,
     );
     // Each caller is listed under the edit that reaches it, riskiest edit (most callers) first.
@@ -99,11 +99,13 @@ export function impactMarkdown(g: CodeGraph, r: ImpactResult, opts: MarkdownOpti
     const cmds = testCommands(r.tests, opts.jsRunner);
     const total = g.nodes('file').filter((n) => n.file && isTestPath(n.file)).length;
     const broad = total >= 5 && r.tests.length / total > 0.7 ? ' That is most of the suite: this change touches widely used code.' : '';
-    out.push('', `<details><summary>${r.tests.length}${total ? ` of ${total}` : ''} test file${r.tests.length === 1 ? '' : 's'} to run</summary>`, '');
+    out.push('', `<details><summary>${r.tests.length}${total ? ` of ${total}` : ''} test file${(total || r.tests.length) === 1 ? '' : 's'} to run</summary>`, '');
     if (broad) out.push(broad.trim(), '');
-    if (cmds.length) out.push('```bash', ...cmds, '```');
+    if (cmds.length) out.push('```bash', ...cmds, '```', '');
     // With a command above, the file list only repeats it; keep it when it is short or there is no command.
-    if (!cmds.length || r.tests.length <= 8) out.push(...r.tests.slice(0, 30).map((t) => `- \`${t}\``), ...(r.tests.length > 30 ? [`- …and ${r.tests.length - 30} more`] : []));
+    const list = !cmds.length || r.tests.length <= 8;
+    if (!list && cmds.length) out.pop(); // no list follows the command, so no blank line either
+    if (list) out.push(...r.tests.slice(0, 30).map((t) => `- \`${t}\``), ...(r.tests.length > 30 ? [`- …and ${r.tests.length - 30} more`] : []));
     out.push('', '</details>');
   }
   out.push('', `<sub>Static analysis of calls and imports (TypeScript, JavaScript, Python, Go). 🟡 and 🔴 links are name matches, so check them before relying on them. Dynamic calls are invisible to it. [CodeGraph](https://github.com/harsharajkumar-273/CodeGraph)</sub>`);
