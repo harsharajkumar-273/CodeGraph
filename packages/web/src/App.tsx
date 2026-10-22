@@ -2,10 +2,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { GraphJSON } from '@codegraph/core';
 import { analyze, sessionFromGraph, type Session } from './session';
 import { loadGithub } from './sources/github';
-import { loadFolder } from './sources/local';
+import { loadFolder, type Picked } from './sources/local';
 import { parseRepoInput, repoLabel, type RepoRef } from './sources/parse-repo';
 import { LoadError, type LoadProgress } from './sources/types';
-import { Landing, type FolderPick, type LandingError } from './views/Landing';
+import { Landing, type LandingError } from './views/Landing';
 import { Loading } from './views/Loading';
 import { Workspace } from './views/Workspace';
 
@@ -63,9 +63,13 @@ export function App() {
     [run],
   );
 
-  const startFolder = useCallback(
-    (folder: FolderPick) => {
-      void run(folder.name, async (signal, progress) => analyze(await loadFolder(folder, { signal, onProgress: progress }), { signal, onProgress: progress }));
+  const startPick = useCallback(
+    (resolve: () => Promise<Picked>) => {
+      void run('your files', async (signal, progress) => {
+        progress({ phase: 'read', done: 0, total: 0, message: 'Looking through your files…' });
+        const picked = await resolve();
+        return analyze(await loadFolder(picked, { signal, onProgress: progress }), { signal, onProgress: progress });
+      });
     },
     [run],
   );
@@ -122,6 +126,6 @@ export function App() {
     case 'workspace':
       return <Workspace key={screen.session.label + (screen.session.ms ?? '')} session={screen.session} shareUrl={screen.shareUrl} onHome={home} />;
     default:
-      return <Landing error={screen.error} initialValue={screen.prefill} onRepo={startRepo} onFolder={startFolder} onGraphFile={(f) => void openGraph(f)} />;
+      return <Landing error={screen.error} initialValue={screen.prefill} onRepo={startRepo} onPick={startPick} onGraphFile={(f) => void openGraph(f)} />;
   }
 }
