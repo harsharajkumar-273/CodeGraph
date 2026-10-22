@@ -1,0 +1,192 @@
+{
+ "all": {
+  "sites": {
+   "internal": 1921,
+   "nosym": 71,
+   "external": 2117,
+   "abstract": 0,
+   "unknown": 0
+  },
+  "internal": {
+   "found": 1884,
+   "wrongOnly": 0,
+   "unresolved": 37,
+   "notExtracted": 0
+  },
+  "nosym": {
+   "clean": 71,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 2117,
+   "falseEdge": 0
+  },
+  "edges": {
+   "correct": 1884,
+   "incorrect": 0,
+   "byTier": {
+    "resolved": {
+     "correct": 1884,
+     "incorrect": 0,
+     "precision": 100
+    }
+   }
+  },
+  "emitted": 1884,
+  "precision": 100,
+  "recall": 98.1,
+  "externalFalseEdgeRate": 0,
+  "nosymFalseEdgeRate": 0
+ },
+ "src": {
+  "sites": {
+   "internal": 1921,
+   "nosym": 71,
+   "external": 2117,
+   "abstract": 0,
+   "unknown": 0
+  },
+  "internal": {
+   "found": 1884,
+   "wrongOnly": 0,
+   "unresolved": 37,
+   "notExtracted": 0
+  },
+  "nosym": {
+   "clean": 71,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 2117,
+   "falseEdge": 0
+  },
+  "edges": {
+   "correct": 1884,
+   "incorrect": 0,
+   "byTier": {
+    "resolved": {
+     "correct": 1884,
+     "incorrect": 0,
+     "precision": 100
+    }
+   }
+  },
+  "emitted": 1884,
+  "precision": 100,
+  "recall": 98.1,
+  "externalFalseEdgeRate": 0,
+  "nosymFalseEdgeRate": 0
+ },
+ "test": {
+  "sites": {
+   "internal": 0,
+   "nosym": 0,
+   "external": 0,
+   "abstract": 0,
+   "unknown": 0
+  },
+  "internal": {
+   "found": 0,
+   "wrongOnly": 0,
+   "unresolved": 0,
+   "notExtracted": 0
+  },
+  "nosym": {
+   "clean": 0,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 0,
+   "falseEdge": 0
+  },
+  "edges": {
+   "correct": 0,
+   "incorrect": 0,
+   "byTier": {}
+  },
+  "emitted": 0,
+  "precision": null,
+  "recall": null,
+  "externalFalseEdgeRate": null,
+  "nosymFalseEdgeRate": null
+ },
+ "examples": {
+  "wrongOnly": [],
+  "falseEdgeExternal": [],
+  "falseEdgeNosym": [],
+  "unresolved": [
+   {
+    "at": "bash_completions.go:450",
+    "callee": "IsAvailableCommand",
+    "want": "command.go#Command.IsAvailableCommand",
+    "got": []
+   },
+   {
+    "at": "bash_completions.go:453",
+    "callee": "Name",
+    "want": "command.go#Command.Name",
+    "got": []
+   },
+   {
+    "at": "bash_completions.go:654",
+    "callee": "IsAvailableCommand",
+    "want": "command.go#Command.IsAvailableCommand",
+    "got": []
+   },
+   {
+    "at": "command.go:1285",
+    "callee": "IsAvailableCommand",
+    "want": "command.go#Command.IsAvailableCommand",
+    "got": []
+   },
+   {
+    "at": "command.go:1286",
+    "callee": "Name",
+    "want": "command.go#Command.Name",
+    "got": []
+   },
+   {
+    "at": "command.go:1287",
+    "callee": "Name",
+    "want": "command.go#Command.Name",
+    "got": []
+   },
+   {
+    "at": "command.go:1329",
+    "callee": "Name",
+    "want": "command.go#Command.Name",
+    "got": []
+   },
+   {
+    "at": "command.go:1329",
+    "callee": "Name",
+    "want": "command.go#Command.Name",
+    "got": []
+   },
+   {
+    "at": "command_test.go:1926",
+    "callee": "Name",
+    "want": "command.go#Command.Name",
+    "got": []
+   },
+   {
+    "at": "command_test.go:1947",
+    "callee": "Name",
+    "want": "command.go#Command.Name",
+    "got": []
+   },
+   {
+    "at": "completions.go:521",
+    "callee": "IsAvailableCommand",
+    "want": "command.go#Command.IsAvailableCommand",
+    "got": []
+   },
+   {
+    "at": "completions.go:522",
+    "callee": "Name",
+    "want": "command.go#Command.Name",
+    "got": []
+   }
+  ]
+ }
+}

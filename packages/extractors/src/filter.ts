@@ -8,8 +8,8 @@ export const DEFAULT_IGNORES = [
   'coverage', '.tox', 'target', 'vendor', '.cache', '.codegraph', '.turbo', '*.timestamp-*.mjs', '*.min.js', '*.d.ts', '*.map', '*.bundle.js',
 ];
 
-/** Config files the resolver reads (workspace packages, tsconfig paths). */
-export const CONFIG_NAMES = new Set(['package.json', 'tsconfig.json', 'jsconfig.json']);
+/** Config files the resolver reads (workspace packages, tsconfig paths, Go module paths). */
+export const CONFIG_NAMES = new Set(['package.json', 'tsconfig.json', 'jsconfig.json', 'go.mod']);
 
 export interface FileFilter {
   /** True when a directory (repo-relative, no trailing slash) should not be entered. */

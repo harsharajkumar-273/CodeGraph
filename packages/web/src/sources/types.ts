@@ -20,7 +20,7 @@ export interface LoadProgress {
   message: string;
 }
 
-export type LoadErrorCode = 'invalid-input' | 'not-found' | 'rate-limit' | 'network' | 'empty' | 'cancelled';
+export type LoadErrorCode = 'invalid-input' | 'not-found' | 'rate-limit' | 'auth' | 'network' | 'empty' | 'cancelled';
 
 /** An expected failure with a message that can be shown to the user as is. */
 export class LoadError extends Error {

@@ -4,7 +4,7 @@
 [![npm downloads](https://img.shields.io/npm/dm/codegraph-engine.svg)](https://www.npmjs.com/package/codegraph-engine)
 [![license](https://img.shields.io/npm/l/codegraph-engine.svg)](LICENSE)
 
-**See what breaks before you change it.** An AST dependency, call-graph and blast-radius engine for TypeScript, JavaScript and Python repositories, with a web app that runs entirely in your browser.
+**See what breaks before you change it.** An AST dependency, call-graph and blast-radius engine for TypeScript, JavaScript, Python and Go repositories, with a web app that runs entirely in your browser.
 
 ![CodeGraph's blast radius for url_for() in Flask: 40 symbols in 19 files, with the affected test files folded together](docs/screenshots/workspace.png)
 
@@ -23,12 +23,13 @@ Impact   3 symbols in 6 files  (3 resolved · 0 probable · 0 ambiguous)
   d3  resolved  src/flask/app.py#Flask.__call__
 ```
 
-Every edge is labelled **resolved / probable / ambiguous**, so you can see *how much* of a blast radius is proven vs. guessed, and filter accordingly. Checked against independent oracles (the TypeScript compiler, and Jedi for Python) on every call site of six open-source repositories, not a sample. The repositories were chosen before measuring, but fixes the checks prompted are included, so a fresh repository may score a little lower:
+Every edge is labelled **resolved / probable / ambiguous**, so you can see *how much* of a blast radius is proven vs. guessed, and filter accordingly. Checked against independent oracles (the TypeScript compiler, Jedi for Python, and the Go type checker) on every call site of ten open-source repositories, not a sample. The repositories were chosen before measuring, but fixes the checks prompted are included, so a fresh repository may score a little lower:
 
 | | `resolved` | `probable` | `ambiguous` |
 |---|---|---|---|
 | TypeScript: Hono, Immer, NestJS (vs. the TypeScript compiler) | 98% | 69% | 35% |
 | Python: Requests, HTTPX, Rich (vs. Jedi) | 99.8% | 80% | 16% |
+| Go: Cobra, Gin, Logrus, mux (vs. the Go type checker) | 100% (7,550 of 7,550) | none emitted | none emitted |
 
 Trust `resolved`; treat `probable` as a lead to check and `ambiguous` as a list of name matches. See [`docs/ORACLE-EVAL.md`](docs/ORACLE-EVAL.md) for the numbers and their limits (no JavaScript-only repos yet, no adoption or independent-user evidence yet). The earlier LLM-labeled samples are in [`docs/PRECISION.md`](docs/PRECISION.md) and [`docs/EVALUATION.md`](docs/EVALUATION.md).
 
@@ -36,8 +37,8 @@ Trust `resolved`; treat `probable` as a lead to check and `ambiguous` as a list 
 
 Open the app, then paste `owner/repo` (or `owner/repo@branch`, or any `github.com` link), or drop a folder, some `.ts`/`.js`/`.py` files or a `.zip` (such as GitHub's "Download ZIP") from your machine. You land on a map of the repository's folders and a short list of the code that is riskiest to change. Pick any function, class or file to see its blast radius: what could break, how sure CodeGraph is about each link, and which tests to run. Share an analysis with `?repo=owner/repo` on the app's URL.
 
-- **Public GitHub repositories, or anything on your own machine** (a folder, loose files, a `.zip`), in TypeScript, JavaScript and Python. Private repositories: download or clone them and use the folder or the CLI. Local files are read in the page and never uploaded.
-- **Anonymous GitHub API limits** apply: about 30 analyses an hour per visitor. Local files, folders and zips don't use GitHub. Dragging a folder in is faster than choosing it, because `node_modules` and `.git` are skipped before anything is read.
+- **Public GitHub repositories, or anything on your own machine** (a folder, loose files, a `.zip`), in TypeScript, JavaScript, Python and Go. Private repositories: paste a GitHub token (fine-grained, read-only "Contents"). It stays in the tab, goes only to api.github.com, and is forgotten when the tab closes. Or clone the repository and drop the folder. Local files are read in the page and never uploaded.
+- **Anonymous GitHub API limits** apply: about 30 analyses an hour per visitor (a token raises it to 5,000 requests an hour). Local files, folders and zips don't use GitHub. Dragging a folder in is faster than choosing it, because `node_modules` and `.git` are skipped before anything is read.
 - **Large repositories** are trimmed to 3,000 source files, tests and examples first, and the page says so.
 - Host it yourself as a static site, for free on Vercel: see [`docs/DEPLOY.md`](docs/DEPLOY.md).
 
@@ -87,15 +88,51 @@ To host the web app yourself (Vercel, Docker, Google Cloud Run or AWS), see [`do
 
 Targets accepted by `impact` / `slice`: `src/a.ts`, `src/a.ts#Foo.bar`, `src/a.ts:42`, or a bare `Foo.bar`.
 
+## Use it with AI agents (MCP)
+
+`codegraph mcp` is a [Model Context Protocol](https://modelcontextprotocol.io) server over stdio. Agents such as Claude
+Code can ask what a change touches before they make it. Tools: `codegraph_impact`, `codegraph_diff_impact`,
+`codegraph_find`, `codegraph_callers_callees`, `codegraph_overview`, `codegraph_reindex`.
+
+```bash
+claude mcp add codegraph -- npx -y codegraph-engine mcp .
+```
+
+Other clients take the same command in their MCP settings (`"command": "npx", "args": ["-y", "codegraph-engine", "mcp", "."]`).
+The graph is built on the first question and held in memory; `codegraph_reindex` refreshes it after files change.
+
+## On pull requests
+
+The repository root is a GitHub Action that comments on each pull request with the symbols, files and tests its
+changes can reach, and updates that comment as the pull request changes.
+
+```yaml
+# .github/workflows/impact.yml
+on: pull_request
+permissions: { contents: read, pull-requests: write }
+jobs:
+  impact:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }      # the base commit must be present
+      - uses: harsharajkumar-273/CodeGraph@main
+        # with: { min-confidence: probable, fail-above: 200 }
+```
+
+`fail-above` makes the check fail when a change reaches more symbols than that. Pull requests from forks have a
+read-only token, so the result goes to the job summary instead of a comment. The same text is available locally with
+`codegraph impact --diff --range main...HEAD --format markdown`.
+
 ## What it understands
 
-| | TypeScript / JavaScript | Python |
-|---|---|---|
-| Imports | ESM, `require()`, dynamic `import()`, barrels (`export *`), `tsconfig` paths, workspace packages | absolute/relative imports, `__init__.py` re-exports, `from pkg import submodule` |
-| Symbols | functions, arrows, classes, methods, `Foo.prototype.x =`, `module.exports` | functions, classes, methods, nested functions |
-| Calls | plain, member, `this`, `new`, JSX components, callbacks passed by name | plain, member, `self`/`super()`, decorators, callbacks |
-| Type-aware | annotations, `new Foo()`, constructor parameter properties | annotations, `x = Foo()`, `self.x = Foo()` |
-| Variables | `const`/`let`/`var`, params, `for`/`for-of`, `catch`, `+=` | assignment, params, `for`, `+=` |
+| | TypeScript / JavaScript | Python | Go |
+|---|---|---|---|
+| Imports | ESM, `require()`, dynamic `import()`, barrels (`export *`), `tsconfig` paths, workspace packages | absolute/relative imports, `__init__.py` re-exports, `from pkg import submodule` | import paths resolved through `go.mod`; a package is its directory, so calls inside it need no import |
+| Symbols | functions, arrows, classes, methods, `Foo.prototype.x =`, `module.exports` | functions, classes, methods, nested functions | functions, methods (attached to their receiver type wherever it is declared), structs, interfaces and interface methods |
+| Calls | plain, member, `this`, `new`, JSX components, callbacks passed by name | plain, member, `self`/`super()`, decorators, callbacks | plain, `pkg.F()`, `x.M()` including promoted methods of embedded types, calls on results (`New().Run()`), `defer`/`go` |
+| Type-aware | annotations, `new Foo()`, constructor parameter properties | annotations, `x = Foo()`, `self.x = Foo()` | parameters, `var x T`, `x := T{}` / `&T{}` / `new(T)` / `F()` results, `for _, v := range`, fields and field chains, typed constants, `//go:build` for linux/amd64 |
+| Variables | `const`/`let`/`var`, params, `for`/`for-of`, `catch`, `+=` | assignment, params, `for`, `+=` | not tracked yet |
 
 Variable lineage is **intra-procedural** (stage 1): it tracks a variable's value only within its own function, not across closures or object fields (`this.x`, `self.x`) — see [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md#6-variable-lineage--stage-1-intra-procedural) for exactly what is and isn't tracked yet.
 
@@ -108,7 +145,7 @@ packages/extractors  per-file fact extraction (incl. variable def/use) + cross-f
 packages/analysis    blast radius, slice, variable lineage, diff→symbols, import cycles  (pure TS: Node or browser)
 packages/cli         codegraph index | impact | slice | vars | cycles | serve
 packages/web         the web app: GitHub / folder loaders, an indexing Web Worker, and the React Flow UI
-fixtures/            tiny TS/JS and Python repos with hand-verified expected edges
+fixtures/            tiny TS/JS, Python and Go repos with hand-verified expected edges
 docs/ARCHITECTURE.md design, schema, resolution algorithm, decisions, roadmap
 ```
 

@@ -1,0 +1,192 @@
+{
+ "all": {
+  "sites": {
+   "internal": 1327,
+   "nosym": 230,
+   "external": 2038,
+   "abstract": 0,
+   "unknown": 0
+  },
+  "internal": {
+   "found": 1315,
+   "wrongOnly": 0,
+   "unresolved": 12,
+   "notExtracted": 0
+  },
+  "nosym": {
+   "clean": 230,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 2038,
+   "falseEdge": 0
+  },
+  "edges": {
+   "correct": 1315,
+   "incorrect": 0,
+   "byTier": {
+    "resolved": {
+     "correct": 1315,
+     "incorrect": 0,
+     "precision": 100
+    }
+   }
+  },
+  "emitted": 1315,
+  "precision": 100,
+  "recall": 99.1,
+  "externalFalseEdgeRate": 0,
+  "nosymFalseEdgeRate": 0
+ },
+ "src": {
+  "sites": {
+   "internal": 1327,
+   "nosym": 230,
+   "external": 2038,
+   "abstract": 0,
+   "unknown": 0
+  },
+  "internal": {
+   "found": 1315,
+   "wrongOnly": 0,
+   "unresolved": 12,
+   "notExtracted": 0
+  },
+  "nosym": {
+   "clean": 230,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 2038,
+   "falseEdge": 0
+  },
+  "edges": {
+   "correct": 1315,
+   "incorrect": 0,
+   "byTier": {
+    "resolved": {
+     "correct": 1315,
+     "incorrect": 0,
+     "precision": 100
+    }
+   }
+  },
+  "emitted": 1315,
+  "precision": 100,
+  "recall": 99.1,
+  "externalFalseEdgeRate": 0,
+  "nosymFalseEdgeRate": 0
+ },
+ "test": {
+  "sites": {
+   "internal": 0,
+   "nosym": 0,
+   "external": 0,
+   "abstract": 0,
+   "unknown": 0
+  },
+  "internal": {
+   "found": 0,
+   "wrongOnly": 0,
+   "unresolved": 0,
+   "notExtracted": 0
+  },
+  "nosym": {
+   "clean": 0,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 0,
+   "falseEdge": 0
+  },
+  "edges": {
+   "correct": 0,
+   "incorrect": 0,
+   "byTier": {}
+  },
+  "emitted": 0,
+  "precision": null,
+  "recall": null,
+  "externalFalseEdgeRate": null,
+  "nosymFalseEdgeRate": null
+ },
+ "examples": {
+  "wrongOnly": [],
+  "falseEdgeExternal": [],
+  "falseEdgeNosym": [],
+  "unresolved": [
+   {
+    "at": "middleware/route_headers.go:93",
+    "callee": "IsMatch",
+    "want": "middleware/route_headers.go#HeaderRoute.IsMatch",
+    "got": []
+   },
+   {
+    "at": "middleware/wrap_writer_test.go:71",
+    "callee": "Tee",
+    "want": "middleware/wrap_writer.go#WrapResponseWriter.Tee",
+    "got": []
+   },
+   {
+    "at": "middleware/wrap_writer_test.go:74",
+    "callee": "Discard",
+    "want": "middleware/wrap_writer.go#WrapResponseWriter.Discard",
+    "got": []
+   },
+   {
+    "at": "middleware/wrap_writer_test.go:81",
+    "callee": "Status",
+    "want": "middleware/wrap_writer.go#WrapResponseWriter.Status",
+    "got": []
+   },
+   {
+    "at": "middleware/wrap_writer_test.go:83",
+    "callee": "BytesWritten",
+    "want": "middleware/wrap_writer.go#WrapResponseWriter.BytesWritten",
+    "got": []
+   },
+   {
+    "at": "middleware/wrap_writer_test.go:90",
+    "callee": "Status",
+    "want": "middleware/wrap_writer.go#WrapResponseWriter.Status",
+    "got": []
+   },
+   {
+    "at": "middleware/wrap_writer_test.go:91",
+    "callee": "BytesWritten",
+    "want": "middleware/wrap_writer.go#WrapResponseWriter.BytesWritten",
+    "got": []
+   },
+   {
+    "at": "tree.go:471",
+    "callee": "isLeaf",
+    "want": "tree.go#node.isLeaf",
+    "got": []
+   },
+   {
+    "at": "tree.go:494",
+    "callee": "findRoute",
+    "want": "tree.go#node.findRoute",
+    "got": []
+   },
+   {
+    "at": "tree.go:519",
+    "callee": "isLeaf",
+    "want": "tree.go#node.isLeaf",
+    "got": []
+   },
+   {
+    "at": "tree.go:542",
+    "callee": "findRoute",
+    "want": "tree.go#node.findRoute",
+    "got": []
+   },
+   {
+    "at": "tree.go:725",
+    "callee": "walk",
+    "want": "tree.go#node.walk",
+    "got": []
+   }
+  ]
+ }
+}
