@@ -87,6 +87,42 @@ To host the web app yourself (Vercel, Docker, Google Cloud Run or AWS), see [`do
 
 Targets accepted by `impact` / `slice`: `src/a.ts`, `src/a.ts#Foo.bar`, `src/a.ts:42`, or a bare `Foo.bar`.
 
+## Use it with AI agents (MCP)
+
+`codegraph mcp` is a [Model Context Protocol](https://modelcontextprotocol.io) server over stdio. Agents such as Claude
+Code can ask what a change touches before they make it. Tools: `codegraph_impact`, `codegraph_diff_impact`,
+`codegraph_find`, `codegraph_callers_callees`, `codegraph_overview`, `codegraph_reindex`.
+
+```bash
+claude mcp add codegraph -- npx -y codegraph-engine mcp .
+```
+
+Other clients take the same command in their MCP settings (`"command": "npx", "args": ["-y", "codegraph-engine", "mcp", "."]`).
+The graph is built on the first question and held in memory; `codegraph_reindex` refreshes it after files change.
+
+## On pull requests
+
+The repository root is a GitHub Action that comments on each pull request with the symbols, files and tests its
+changes can reach, and updates that comment as the pull request changes.
+
+```yaml
+# .github/workflows/impact.yml
+on: pull_request
+permissions: { contents: read, pull-requests: write }
+jobs:
+  impact:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }      # the base commit must be present
+      - uses: harsharajkumar-273/CodeGraph@main
+        # with: { min-confidence: probable, fail-above: 200 }
+```
+
+`fail-above` makes the check fail when a change reaches more symbols than that. Pull requests from forks have a
+read-only token, so the result goes to the job summary instead of a comment. The same text is available locally with
+`codegraph impact --diff --range main...HEAD --format markdown`.
+
 ## What it understands
 
 | | TypeScript / JavaScript | Python |

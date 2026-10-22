@@ -5,6 +5,8 @@ All notable changes to [`codegraph-engine`](https://www.npmjs.com/package/codegr
 ## Unreleased
 
 ### Added
+- **`codegraph mcp`**: an MCP server (stdio) so AI agents can ask what a change touches: impact of a symbol or of the current diff, callers and callees, symbol search, an overview of the riskiest code.
+- **A GitHub Action** (`uses: harsharajkumar-273/CodeGraph@main`) that comments on pull requests with the symbols, files and tests a change can reach, with an optional `fail-above` limit. `codegraph impact --format markdown` prints the same text.
 - **A proper website around the app.** A new homepage with an animated pipeline (get the code, parse it, link it, label every edge, show the blast radius), a product preview, features, the accuracy results with their caveats, and the CLI commands. Analyzing now shows the same pipeline live, stage by stage, with real progress. Fonts are bundled (no third-party requests), the page works on phones, respects reduced-motion settings and passes an automated accessibility check.
 - **The web app analyzes any repository, in the browser.** Paste a public GitHub repository (or `owner/repo@branch`, or
   a `github.com` link) or drop a project folder; the parser (WebAssembly) runs in a Web Worker and nothing is uploaded.
