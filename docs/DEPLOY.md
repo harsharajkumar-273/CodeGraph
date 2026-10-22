@@ -17,8 +17,8 @@ tag.
 ## Vercel (recommended: static, free)
 
 The demo needs no server: `npm run build:demo` builds the UI and indexes the demo repo into a static `graph.json`,
-and `packages/web/vercel.json` routes the UI's `/api/graph` request to it. (The root `vercel.json` does the same for
-an import with Root Directory `.`, which Vercel's multi-service detection can get in the way of.)
+and `packages/web/vercel.json` routes the UI's `/api/graph` request to it. This is the only Vercel config, so
+Root Directory must be `packages/web`.
 
 1. Sign in at <https://vercel.com> with GitHub. The free Hobby plan is enough.
 2. Click **Add New → Project** and import `harsharajkumar-273/CodeGraph`.
