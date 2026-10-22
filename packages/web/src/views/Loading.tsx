@@ -1,50 +1,47 @@
 import type { LoadProgress } from '../sources/types';
-import { IconCheck, IconLogo } from '../ui/icons';
+import { IconLogo } from '../ui/icons';
+import { LIVE_STAGES, Pipeline } from '../ui/Pipeline';
+import './landing/landing.css';
 
-const STEPS = ['Get the files', 'Parse the code', 'Link calls'] as const;
-
-function stepOf(p: LoadProgress | null) {
-  if (!p || p.phase === 'list' || p.phase === 'download' || p.phase === 'read') return 0;
-  return p.done >= p.total && p.total > 0 ? 2 : 1;
+/** Which pipeline stage a progress report belongs to, and how far through it we are. */
+function where(p: LoadProgress | null): { current: number; progress: number; determinate: boolean } {
+  if (!p || p.phase === 'list') return { current: 0, progress: 0, determinate: false };
+  const frac = p.total > 0 ? Math.min(1, p.done / p.total) : 0;
+  if (p.phase === 'download' || p.phase === 'read') return { current: 0, progress: frac, determinate: p.total > 0 };
+  // Parsing reaches 100% before the calls are linked, and linking has no count of its own.
+  return p.done >= p.total && p.total > 0 ? { current: 2, progress: 0.5, determinate: false } : { current: 1, progress: frac, determinate: true };
 }
 
 export function Loading({ title, progress, onCancel }: { title: string; progress: LoadProgress | null; onCancel: () => void }) {
-  const step = stepOf(progress);
-  const determinate = !!progress && progress.total > 0 && progress.phase !== 'list' && step < 2;
-  const pct = determinate ? Math.round((progress!.done / progress!.total) * 100) : 0;
+  const { current, progress: frac, determinate } = where(progress);
+  const pct = Math.round(frac * 100);
   return (
-    <div className="landing loading-screen">
-      <header className="landing-top">
-        <div className="brand">
+    <div className="site loading-screen">
+      <div className="loading-top">
+        <span className="brand">
           <IconLogo width={22} height={22} className="brand-logo" />
           <span>CodeGraph</span>
-        </div>
-      </header>
-      <main className="landing-main loading-main" aria-live="polite">
+        </span>
+      </div>
+      <main className="loading-main" aria-live="polite">
         <h2>Analyzing {title}</h2>
-        <div className={`bar${determinate ? '' : ' indeterminate'}`} role="progressbar" aria-valuenow={determinate ? pct : undefined} aria-valuemin={0} aria-valuemax={100}>
+        <Pipeline stages={LIVE_STAGES} mode="live" current={current} progress={frac} detail={false} />
+        <div className={`bar${determinate ? '' : ' indeterminate'}`} role="progressbar" aria-valuenow={determinate ? pct : undefined} aria-valuemin={0} aria-valuemax={100} aria-label="Progress">
           <span style={determinate ? { width: `${pct}%` } : undefined} />
         </div>
         <p className="status">
           {progress?.message ?? 'Starting…'}
-          {determinate && (
+          {determinate && progress && progress.total > 0 && (
             <span className="muted">
               {' '}
-              {progress!.done.toLocaleString()} of {progress!.total.toLocaleString()}
+              {progress.done.toLocaleString()} of {progress.total.toLocaleString()}
             </span>
           )}
         </p>
-        <ol className="steps">
-          {STEPS.map((s, i) => (
-            <li key={s} className={i < step ? 'done' : i === step ? 'now' : ''}>
-              <span className="step-mark">{i < step ? <IconCheck width={12} height={12} /> : i + 1}</span>
-              {s}
-            </li>
-          ))}
-        </ol>
         <button type="button" className="ghost" onClick={onCancel}>
           Cancel
         </button>
+        <p className="tip">When it's ready, press / to search for any function, class or file.</p>
       </main>
     </div>
   );

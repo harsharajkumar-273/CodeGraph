@@ -5,6 +5,7 @@ All notable changes to [`codegraph-engine`](https://www.npmjs.com/package/codegr
 ## Unreleased
 
 ### Added
+- **A proper website around the app.** A new homepage with an animated pipeline (get the code, parse it, link it, label every edge, show the blast radius), a product preview, features, the accuracy results with their caveats, and the CLI commands. Analyzing now shows the same pipeline live, stage by stage, with real progress. Fonts are bundled (no third-party requests), the page works on phones, respects reduced-motion settings and passes an automated accessibility check.
 - **The web app analyzes any repository, in the browser.** Paste a public GitHub repository (or `owner/repo@branch`, or
   a `github.com` link) or drop a project folder; the parser (WebAssembly) runs in a Web Worker and nothing is uploaded.
   Shareable `?repo=owner/repo` links, a "where to start" overview, search (`/`), a file tree, an inspector with the
