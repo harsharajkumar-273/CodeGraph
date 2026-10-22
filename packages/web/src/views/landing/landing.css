@@ -1048,3 +1048,14 @@ html {
     transition: none;
   }
 }
+
+/* Token for private repositories */
+.token { max-width: 720px; margin: 14px auto 0; text-align: left; color: var(--dim); font-size: 13px; }
+.token summary { cursor: pointer; width: fit-content; margin: 0 auto; padding: 4px 8px; border-radius: 8px; color: var(--dim); }
+.token summary:hover { color: var(--text); }
+.token summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.token[open] summary { margin-bottom: 8px; }
+.token p { margin: 0 0 10px; line-height: 1.55; }
+.token a { color: var(--accent); }
+.token input { width: 100%; height: 38px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--line-2); background: var(--panel); color: var(--text); font: 13px var(--mono); }
+.token input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }

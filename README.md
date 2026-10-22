@@ -36,8 +36,8 @@ Trust `resolved`; treat `probable` as a lead to check and `ambiguous` as a list 
 
 Open the app, then paste `owner/repo` (or `owner/repo@branch`, or any `github.com` link), or drop a folder, some `.ts`/`.js`/`.py` files or a `.zip` (such as GitHub's "Download ZIP") from your machine. You land on a map of the repository's folders and a short list of the code that is riskiest to change. Pick any function, class or file to see its blast radius: what could break, how sure CodeGraph is about each link, and which tests to run. Share an analysis with `?repo=owner/repo` on the app's URL.
 
-- **Public GitHub repositories, or anything on your own machine** (a folder, loose files, a `.zip`), in TypeScript, JavaScript and Python. Private repositories: download or clone them and use the folder or the CLI. Local files are read in the page and never uploaded.
-- **Anonymous GitHub API limits** apply: about 30 analyses an hour per visitor. Local files, folders and zips don't use GitHub. Dragging a folder in is faster than choosing it, because `node_modules` and `.git` are skipped before anything is read.
+- **Public GitHub repositories, or anything on your own machine** (a folder, loose files, a `.zip`), in TypeScript, JavaScript and Python. Private repositories: paste a GitHub token (fine-grained, read-only "Contents"). It stays in the tab, goes only to api.github.com, and is forgotten when the tab closes. Or clone the repository and drop the folder. Local files are read in the page and never uploaded.
+- **Anonymous GitHub API limits** apply: about 30 analyses an hour per visitor (a token raises it to 5,000 requests an hour). Local files, folders and zips don't use GitHub. Dragging a folder in is faster than choosing it, because `node_modules` and `.git` are skipped before anything is read.
 - **Large repositories** are trimmed to 3,000 source files, tests and examples first, and the page says so.
 - Host it yourself as a static site, for free on Vercel: see [`docs/DEPLOY.md`](docs/DEPLOY.md).
 

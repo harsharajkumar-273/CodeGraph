@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { IconArrowRight, IconGithub, IconUpload } from '../ui/icons';
+import { getToken, setToken } from '../sources/token';
 import { entriesFromDrop, entriesFromFileList, type Picked } from '../sources/local';
 import { Accuracy, Cta, Features, Footer, HowItWorks, Nav, Preview, Terminal } from './landing/sections';
 import './landing/landing.css';
@@ -39,6 +40,7 @@ export function Landing({
   const filesInput = useRef<HTMLInputElement>(null);
   const graphInput = useRef<HTMLInputElement>(null);
   const depth = useRef(0);
+  const [token, setTokenState] = useState(getToken);
 
   // A dropped folder, files or zip anywhere on the page is accepted, and the browser must not navigate to them.
   useEffect(() => {
@@ -136,6 +138,30 @@ export function Landing({
               </button>
             ))}
           </div>
+
+          <details className="token" open={!!token}>
+            <summary>Private repository, or hit GitHub's rate limit? Add a token</summary>
+            <p>
+              Paste a GitHub personal access token to read a private repository and to raise GitHub's limit from 60 to 5,000 requests an
+              hour. Create a{' '}
+              <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noreferrer">
+                fine-grained token
+              </a>{' '}
+              with read-only “Contents” access to that repository. It is kept in this tab only, sent only to api.github.com, and forgotten when you close the tab.
+            </p>
+            <input
+              type="password"
+              aria-label="GitHub token"
+              placeholder="github_pat_…"
+              autoComplete="off"
+              spellCheck={false}
+              value={token}
+              onChange={(e) => {
+                setTokenState(e.target.value);
+                setToken(e.target.value);
+              }}
+            />
+          </details>
 
           <div className="drop">
             <IconUpload width={22} height={22} />

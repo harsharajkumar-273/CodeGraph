@@ -1,6 +1,7 @@
-// Reads a public GitHub repository straight from the browser: one call to the tree API lists every file, then the
-// source files are fetched from raw.githubusercontent.com. Both hosts send `access-control-allow-origin: *`, so no
-// server is involved and nothing is uploaded anywhere.
+// Reads a GitHub repository straight from the browser: one call to the tree API lists every file, then the source
+// files are fetched from raw.githubusercontent.com. Both hosts send `access-control-allow-origin: *`, so no server is
+// involved and nothing is uploaded anywhere. With a token (private repositories, or a higher rate limit) the files come
+// from the contents API instead, because that is the endpoint that accepts an Authorization header from a browser.
 import { createFilter } from '@codegraph/extractors/browser';
 import { repoLabel, type RepoRef } from './parse-repo';
 import { LIMITS, LoadError, type LoadProgress, type LoadedSource } from './types';
@@ -17,6 +18,8 @@ export interface TreeEntry {
 export interface GithubOptions {
   signal?: AbortSignal;
   onProgress?: (p: LoadProgress) => void;
+  /** A personal access token. Sent only to api.github.com. */
+  token?: string;
   /** For tests. */
   fetchImpl?: typeof fetch;
 }
@@ -92,7 +95,10 @@ export async function loadGithub(repoRef: RepoRef, opts: GithubOptions = {}): Pr
 
   const get = async (url: string, accept?: string): Promise<Response> => {
     try {
-      return await f(url, { signal: opts.signal, headers: accept ? { Accept: accept } : undefined });
+      const headers: Record<string, string> = {};
+      if (accept) headers.Accept = accept;
+      if (opts.token && url.startsWith(API)) headers.Authorization = `Bearer ${opts.token}`; // never to any other host
+      return await f(url, { signal: opts.signal, headers: Object.keys(headers).length ? headers : undefined });
     } catch (e) {
       if (opts.signal?.aborted || (e as Error).name === 'AbortError') throw cancelled();
       throw new LoadError('network', "Couldn't reach GitHub.", 'Check your connection and try again.');
@@ -106,19 +112,24 @@ export async function loadGithub(repoRef: RepoRef, opts: GithubOptions = {}): Pr
       throw new LoadError(
         'not-found',
         `Couldn't find ${what}.`,
-        'Check the spelling. Private repositories can\'t be read from the browser: run `npx codegraph-engine index .` on a clone instead.',
+        opts.token
+          ? 'Check the spelling, and that your token can read this repository (a fine-grained token needs "Contents: read" on it).'
+          : 'Check the spelling. For a private repository, add a GitHub token below, or drop a clone of it onto this page.',
       );
     }
     // 403/429 from the anonymous API is almost always its rate limit. The remaining-requests header says so for sure,
     // but a browser can only read it when the server exposes it, so a missing header counts as "probably".
     const remaining = res.headers.get('x-ratelimit-remaining');
+    if (res.status === 401) throw new LoadError('auth', 'GitHub did not accept that token.', 'It may be mistyped, expired or revoked. Remove it, or paste a new one.');
     if (res.status === 429 || (res.status === 403 && (remaining === '0' || remaining === null))) {
       const reset = Number(res.headers.get('x-ratelimit-reset')) * 1000;
       const mins = reset ? Math.max(1, Math.ceil((reset - Date.now()) / 60000)) : undefined;
       throw new LoadError(
         'rate-limit',
-        remaining === '0' ? "GitHub's limit for anonymous requests has been reached." : 'GitHub refused the request, most likely because its limit for anonymous requests has been reached.',
-        `${mins ? `It resets in about ${mins} minute${mins === 1 ? '' : 's'}. ` : 'Wait a few minutes and try again. '}Meanwhile you can analyze a local folder, which doesn't use GitHub.`,
+        remaining === '0'
+          ? `GitHub's limit for ${opts.token ? 'this token' : 'anonymous requests'} has been reached.`
+          : `GitHub refused the request, most likely because its limit for ${opts.token ? 'this token' : 'anonymous requests'} has been reached.`,
+        `${mins ? `It resets in about ${mins} minute${mins === 1 ? '' : 's'}. ` : 'Wait a few minutes and try again. '}${opts.token ? '' : 'A GitHub token raises the limit to 5,000 an hour. '}Meanwhile you can analyze a local folder, which doesn't use GitHub.`,
       );
     }
     throw new LoadError('network', `GitHub answered ${res.status} for ${what}.`, 'Try again in a moment.');
@@ -137,10 +148,11 @@ export async function loadGithub(repoRef: RepoRef, opts: GithubOptions = {}): Pr
   if (opts.signal?.aborted) throw cancelled();
 
   const rawUrl = (path: string) => `${RAW}/${repoRef.owner}/${repoRef.repo}/${encodePath(branch!)}/${encodePath(path)}`;
+  const contentsUrl = (path: string) => `${API}/repos/${repoRef.owner}/${repoRef.repo}/contents/${encodePath(path)}?ref=${encodeURIComponent(branch!)}`;
   const fetchText = async (path: string): Promise<string | undefined> => {
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
-        const res = await get(rawUrl(path));
+        const res = opts.token ? await get(contentsUrl(path), 'application/vnd.github.raw+json') : await get(rawUrl(path));
         if (res.ok) return await res.text();
         if (res.status === 404) return undefined;
       } catch (e) {

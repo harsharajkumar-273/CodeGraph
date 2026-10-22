@@ -305,4 +305,58 @@ describe('local folders, files and zips', () => {
     const bad = new File([new Uint8Array([1, 2, 3, 4])], 'broken.zip', { type: 'application/zip' });
     await expect(entriesFromFileList([bad])).rejects.toMatchObject({ code: 'invalid-input' });
   });
+
+  describe('with a token (private repositories)', () => {
+    const repo = new Map([['src/a.ts', 'export const a = 1;\n'], ['src/b.ts', "import { a } from './a';\nexport const b = a;\n"]]);
+    /** A private repository: everything needs the right bearer token, and the contents API serves the files. */
+    function privateGithub() {
+      const seen: { url: string; auth?: string }[] = [];
+      const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
+      const fetchImpl = (async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input);
+        const auth = (init?.headers as Record<string, string> | undefined)?.Authorization;
+        seen.push({ url, auth });
+        if (!url.startsWith('https://api.github.com/')) return new Response('404: Not Found', { status: 404 }); // raw.githubusercontent.com can't see a private repo
+        if (auth === 'Bearer bad') return json({ message: 'Bad credentials' }, 401);
+        if (auth !== 'Bearer good') return json({ message: 'Not Found' }, 404);
+        if (url === 'https://api.github.com/repos/o/r') return json({ default_branch: 'main' });
+        if (url.includes('/git/trees/')) return json({ tree: [...repo].map(([path, t]) => ({ path, type: 'blob', size: t.length })) });
+        const m = /\/contents\/(.+)\?ref=main$/.exec(url);
+        return m && repo.has(decodeURIComponent(m[1])) ? new Response(repo.get(decodeURIComponent(m[1]))) : new Response('', { status: 404 });
+      }) as typeof fetch;
+      return { fetchImpl, seen };
+    }
+
+    it('reads a private repository through the contents API, sending the token only to api.github.com', async () => {
+      const gh = privateGithub();
+      const src = await loadGithub({ owner: 'o', repo: 'r' }, { fetchImpl: gh.fetchImpl, token: 'good' });
+      expect([...src.files.keys()].sort()).toEqual(['src/a.ts', 'src/b.ts']);
+      expect(src.files.get('src/a.ts')).toContain('export const a');
+      expect(gh.seen.every((c) => c.url.startsWith('https://api.github.com/'))).toBe(true);
+      expect(gh.seen.every((c) => c.auth === 'Bearer good')).toBe(true);
+    });
+
+    it('explains a missing repository differently with and without a token', async () => {
+      const without = await loadGithub({ owner: 'o', repo: 'r' }, { fetchImpl: privateGithub().fetchImpl }).catch((e) => e);
+      expect(without).toBeInstanceOf(LoadError);
+      expect(without.code).toBe('not-found');
+      expect(without.hint).toMatch(/add a GitHub token/);
+      const wrong = await loadGithub({ owner: 'o', repo: 'r' }, { fetchImpl: privateGithub().fetchImpl, token: 'other' }).catch((e) => e);
+      expect(wrong.code).toBe('not-found');
+      expect(wrong.hint).toMatch(/token can read/);
+    });
+
+    it('says when GitHub rejects the token', async () => {
+      const err = await loadGithub({ owner: 'o', repo: 'r' }, { fetchImpl: privateGithub().fetchImpl, token: 'bad' }).catch((e) => e);
+      expect(err.code).toBe('auth');
+    });
+
+    it('does not send an Authorization header without a token', async () => {
+      const gh = fakeGithub(new Map([['a.ts', 'export const a = 1;']]));
+      const seen: (HeadersInit | undefined)[] = [];
+      const spy = ((i: RequestInfo | URL, init?: RequestInit) => (seen.push(init?.headers), gh.fetchImpl(i, init))) as typeof fetch;
+      await loadGithub({ owner: 'o', repo: 'r' }, { fetchImpl: spy });
+      expect(seen.every((h) => !h || !('Authorization' in (h as object)))).toBe(true);
+    });
+  });
 });
