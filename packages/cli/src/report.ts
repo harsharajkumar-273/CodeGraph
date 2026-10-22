@@ -40,6 +40,6 @@ export function impactMarkdown(g: CodeGraph, r: ImpactResult, opts: { limit?: nu
     if (r.tests.length > 30) out.push(`- …and ${r.tests.length - 30} more`);
     out.push('', '</details>');
   }
-  out.push('', `<sub>Static analysis of calls and imports (TypeScript, JavaScript, Python). 🟡 and 🔴 links are name matches, so check them before relying on them. Dynamic calls are invisible to it. [CodeGraph](https://github.com/harsharajkumar-273/CodeGraph)</sub>`);
+  out.push('', `<sub>Static analysis of calls and imports (TypeScript, JavaScript, Python, Go). 🟡 and 🔴 links are name matches, so check them before relying on them. Dynamic calls are invisible to it. [CodeGraph](https://github.com/harsharajkumar-273/CodeGraph)</sub>`);
   return out.join('\n');
 }
