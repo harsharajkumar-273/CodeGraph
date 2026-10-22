@@ -1,4 +1,4 @@
-import { posix as p } from 'node:path';
+import * as p from './posix';
 import { CodeGraph, externalId, fileId, symbolId, variableId, type Confidence, type GraphNode } from '@codegraph/core';
 import type { CallFact, CallTypeHint, ExportFact, FileFacts, ImportBinding, ImportFact, SymbolFact, VarFact } from './types';
 

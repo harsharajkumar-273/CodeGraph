@@ -1,24 +1,17 @@
-# Deploying the public demo
+# Deploying the web app
 
-Every option below publishes a **read-only demo**: the graph of one repo (Flask 3.1.0 by default), built ahead of
-time. Visitors can browse that graph, but nothing they do makes anything clone or parse code. Vercel serves it as a
-static site. For Cloud Run and AWS, the `Dockerfile` indexes the repo at image build time and runs
-`codegraph serve --graph` on it, as a non-root user listening on `$PORT` (default 8080).
+The web app is a static site. Visitors paste a GitHub repository or pick a folder, and the analysis runs **in their own
+browser** (the parser is WebAssembly, in a Web Worker), so hosting it needs no server, no secrets and no per-visit cost.
+Their code is never sent to your host; for GitHub repositories the browser downloads the files straight from
+`api.github.com` and `raw.githubusercontent.com`.
 
 ```bash
-docker build -t codegraph-demo .
-docker run -p 8080:8080 codegraph-demo        # http://localhost:8080
+npm install
+npm run build:web          # writes packages/web/dist
+npx serve packages/web/dist   # or any static file server
 ```
 
-To show a different repo, pass build args:
-`--build-arg DEMO_REPO=https://github.com/honojs/hono --build-arg DEMO_REF=v4.6.0`. `DEMO_REF` must be a branch or a
-tag.
-
-## Vercel (recommended: static, free)
-
-The demo needs no server: `npm run build:demo` builds the UI and indexes the demo repo into a static `graph.json`,
-and `packages/web/vercel.json` routes the UI's `/api/graph` request to it. This is the only Vercel config, so
-Root Directory must be `packages/web`.
+## Vercel (recommended: free)
 
 1. Sign in at <https://vercel.com> with GitHub. The free Hobby plan is enough.
 2. Click **Add New → Project** and import `harsharajkumar-273/CodeGraph`.
@@ -27,11 +20,29 @@ Root Directory must be `packages/web`.
    supplies the install command, build command and output folder, so leave those alone, and click **Deploy**.
 4. Vercel prints a `https://<project>.vercel.app` URL. Every push to `main` redeploys it.
 
-To show a different repo, set `DEMO_REPO` (a git URL) and `DEMO_REF` (a branch or tag) under **Settings →
-Environment Variables**, then redeploy. To try the static build locally, run `npm run build:demo` and serve
-`packages/web/dist` with the same rewrite.
+Share a ready-made analysis with a link such as `https://<project>.vercel.app/?repo=pallets/flask`. `?repo=` takes
+`owner/repo`, `owner/repo@branch` or a `github.com` URL.
 
-## Google Cloud Run
+**Limits to know about**
+- GitHub allows 60 anonymous API requests per hour per visitor IP. One analysis uses 2 (1 when the branch is given),
+  so a visitor can run about 30 analyses an hour. The page explains it when a visitor hits the limit.
+- Only public repositories can be read from a browser. Private ones need a local folder or the CLI.
+- Very large repositories are trimmed to 3,000 source files (tests and examples first), and files over 1 MB are
+  skipped; the page says when it does this.
+
+## Google Cloud Run, AWS: serve one fixed graph
+
+These two host a container that runs `codegraph serve --graph` on a graph built when the image is built (Flask 3.1.0
+by default; `--build-arg DEMO_REPO=https://github.com/honojs/hono --build-arg DEMO_REF=v4.6.0` for another). The same
+web app is served, opening straight onto that graph, and visitors can still use "Analyze another". Prefer Vercel unless
+you need to host it yourself on those platforms.
+
+```bash
+docker build -t codegraph-demo .
+docker run -p 8080:8080 codegraph-demo        # http://localhost:8080
+```
+
+### Google Cloud Run
 
 Cloud Run scales to zero, so an idle demo costs nothing, and its free tier covers a low-traffic demo. You still need
 a billing account attached to the project.
@@ -53,7 +64,7 @@ The last command builds the `Dockerfile` with Cloud Build and prints the public 
 URL. `--max-instances 2` caps what a traffic spike can cost. To redeploy after a change, `git pull` and rerun the
 same `gcloud run deploy` command.
 
-## AWS (alternative)
+### AWS (Lightsail)
 
 The simplest AWS route is **Lightsail container service**. It has a fixed monthly price, starting with the Nano
 size, and does not scale to zero.

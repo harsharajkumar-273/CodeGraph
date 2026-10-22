@@ -1,7 +1,7 @@
 import { execFile } from 'node:child_process';
-import { promises as fs, existsSync, createReadStream } from 'node:fs';
+import { promises as fs, existsSync, createReadStream, readFileSync } from 'node:fs';
 import { createServer } from 'node:http';
-import { dirname, extname, join, resolve } from 'node:path';
+import { basename, dirname, extname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import { CodeGraph, type Confidence, type GraphJSON } from '@codegraph/core';
@@ -218,6 +218,11 @@ export async function cmdServe(pos: string[], flags: Flags) {
       return;
     }
     res.setHeader('content-type', MIME[extname(file)] ?? 'application/octet-stream');
+    if (basename(file) === 'index.html') {
+      // Tell the page a graph is waiting at /api/graph; a static host has none, and the page shouldn't probe for one.
+      res.end(readFileSync(file, 'utf8').replace('<head>', '<head><script>window.__CODEGRAPH_SERVED__=true</script>'));
+      return;
+    }
     createReadStream(file).pipe(res);
   });
   server.listen(port, () => console.log(`CodeGraph serving ${graph.size.nodes} nodes / ${graph.size.edges} edges at http://localhost:${port}`));

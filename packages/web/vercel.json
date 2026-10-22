@@ -2,7 +2,6 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
   "installCommand": "cd ../.. && npm ci",
-  "buildCommand": "cd ../.. && npm run build:demo",
-  "outputDirectory": "dist",
-  "rewrites": [{ "source": "/api/graph", "destination": "/graph.json" }]
+  "buildCommand": "cd ../.. && npm run build:web",
+  "outputDirectory": "dist"
 }

@@ -4,9 +4,11 @@
 [![npm downloads](https://img.shields.io/npm/dm/codegraph-engine.svg)](https://www.npmjs.com/package/codegraph-engine)
 [![license](https://img.shields.io/npm/l/codegraph-engine.svg)](LICENSE)
 
-**AST dependency, call-graph and blast-radius engine for real repositories** — TypeScript + Tree-sitter, with a React Flow UI.
+**See what breaks before you change it.** An AST dependency, call-graph and blast-radius engine for TypeScript, JavaScript and Python repositories, with a web app that runs entirely in your browser.
 
-Point it at a local repo or a GitHub URL and it builds a multi-granular graph (folders → file imports → function calls → local variable dataflow). Then it answers:
+![CodeGraph's blast radius for url_for() in Flask: 40 symbols in 19 files, with the affected test files folded together](docs/screenshots/workspace.png)
+
+Paste a GitHub repository or drop a project folder into the web app and it builds a multi-granular graph (folders → file imports → function calls → local variable dataflow). Nothing is uploaded: the parser is WebAssembly running in a Web Worker, and a GitHub repository is downloaded straight from GitHub into your tab. Then it answers:
 
 - **Blast radius** — *"If I change this function (or this diff), what else can break, how confident are we, and which tests should I run?"*
 - **Slice** — *"Show me only the code relevant to this function"*: its callers and callees, with exact line ranges.
@@ -29,6 +31,15 @@ Every edge is labelled **resolved / probable / ambiguous**, so you can see *how 
 | Python: Requests, HTTPX, Rich (vs. Jedi) | 99.8% | 80% | 16% |
 
 Trust `resolved`; treat `probable` as a lead to check and `ambiguous` as a list of name matches. See [`docs/ORACLE-EVAL.md`](docs/ORACLE-EVAL.md) for the numbers and their limits (no JavaScript-only repos yet, no adoption or independent-user evidence yet). The earlier LLM-labeled samples are in [`docs/PRECISION.md`](docs/PRECISION.md) and [`docs/EVALUATION.md`](docs/EVALUATION.md).
+
+## Web app
+
+Open the app, then paste `owner/repo` (or `owner/repo@branch`, or any `github.com` link), or drop a folder from your machine. You land on a map of the repository's folders and a short list of the code that is riskiest to change. Pick any function, class or file to see its blast radius: what could break, how sure CodeGraph is about each link, and which tests to run. Share an analysis with `?repo=owner/repo` on the app's URL.
+
+- **Public GitHub repositories and local folders**, in TypeScript, JavaScript and Python. Private repositories need a local folder or the CLI.
+- **Anonymous GitHub API limits** apply: about 30 analyses an hour per visitor. Local folders don't use GitHub.
+- **Large repositories** are trimmed to 3,000 source files, tests and examples first, and the page says so.
+- Host it yourself as a static site, for free on Vercel: see [`docs/DEPLOY.md`](docs/DEPLOY.md).
 
 ## Install
 
@@ -65,12 +76,14 @@ npm run cg -- vars pipeline.count         # traces one of them
 # import cycles
 npm run cg -- cycles .
 
-# interactive UI
+# the web app: analyze any repo or folder from the page itself ...
+npm run build:web && npx serve packages/web/dist
+# ... or open it already pointed at a repo you indexed locally
 npm run build:web && npm run cg -- serve .        # http://localhost:4173
-# or, with hot reload:  npm run cg -- serve .   +   npm run dev:web
+# with hot reload:  npm run cg -- serve .   +   npm run dev:web
 ```
 
-To host the UI as a public read-only demo (Vercel, Docker, Google Cloud Run or AWS), see [`docs/DEPLOY.md`](docs/DEPLOY.md).
+To host the web app yourself (Vercel, Docker, Google Cloud Run or AWS), see [`docs/DEPLOY.md`](docs/DEPLOY.md).
 
 Targets accepted by `impact` / `slice`: `src/a.ts`, `src/a.ts#Foo.bar`, `src/a.ts:42`, or a bare `Foo.bar`.
 
@@ -90,11 +103,11 @@ Variable lineage is **intra-procedural** (stage 1): it tracks a variable's value
 
 ```
 packages/core        graph types + CodeGraph
-packages/parser      web-tree-sitter loader (WASM grammars)
-packages/extractors  per-file fact extraction (incl. variable def/use) + cross-file resolver + indexer
+packages/parser      web-tree-sitter loader (WASM grammars), with a Node entry and a browser entry
+packages/extractors  per-file fact extraction (incl. variable def/use) + cross-file resolver + indexer (no Node APIs on the in-memory path)
 packages/analysis    blast radius, slice, variable lineage, diff→symbols, import cycles  (pure TS: Node or browser)
 packages/cli         codegraph index | impact | slice | vars | cycles | serve
-packages/web         React Flow UI with folder → file → function zoom, plus a variable dataflow view
+packages/web         the web app: GitHub / folder loaders, an indexing Web Worker, and the React Flow UI
 fixtures/            tiny TS/JS and Python repos with hand-verified expected edges
 docs/ARCHITECTURE.md design, schema, resolution algorithm, decisions, roadmap
 ```
