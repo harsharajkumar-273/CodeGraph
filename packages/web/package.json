@@ -3,10 +3,12 @@
   "version": "0.1.0",
   "type": "module",
   "private": true,
-  "scripts": { "dev": "vite", "build": "vite build", "preview": "vite preview", "build:demo": "cd ../.. && npm run build:demo" },
+  "scripts": { "dev": "vite", "build": "vite build", "preview": "vite preview" },
   "dependencies": {
     "@codegraph/analysis": "*",
     "@codegraph/core": "*",
+    "@codegraph/extractors": "*",
+    "@codegraph/parser": "*",
     "@dagrejs/dagre": "^1.1.4",
     "@xyflow/react": "^12.3.0",
     "react": "^18.3.1",
