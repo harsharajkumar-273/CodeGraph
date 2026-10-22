@@ -1,6 +1,7 @@
 import { promises as fs } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { strToU8, zipSync } from 'fflate';
 import { describe, expect, it } from 'vitest';
 import { indexFiles } from '@codegraph/extractors/browser';
 import { indexRepo } from '@codegraph/extractors';
@@ -200,12 +201,13 @@ describe('loadGithub', () => {
   });
 });
 
-describe('local folders', () => {
+describe('local folders, files and zips', () => {
   const file = (rel: string, text: string) => {
     const f = new File([text], rel.slice(rel.lastIndexOf('/') + 1));
     Object.defineProperty(f, 'webkitRelativePath', { value: 'myproj/' + rel });
     return f;
   };
+  const loose = (name: string, text: string) => new File([text], name); // no webkitRelativePath: picked as a plain file
   const list = [
     file('src/a.ts', "import { b } from './b'\nexport function a() { return b() }\n"),
     file('src/b.ts', 'export function b() { return 1 }\n'),
@@ -216,9 +218,10 @@ describe('local folders', () => {
     file('notes.md', '#'),
   ];
 
-  it('strips the folder name and keeps the same files the GitHub loader would', async () => {
-    const folder = entriesFromFileList(list);
+  it('a folder: strips the folder name and keeps the same files the GitHub loader would', async () => {
+    const folder = await entriesFromFileList(list);
     expect(folder.name).toBe('myproj');
+    expect(folder.files.some((f) => f.path.startsWith('node_modules'))).toBe(false); // dropped before anything is read
     const src = await loadFolder(folder);
     expect([...src.files.keys()]).toEqual(['src/a.ts', 'src/b.ts']);
     expect([...src.configs.keys()]).toEqual(['package.json']);
@@ -226,8 +229,80 @@ describe('local folders', () => {
     expect(src.origin.kind).toBe('folder');
   });
 
-  it('reports an empty folder', async () => {
-    const err = await loadFolder(entriesFromFileList([file('README.md', '#')])).catch((e) => e);
+  it('a folder with nothing to analyze is reported', async () => {
+    const err = await loadFolder(await entriesFromFileList([file('README.md', '#')])).catch((e) => e);
     expect(err.code).toBe('empty');
+  });
+
+  it('loose files: analyzed together as one project, so imports between them resolve', async () => {
+    const picked = await entriesFromFileList([loose('main.ts', "import { helper } from './util'\nexport function main() { return helper() }\n"), loose('util.ts', 'export function helper() { return 1 }\n')]);
+    expect(picked.name).toBe('2 files');
+    expect(picked.detail).toBe('local files');
+    const src = await loadFolder(picked);
+    expect([...src.files.keys()]).toEqual(['main.ts', 'util.ts']);
+    const { graph } = await indexFiles(src.files, src.configs);
+    expect(graph.edges('calls').some((e) => graph.node(e.from)?.name === 'main' && graph.node(e.to)?.name === 'helper' && e.confidence === 'resolved')).toBe(true);
+  });
+
+  it('one file is labelled with its name, and two files that share a name stay distinct', async () => {
+    const one = await entriesFromFileList([loose('solo.py', 'def f():\n    return 1\n')]);
+    expect(one.name).toBe('solo.py');
+    expect(one.detail).toBe('one file');
+    const two = await entriesFromFileList([loose('index.js', 'a'), loose('index.js', 'b')]);
+    expect(two.files.map((f) => f.path)).toEqual(['index.js', 'index-2.js']);
+  });
+
+  it('nothing picked, or only non-code files, is reported rather than ignored', async () => {
+    await expect(entriesFromFileList([])).rejects.toMatchObject({ code: 'invalid-input' });
+    const err = await loadFolder(await entriesFromFileList([loose('notes.txt', 'hi'), loose('photo.png', 'x')])).catch((e) => e);
+    expect(err.code).toBe('empty');
+  });
+
+  const zipOf = (entries: Record<string, string>, name: string) => {
+    const bytes = zipSync(Object.fromEntries(Object.entries(entries).map(([k, v]) => [k, strToU8(v)])));
+    return new File([new Uint8Array(bytes)], name, { type: 'application/zip' });
+  };
+
+  it('a GitHub-style zip: unpacks, strips the wrapper folder, and skips dependencies and non-code', async () => {
+    const zip = zipOf(
+      {
+        'flask-main/src/app.py': 'from .util import helper\n\ndef main():\n    return helper()\n',
+        'flask-main/src/util.py': 'def helper():\n    return 1\n',
+        'flask-main/pyproject.toml': '[project]\n',
+        'flask-main/package.json': '{}',
+        'flask-main/node_modules/x/index.js': 'module.exports = 1\n',
+        'flask-main/README.md': '# flask\n',
+        'flask-main/.gitignore': 'build_out/\n',
+        'flask-main/build_out/gen.py': 'x = 1\n',
+        '__MACOSX/flask-main/._app.py': 'junk',
+      },
+      'flask-main.zip',
+    );
+    const picked = await entriesFromFileList([zip]);
+    expect(picked.name).toBe('flask-main');
+    expect(picked.detail).toBe('from a .zip');
+    const src = await loadFolder(picked);
+    expect([...src.files.keys()]).toEqual(['src/app.py', 'src/util.py']); // .gitignore removed build_out/
+    expect([...src.configs.keys()]).toEqual(['package.json']);
+  });
+
+  it("a zip whose only folder is part of the project (a lone src/) keeps that folder", async () => {
+    const picked = await entriesFromFileList([zipOf({ 'src/a.ts': 'export const a = 1\n', 'src/b.ts': 'export const b = 1\n' }, 'code.zip')]);
+    expect(picked.files.map((f) => f.path).sort()).toEqual(['src/a.ts', 'src/b.ts']);
+  });
+
+  it('a zip with a wrapper folder that holds project files is stripped even when named differently', async () => {
+    const picked = await entriesFromFileList([zipOf({ 'my-app/package.json': '{}', 'my-app/index.ts': 'export const x = 1\n' }, 'download.zip')]);
+    expect(picked.files.map((f) => f.path).sort()).toEqual(['index.ts', 'package.json']);
+  });
+
+  it('a zip with several top-level folders keeps them all', async () => {
+    const picked = await entriesFromFileList([zipOf({ 'api/a.py': 'x = 1\n', 'web/b.ts': 'export const b = 1\n' }, 'both.zip')]);
+    expect(picked.files.map((f) => f.path).sort()).toEqual(['api/a.py', 'web/b.ts']);
+  });
+
+  it('a file that is not a valid zip says so', async () => {
+    const bad = new File([new Uint8Array([1, 2, 3, 4])], 'broken.zip', { type: 'application/zip' });
+    await expect(entriesFromFileList([bad])).rejects.toMatchObject({ code: 'invalid-input' });
   });
 });
