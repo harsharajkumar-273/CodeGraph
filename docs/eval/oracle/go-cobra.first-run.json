@@ -1,0 +1,251 @@
+{
+ "all": {
+  "sites": {
+   "internal": 1921,
+   "nosym": 71,
+   "external": 2117,
+   "abstract": 0,
+   "unknown": 0
+  },
+  "internal": {
+   "found": 1917,
+   "wrongOnly": 0,
+   "unresolved": 4,
+   "notExtracted": 0
+  },
+  "nosym": {
+   "clean": 71,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 2098,
+   "falseEdge": 19
+  },
+  "edges": {
+   "correct": 1917,
+   "incorrect": 19,
+   "byTier": {
+    "resolved": {
+     "correct": 1884,
+     "incorrect": 0,
+     "precision": 100
+    },
+    "ambiguous": {
+     "correct": 33,
+     "incorrect": 19,
+     "precision": 63.5
+    }
+   }
+  },
+  "emitted": 1936,
+  "precision": 99,
+  "recall": 99.8,
+  "externalFalseEdgeRate": 0.9,
+  "nosymFalseEdgeRate": 0
+ },
+ "src": {
+  "sites": {
+   "internal": 1921,
+   "nosym": 71,
+   "external": 2117,
+   "abstract": 0,
+   "unknown": 0
+  },
+  "internal": {
+   "found": 1917,
+   "wrongOnly": 0,
+   "unresolved": 4,
+   "notExtracted": 0
+  },
+  "nosym": {
+   "clean": 71,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 2098,
+   "falseEdge": 19
+  },
+  "edges": {
+   "correct": 1917,
+   "incorrect": 19,
+   "byTier": {
+    "resolved": {
+     "correct": 1884,
+     "incorrect": 0,
+     "precision": 100
+    },
+    "ambiguous": {
+     "correct": 33,
+     "incorrect": 19,
+     "precision": 63.5
+    }
+   }
+  },
+  "emitted": 1936,
+  "precision": 99,
+  "recall": 99.8,
+  "externalFalseEdgeRate": 0.9,
+  "nosymFalseEdgeRate": 0
+ },
+ "test": {
+  "sites": {
+   "internal": 0,
+   "nosym": 0,
+   "external": 0,
+   "abstract": 0,
+   "unknown": 0
+  },
+  "internal": {
+   "found": 0,
+   "wrongOnly": 0,
+   "unresolved": 0,
+   "notExtracted": 0
+  },
+  "nosym": {
+   "clean": 0,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 0,
+   "falseEdge": 0
+  },
+  "edges": {
+   "correct": 0,
+   "incorrect": 0,
+   "byTier": {}
+  },
+  "emitted": 0,
+  "precision": null,
+  "recall": null,
+  "externalFalseEdgeRate": null,
+  "nosymFalseEdgeRate": null
+ },
+ "examples": {
+  "wrongOnly": [],
+  "falseEdgeExternal": [
+   {
+    "at": "cobra.go:120",
+    "callee": "Len",
+    "want": "reflect",
+    "got": [
+     "command.go#commandSorterByName.Len (ambiguous)"
+    ]
+   },
+   {
+    "at": "cobra.go:124",
+    "callee": "String",
+    "want": "reflect",
+    "got": [
+     "completions_test.go#customMultiString.String (ambiguous)"
+    ]
+   },
+   {
+    "at": "cobra.go:131",
+    "callee": "Len",
+    "want": "reflect",
+    "got": [
+     "command.go#commandSorterByName.Len (ambiguous)"
+    ]
+   },
+   {
+    "at": "cobra.go:135",
+    "callee": "String",
+    "want": "reflect",
+    "got": [
+     "completions_test.go#customMultiString.String (ambiguous)"
+    ]
+   },
+   {
+    "at": "cobra.go:154",
+    "callee": "String",
+    "want": "reflect",
+    "got": [
+     "completions_test.go#customMultiString.String (ambiguous)"
+    ]
+   },
+   {
+    "at": "cobra.go:154",
+    "callee": "String",
+    "want": "reflect",
+    "got": [
+     "completions_test.go#customMultiString.String (ambiguous)"
+    ]
+   },
+   {
+    "at": "cobra.go:186",
+    "callee": "Execute",
+    "want": "text/template",
+    "got": [
+     "command.go#Command.Execute (ambiguous)"
+    ]
+   },
+   {
+    "at": "doc/man_docs_test.go:169",
+    "callee": "Error",
+    "want": "universe",
+    "got": [
+     "completions.go#flagCompError.Error (ambiguous)"
+    ]
+   },
+   {
+    "at": "doc/man_docs_test.go:222",
+    "callee": "Name",
+    "want": "os",
+    "got": [
+     "command.go#Command.Name (ambiguous)"
+    ]
+   },
+   {
+    "at": "doc/md_docs_test.go:116",
+    "callee": "Name",
+    "want": "os",
+    "got": [
+     "command.go#Command.Name (ambiguous)"
+    ]
+   },
+   {
+    "at": "doc/rest_docs_test.go:85",
+    "callee": "Error",
+    "want": "universe",
+    "got": [
+     "completions.go#flagCompError.Error (ambiguous)"
+    ]
+   },
+   {
+    "at": "doc/rest_docs_test.go:103",
+    "callee": "Name",
+    "want": "os",
+    "got": [
+     "command.go#Command.Name (ambiguous)"
+    ]
+   }
+  ],
+  "falseEdgeNosym": [],
+  "unresolved": [
+   {
+    "at": "command.go:1329",
+    "callee": "Name",
+    "want": "command.go#Command.Name",
+    "got": []
+   },
+   {
+    "at": "command.go:1329",
+    "callee": "Name",
+    "want": "command.go#Command.Name",
+    "got": []
+   },
+   {
+    "at": "doc/util.go:52",
+    "callee": "Name",
+    "want": "command.go#Command.Name",
+    "got": []
+   },
+   {
+    "at": "doc/util.go:52",
+    "callee": "Name",
+    "want": "command.go#Command.Name",
+    "got": []
+   }
+  ]
+ }
+}

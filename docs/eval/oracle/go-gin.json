@@ -1,0 +1,192 @@
+{
+ "all": {
+  "sites": {
+   "internal": 3636,
+   "nosym": 270,
+   "external": 5098,
+   "abstract": 0,
+   "unknown": 0
+  },
+  "internal": {
+   "found": 3580,
+   "wrongOnly": 0,
+   "unresolved": 56,
+   "notExtracted": 0
+  },
+  "nosym": {
+   "clean": 270,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 5098,
+   "falseEdge": 0
+  },
+  "edges": {
+   "correct": 3580,
+   "incorrect": 0,
+   "byTier": {
+    "resolved": {
+     "correct": 3580,
+     "incorrect": 0,
+     "precision": 100
+    }
+   }
+  },
+  "emitted": 3580,
+  "precision": 100,
+  "recall": 98.5,
+  "externalFalseEdgeRate": 0,
+  "nosymFalseEdgeRate": 0
+ },
+ "src": {
+  "sites": {
+   "internal": 3636,
+   "nosym": 270,
+   "external": 5098,
+   "abstract": 0,
+   "unknown": 0
+  },
+  "internal": {
+   "found": 3580,
+   "wrongOnly": 0,
+   "unresolved": 56,
+   "notExtracted": 0
+  },
+  "nosym": {
+   "clean": 270,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 5098,
+   "falseEdge": 0
+  },
+  "edges": {
+   "correct": 3580,
+   "incorrect": 0,
+   "byTier": {
+    "resolved": {
+     "correct": 3580,
+     "incorrect": 0,
+     "precision": 100
+    }
+   }
+  },
+  "emitted": 3580,
+  "precision": 100,
+  "recall": 98.5,
+  "externalFalseEdgeRate": 0,
+  "nosymFalseEdgeRate": 0
+ },
+ "test": {
+  "sites": {
+   "internal": 0,
+   "nosym": 0,
+   "external": 0,
+   "abstract": 0,
+   "unknown": 0
+  },
+  "internal": {
+   "found": 0,
+   "wrongOnly": 0,
+   "unresolved": 0,
+   "notExtracted": 0
+  },
+  "nosym": {
+   "clean": 0,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 0,
+   "falseEdge": 0
+  },
+  "edges": {
+   "correct": 0,
+   "incorrect": 0,
+   "byTier": {}
+  },
+  "emitted": 0,
+  "precision": null,
+  "recall": null,
+  "externalFalseEdgeRate": null,
+  "nosymFalseEdgeRate": null
+ },
+ "examples": {
+  "wrongOnly": [],
+  "falseEdgeExternal": [],
+  "falseEdgeNosym": [],
+  "unresolved": [
+   {
+    "at": "binding/default_validator_test.go:44",
+    "callee": "Error",
+    "want": "binding/default_validator.go#SliceValidationError.Error",
+    "got": []
+   },
+   {
+    "at": "binding/default_validator_test.go:85",
+    "callee": "ValidateStruct",
+    "want": "binding/default_validator.go#defaultValidator.ValidateStruct",
+    "got": []
+   },
+   {
+    "at": "binding/form_mapping.go:194",
+    "callee": "UnmarshalParam",
+    "want": "binding/form_mapping.go#BindUnmarshaler.UnmarshalParam",
+    "got": []
+   },
+   {
+    "at": "context_test.go:769",
+    "callee": "Error",
+    "want": "errors.go#Error.Error",
+    "got": []
+   },
+   {
+    "at": "context_test.go:769",
+    "callee": "Error",
+    "want": "errors.go#Error.Error",
+    "got": []
+   },
+   {
+    "at": "context_test.go:770",
+    "callee": "Error",
+    "want": "errors.go#Error.Error",
+    "got": []
+   },
+   {
+    "at": "context_test.go:770",
+    "callee": "Error",
+    "want": "errors.go#Error.Error",
+    "got": []
+   },
+   {
+    "at": "context_test.go:909",
+    "callee": "initQueryCache",
+    "want": "context.go#Context.initQueryCache",
+    "got": []
+   },
+   {
+    "at": "context_test.go:3522",
+    "callee": "Value",
+    "want": "context.go#Context.Value",
+    "got": []
+   },
+   {
+    "at": "errors.go:107",
+    "callee": "IsType",
+    "want": "errors.go#Error.IsType",
+    "got": []
+   },
+   {
+    "at": "errors.go:136",
+    "callee": "Error",
+    "want": "errors.go#Error.Error",
+    "got": []
+   },
+   {
+    "at": "errors.go:150",
+    "callee": "JSON",
+    "want": "errors.go#Error.JSON",
+    "got": []
+   }
+  ]
+ }
+}

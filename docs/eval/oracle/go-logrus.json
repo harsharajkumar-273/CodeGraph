@@ -1,0 +1,198 @@
+{
+ "all": {
+  "sites": {
+   "internal": 1141,
+   "nosym": 174,
+   "external": 1380,
+   "abstract": 0,
+   "unknown": 0
+  },
+  "internal": {
+   "found": 1128,
+   "wrongOnly": 0,
+   "unresolved": 13,
+   "notExtracted": 0
+  },
+  "nosym": {
+   "clean": 174,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 1380,
+   "falseEdge": 0
+  },
+  "edges": {
+   "correct": 1128,
+   "incorrect": 0,
+   "byTier": {
+    "resolved": {
+     "correct": 1128,
+     "incorrect": 0,
+     "precision": 100
+    }
+   }
+  },
+  "emitted": 1128,
+  "precision": 100,
+  "recall": 98.9,
+  "externalFalseEdgeRate": 0,
+  "nosymFalseEdgeRate": 0
+ },
+ "src": {
+  "sites": {
+   "internal": 1105,
+   "nosym": 174,
+   "external": 1325,
+   "abstract": 0,
+   "unknown": 0
+  },
+  "internal": {
+   "found": 1092,
+   "wrongOnly": 0,
+   "unresolved": 13,
+   "notExtracted": 0
+  },
+  "nosym": {
+   "clean": 174,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 1325,
+   "falseEdge": 0
+  },
+  "edges": {
+   "correct": 1092,
+   "incorrect": 0,
+   "byTier": {
+    "resolved": {
+     "correct": 1092,
+     "incorrect": 0,
+     "precision": 100
+    }
+   }
+  },
+  "emitted": 1092,
+  "precision": 100,
+  "recall": 98.8,
+  "externalFalseEdgeRate": 0,
+  "nosymFalseEdgeRate": 0
+ },
+ "test": {
+  "sites": {
+   "internal": 36,
+   "nosym": 0,
+   "external": 55,
+   "abstract": 0,
+   "unknown": 0
+  },
+  "internal": {
+   "found": 36,
+   "wrongOnly": 0,
+   "unresolved": 0,
+   "notExtracted": 0
+  },
+  "nosym": {
+   "clean": 0,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 55,
+   "falseEdge": 0
+  },
+  "edges": {
+   "correct": 36,
+   "incorrect": 0,
+   "byTier": {
+    "resolved": {
+     "correct": 36,
+     "incorrect": 0,
+     "precision": 100
+    }
+   }
+  },
+  "emitted": 36,
+  "precision": 100,
+  "recall": 100,
+  "externalFalseEdgeRate": 0,
+  "nosymFalseEdgeRate": null
+ },
+ "examples": {
+  "wrongOnly": [],
+  "falseEdgeExternal": [],
+  "falseEdgeNosym": [],
+  "unresolved": [
+   {
+    "at": "entry_bench_test.go:242",
+    "callee": "Info",
+    "want": "entry.go#Entry.Info",
+    "got": []
+   },
+   {
+    "at": "entry_test.go:119",
+    "callee": "Error",
+    "want": "entry.go#Entry.Error",
+    "got": []
+   },
+   {
+    "at": "hooks.go:28",
+    "callee": "Fire",
+    "want": "hooks.go#Hook.Fire",
+    "got": []
+   },
+   {
+    "at": "hooks/slog/slog_test.go:188",
+    "callee": "String",
+    "want": "logrus.go#Level.String",
+    "got": []
+   },
+   {
+    "at": "logrus_test.go:531",
+    "callee": "String",
+    "want": "logrus.go#Level.String",
+    "got": []
+   },
+   {
+    "at": "logrus_test.go:532",
+    "callee": "String",
+    "want": "logrus.go#Level.String",
+    "got": []
+   },
+   {
+    "at": "logrus_test.go:533",
+    "callee": "String",
+    "want": "logrus.go#Level.String",
+    "got": []
+   },
+   {
+    "at": "logrus_test.go:534",
+    "callee": "String",
+    "want": "logrus.go#Level.String",
+    "got": []
+   },
+   {
+    "at": "logrus_test.go:535",
+    "callee": "String",
+    "want": "logrus.go#Level.String",
+    "got": []
+   },
+   {
+    "at": "logrus_test.go:536",
+    "callee": "String",
+    "want": "logrus.go#Level.String",
+    "got": []
+   },
+   {
+    "at": "logrus_test.go:537",
+    "callee": "String",
+    "want": "logrus.go#Level.String",
+    "got": []
+   },
+   {
+    "at": "text_formatter_test.go:318",
+    "callee": "String",
+    "want": "logrus.go#Level.String",
+    "got": []
+   }
+  ]
+ }
+}

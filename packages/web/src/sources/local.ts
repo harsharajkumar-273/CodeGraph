@@ -19,7 +19,7 @@ export interface Picked {
   notes?: string[];
 }
 
-const NOTHING = () => new LoadError('invalid-input', 'There is nothing to analyze there.', 'Pick a project folder, some .ts, .js or .py files, or a .zip.');
+const NOTHING = () => new LoadError('invalid-input', 'There is nothing to analyze there.', 'Pick a project folder, some .ts, .js, .py or .go files, or a .zip.');
 
 /** Distinct paths for loose files (two picked files may share a name when they came from different folders). */
 function flat(files: File[]): FolderFile[] {
@@ -140,7 +140,7 @@ export async function loadFolder(
     else sources.push(f);
   }
   if (!sources.length) {
-    throw new LoadError('empty', `No TypeScript, JavaScript or Python files found in ${folder.name}.`, 'CodeGraph reads .ts, .tsx, .js, .jsx, .mjs, .cjs and .py files, from a folder, loose files or a .zip.');
+    throw new LoadError('empty', `No TypeScript, JavaScript, Python or Go files found in ${folder.name}.`, 'CodeGraph reads .ts, .tsx, .js, .jsx, .mjs, .cjs, .py and .go files, from a folder, loose files or a .zip.');
   }
   sources.sort((a, b) => (a.path < b.path ? -1 : 1));
 

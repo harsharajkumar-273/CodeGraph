@@ -52,12 +52,12 @@ describe('browser path parity', () => {
     expect(f.ignoresFile('types/index.d.ts')).toBe(true);
     expect(f.ignoresFile('vendor.min.js')).toBe(true);
     expect(f.ignoresFile('src/a.ts')).toBe(false);
-    expect(f.isSource('a.ts') && f.isSource('a.py') && f.isSource('A.JSX')).toBe(true);
+    expect(f.isSource('a.ts') && f.isSource('a.py') && f.isSource('main.go') && f.isSource('A.JSX')).toBe(true);
     expect(f.isSource('README.md') || f.isSource('Makefile')).toBe(false);
-    expect(f.isConfig('tsconfig.json') && f.isConfig('package.json') && !f.isConfig('data.json')).toBe(true);
+    expect(f.isConfig('tsconfig.json') && f.isConfig('package.json') && f.isConfig('go.mod') && !f.isConfig('data.json')).toBe(true);
   });
 
-  for (const name of ['ts-basic', 'py-basic', 'py-affinity', 'express-proto', 'zod-versions', 'ts-grammar', 'ts-returns']) {
+  for (const name of ['ts-basic', 'go-basic', 'py-basic', 'py-affinity', 'express-proto', 'zod-versions', 'ts-grammar', 'ts-returns']) {
     it(`indexing in-memory files gives the same graph as indexing the disk: ${name}`, async () => {
       const root = fixture(name);
       const disk = await indexRepo(root);

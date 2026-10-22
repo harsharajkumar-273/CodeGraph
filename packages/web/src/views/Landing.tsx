@@ -102,7 +102,7 @@ export function Landing({
             See what breaks <em>before</em> you change it
           </h1>
           <p className="lede">
-            Paste a GitHub repository, or drop a folder, some files or a .zip from your computer. CodeGraph maps the imports and calls across TypeScript, JavaScript and Python, then shows exactly which functions, files and tests a change could reach.
+            Paste a GitHub repository, or drop a folder, some files or a .zip from your computer. CodeGraph maps the imports and calls across TypeScript, JavaScript, Python and Go, then shows exactly which functions, files and tests a change could reach.
           </p>
 
           <form className="repo-form" onSubmit={submit}>
@@ -208,7 +208,7 @@ export function Landing({
         type="file"
         multiple
         hidden
-        accept=".ts,.tsx,.mts,.cts,.js,.jsx,.mjs,.cjs,.py,.zip"
+        accept=".ts,.tsx,.mts,.cts,.js,.jsx,.mjs,.cjs,.py,.go,.zip"
         onChange={(e) => {
           const files = Array.from(e.target.files ?? []);
           e.target.value = '';
