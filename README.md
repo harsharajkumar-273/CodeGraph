@@ -70,7 +70,7 @@ npm run build:web && npm run cg -- serve .        # http://localhost:4173
 # or, with hot reload:  npm run cg -- serve .   +   npm run dev:web
 ```
 
-To host the UI as a public read-only demo (Docker, Google Cloud Run or AWS), see [`docs/DEPLOY.md`](docs/DEPLOY.md).
+To host the UI as a public read-only demo (Vercel, Docker, Google Cloud Run or AWS), see [`docs/DEPLOY.md`](docs/DEPLOY.md).
 
 Targets accepted by `impact` / `slice`: `src/a.ts`, `src/a.ts#Foo.bar`, `src/a.ts:42`, or a bare `Foo.bar`.
 
