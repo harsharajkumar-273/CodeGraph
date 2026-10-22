@@ -164,6 +164,12 @@ describe('loadGithub', () => {
     const limited = await fail({ repoStatus: 403, treeHeaders: { 'x-ratelimit-remaining': '0', 'x-ratelimit-reset': String(Math.floor(Date.now() / 1000) + 25 * 60) } });
     expect(limited.code).toBe('rate-limit');
     expect(limited.hint).toMatch(/resets in about 2\d minutes/);
+    // A browser hides headers the server doesn't expose, so a bare 403 is treated as the rate limit too.
+    const hidden = await fail({ repoStatus: 403 });
+    expect(hidden.code).toBe('rate-limit');
+    expect(hidden.message).toContain('most likely');
+    // ...but a 403 that plainly isn't the limit is not.
+    expect((await fail({ repoStatus: 403, treeHeaders: { 'x-ratelimit-remaining': '41' } })).code).toBe('network');
     expect((await fail({ repoStatus: 500 })).code).toBe('network');
     const empty = await loadGithub({ owner: 'o', repo: 'r' }, { fetchImpl: fakeGithub(new Map([['README.md', '#']])).fetchImpl }).catch((e) => e);
     expect(empty.code).toBe('empty');

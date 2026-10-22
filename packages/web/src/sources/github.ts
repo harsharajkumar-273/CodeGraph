@@ -109,13 +109,16 @@ export async function loadGithub(repoRef: RepoRef, opts: GithubOptions = {}): Pr
         'Check the spelling. Private repositories can\'t be read from the browser: run `npx codegraph-engine index .` on a clone instead.',
       );
     }
-    if ((res.status === 403 || res.status === 429) && res.headers.get('x-ratelimit-remaining') === '0') {
+    // 403/429 from the anonymous API is almost always its rate limit. The remaining-requests header says so for sure,
+    // but a browser can only read it when the server exposes it, so a missing header counts as "probably".
+    const remaining = res.headers.get('x-ratelimit-remaining');
+    if (res.status === 429 || (res.status === 403 && (remaining === '0' || remaining === null))) {
       const reset = Number(res.headers.get('x-ratelimit-reset')) * 1000;
       const mins = reset ? Math.max(1, Math.ceil((reset - Date.now()) / 60000)) : undefined;
       throw new LoadError(
         'rate-limit',
-        "GitHub's limit for anonymous requests has been reached.",
-        `${mins ? `It resets in about ${mins} minute${mins === 1 ? '' : 's'}. ` : ''}Meanwhile you can analyze a local folder, which doesn't use GitHub.`,
+        remaining === '0' ? "GitHub's limit for anonymous requests has been reached." : 'GitHub refused the request, most likely because its limit for anonymous requests has been reached.',
+        `${mins ? `It resets in about ${mins} minute${mins === 1 ? '' : 's'}. ` : 'Wait a few minutes and try again. '}Meanwhile you can analyze a local folder, which doesn't use GitHub.`,
       );
     }
     throw new LoadError('network', `GitHub answered ${res.status} for ${what}.`, 'Try again in a moment.');
