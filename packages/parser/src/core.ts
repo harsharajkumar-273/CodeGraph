@@ -1,7 +1,7 @@
 import { Language, Parser, type Node, type Tree } from 'web-tree-sitter';
 
 export type { Node, Tree };
-export type LangId = 'typescript' | 'tsx' | 'javascript' | 'python';
+export type LangId = 'typescript' | 'tsx' | 'javascript' | 'python' | 'go';
 
 const EXT_TO_LANG: Record<string, LangId> = {
   '.ts': 'typescript',
@@ -13,6 +13,7 @@ const EXT_TO_LANG: Record<string, LangId> = {
   '.mjs': 'javascript',
   '.cjs': 'javascript',
   '.py': 'python',
+  '.go': 'go',
 };
 
 export const SUPPORTED_EXTENSIONS = Object.keys(EXT_TO_LANG);
@@ -23,8 +24,8 @@ export function langForPath(path: string): LangId | undefined {
 }
 
 /** Coarse language family used by extractors (ts/tsx/js share one extractor). */
-export function familyOf(lang: LangId): 'js' | 'python' {
-  return lang === 'python' ? 'python' : 'js';
+export function familyOf(lang: LangId): 'js' | 'python' | 'go' {
+  return lang === 'python' ? 'python' : lang === 'go' ? 'go' : 'js';
 }
 
 /**

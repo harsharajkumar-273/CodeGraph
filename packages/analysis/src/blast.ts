@@ -32,7 +32,7 @@ export interface ImpactResult {
 }
 
 const REVERSE_KINDS: EdgeKind[] = ['calls', 'extends'];
-const TEST_RE = /(^|\/)(tests?|__tests__|spec|specs)\/|\.(test|spec)\.[cm]?[jt]sx?$|(^|\/)test_[^/]*\.py$|_test\.py$/;
+const TEST_RE = /(^|\/)(tests?|__tests__|spec|specs)\/|\.(test|spec)\.[cm]?[jt]sx?$|(^|\/)test_[^/]*\.py$|_test\.py$|_test\.go$/;
 
 export const isTestPath = (p: string) => TEST_RE.test(p);
 

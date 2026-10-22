@@ -614,7 +614,7 @@ html {
 .features {
   margin-top: 52px;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 16px;
 }
 .feature-wrap {
@@ -659,7 +659,7 @@ html {
 .panels {
   margin-top: 48px;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 16px;
 }
 .panel {
@@ -711,6 +711,9 @@ html {
 .t-ambiguous {
   color: var(--bad);
 }
+.t-found {
+  color: var(--accent-2);
+}
 .meter-value {
   font: 600 20px var(--sans);
   letter-spacing: -0.02em;
@@ -740,6 +743,9 @@ html {
 }
 .m-ambiguous {
   background: linear-gradient(90deg, #e04f4f, #ff6b6b);
+}
+.m-found {
+  background: linear-gradient(90deg, #3f6fe0, #5b8cff);
 }
 .meters small {
   display: block;

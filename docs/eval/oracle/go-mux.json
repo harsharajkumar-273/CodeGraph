@@ -1,0 +1,156 @@
+{
+ "all": {
+  "sites": {
+   "internal": 964,
+   "nosym": 100,
+   "external": 784,
+   "abstract": 0,
+   "unknown": 0
+  },
+  "internal": {
+   "found": 958,
+   "wrongOnly": 0,
+   "unresolved": 6,
+   "notExtracted": 0
+  },
+  "nosym": {
+   "clean": 100,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 784,
+   "falseEdge": 0
+  },
+  "edges": {
+   "correct": 958,
+   "incorrect": 0,
+   "byTier": {
+    "resolved": {
+     "correct": 958,
+     "incorrect": 0,
+     "precision": 100
+    }
+   }
+  },
+  "emitted": 958,
+  "precision": 100,
+  "recall": 99.4,
+  "externalFalseEdgeRate": 0,
+  "nosymFalseEdgeRate": 0
+ },
+ "src": {
+  "sites": {
+   "internal": 964,
+   "nosym": 100,
+   "external": 784,
+   "abstract": 0,
+   "unknown": 0
+  },
+  "internal": {
+   "found": 958,
+   "wrongOnly": 0,
+   "unresolved": 6,
+   "notExtracted": 0
+  },
+  "nosym": {
+   "clean": 100,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 784,
+   "falseEdge": 0
+  },
+  "edges": {
+   "correct": 958,
+   "incorrect": 0,
+   "byTier": {
+    "resolved": {
+     "correct": 958,
+     "incorrect": 0,
+     "precision": 100
+    }
+   }
+  },
+  "emitted": 958,
+  "precision": 100,
+  "recall": 99.4,
+  "externalFalseEdgeRate": 0,
+  "nosymFalseEdgeRate": 0
+ },
+ "test": {
+  "sites": {
+   "internal": 0,
+   "nosym": 0,
+   "external": 0,
+   "abstract": 0,
+   "unknown": 0
+  },
+  "internal": {
+   "found": 0,
+   "wrongOnly": 0,
+   "unresolved": 0,
+   "notExtracted": 0
+  },
+  "nosym": {
+   "clean": 0,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 0,
+   "falseEdge": 0
+  },
+  "edges": {
+   "correct": 0,
+   "incorrect": 0,
+   "byTier": {}
+  },
+  "emitted": 0,
+  "precision": null,
+  "recall": null,
+  "externalFalseEdgeRate": null,
+  "nosymFalseEdgeRate": null
+ },
+ "examples": {
+  "wrongOnly": [],
+  "falseEdgeExternal": [],
+  "falseEdgeNosym": [],
+  "unresolved": [
+   {
+    "at": "mux_test.go:1631",
+    "callee": "PathPrefix",
+    "want": "mux.go#Router.PathPrefix",
+    "got": []
+   },
+   {
+    "at": "mux_test.go:1632",
+    "callee": "PathPrefix",
+    "want": "mux.go#Router.PathPrefix",
+    "got": []
+   },
+   {
+    "at": "mux_test.go:1633",
+    "callee": "PathPrefix",
+    "want": "mux.go#Router.PathPrefix",
+    "got": []
+   },
+   {
+    "at": "mux_test.go:1634",
+    "callee": "PathPrefix",
+    "want": "mux.go#Router.PathPrefix",
+    "got": []
+   },
+   {
+    "at": "mux_test.go:1635",
+    "callee": "PathPrefix",
+    "want": "mux.go#Router.PathPrefix",
+    "got": []
+   },
+   {
+    "at": "mux_test.go:1636",
+    "callee": "Path",
+    "want": "mux.go#Router.Path",
+    "got": []
+   }
+  ]
+ }
+}

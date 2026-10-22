@@ -24,7 +24,7 @@ export interface GithubOptions {
   fetchImpl?: typeof fetch;
 }
 
-const TESTISH = /(^|\/)(tests?|__tests__|spec|e2e|integration|fixtures?|examples?|docs?|benchmarks?|bench)(\/|$)|\.(test|spec)\.[a-z]+$|(^|\/)test_[^/]*\.py$|_test\.py$/;
+const TESTISH = /(^|\/)(tests?|__tests__|spec|e2e|integration|fixtures?|examples?|docs?|benchmarks?|bench)(\/|$)|\.(test|spec)\.[a-z]+$|(^|\/)test_[^/]*\.py$|_test\.py$|_test\.go$/;
 const encodePath = (p: string) => p.split('/').map(encodeURIComponent).join('/');
 
 export interface Selection {
@@ -174,7 +174,7 @@ export async function loadGithub(repoRef: RepoRef, opts: GithubOptions = {}): Pr
     throw new LoadError(
       'empty',
       `${label} has no TypeScript, JavaScript or Python files to analyze${repoRef.subdir ? ` in ${repoRef.subdir}` : ''}.`,
-      'CodeGraph reads .ts, .tsx, .js, .jsx, .mjs, .cjs and .py files.',
+      'CodeGraph reads .ts, .tsx, .js, .jsx, .mjs, .cjs, .py and .go files.',
     );
   }
 

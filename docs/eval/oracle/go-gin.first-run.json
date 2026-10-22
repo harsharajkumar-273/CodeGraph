@@ -1,0 +1,301 @@
+{
+ "all": {
+  "sites": {
+   "internal": 3636,
+   "nosym": 270,
+   "external": 5098,
+   "abstract": 0,
+   "unknown": 0
+  },
+  "internal": {
+   "found": 3528,
+   "wrongOnly": 0,
+   "unresolved": 108,
+   "notExtracted": 0
+  },
+  "nosym": {
+   "clean": 270,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 4983,
+   "falseEdge": 115
+  },
+  "edges": {
+   "correct": 3528,
+   "incorrect": 231,
+   "byTier": {
+    "resolved": {
+     "correct": 3517,
+     "incorrect": 0,
+     "precision": 100
+    },
+    "ambiguous": {
+     "correct": 11,
+     "incorrect": 231,
+     "precision": 4.5
+    }
+   }
+  },
+  "emitted": 3759,
+  "precision": 93.9,
+  "recall": 97,
+  "externalFalseEdgeRate": 2.3,
+  "nosymFalseEdgeRate": 0
+ },
+ "src": {
+  "sites": {
+   "internal": 3636,
+   "nosym": 270,
+   "external": 5098,
+   "abstract": 0,
+   "unknown": 0
+  },
+  "internal": {
+   "found": 3528,
+   "wrongOnly": 0,
+   "unresolved": 108,
+   "notExtracted": 0
+  },
+  "nosym": {
+   "clean": 270,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 4983,
+   "falseEdge": 115
+  },
+  "edges": {
+   "correct": 3528,
+   "incorrect": 231,
+   "byTier": {
+    "resolved": {
+     "correct": 3517,
+     "incorrect": 0,
+     "precision": 100
+    },
+    "ambiguous": {
+     "correct": 11,
+     "incorrect": 231,
+     "precision": 4.5
+    }
+   }
+  },
+  "emitted": 3759,
+  "precision": 93.9,
+  "recall": 97,
+  "externalFalseEdgeRate": 2.3,
+  "nosymFalseEdgeRate": 0
+ },
+ "test": {
+  "sites": {
+   "internal": 0,
+   "nosym": 0,
+   "external": 0,
+   "abstract": 0,
+   "unknown": 0
+  },
+  "internal": {
+   "found": 0,
+   "wrongOnly": 0,
+   "unresolved": 0,
+   "notExtracted": 0
+  },
+  "nosym": {
+   "clean": 0,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 0,
+   "falseEdge": 0
+  },
+  "edges": {
+   "correct": 0,
+   "incorrect": 0,
+   "byTier": {}
+  },
+  "emitted": 0,
+  "precision": null,
+  "recall": null,
+  "externalFalseEdgeRate": null,
+  "nosymFalseEdgeRate": null
+ },
+ "examples": {
+  "wrongOnly": [],
+  "falseEdgeExternal": [
+   {
+    "at": "auth_test.go:94",
+    "callee": "Set",
+    "want": "net/http",
+    "got": [
+     "context.go#Context.Set (ambiguous)"
+    ]
+   },
+   {
+    "at": "auth_test.go:98",
+    "callee": "String",
+    "want": "bytes",
+    "got": [
+     "context.go#Context.String (ambiguous)",
+     "errors.go#errorMsgs.String (ambiguous)"
+    ]
+   },
+   {
+    "at": "auth_test.go:113",
+    "callee": "Set",
+    "want": "net/http",
+    "got": [
+     "context.go#Context.Set (ambiguous)"
+    ]
+   },
+   {
+    "at": "auth_test.go:133",
+    "callee": "Set",
+    "want": "net/http",
+    "got": [
+     "context.go#Context.Set (ambiguous)"
+    ]
+   },
+   {
+    "at": "auth_test.go:151",
+    "callee": "Set",
+    "want": "net/http",
+    "got": [
+     "context.go#Context.Set (ambiguous)"
+    ]
+   },
+   {
+    "at": "auth_test.go:155",
+    "callee": "String",
+    "want": "bytes",
+    "got": [
+     "context.go#Context.String (ambiguous)",
+     "errors.go#errorMsgs.String (ambiguous)"
+    ]
+   },
+   {
+    "at": "auth_test.go:170",
+    "callee": "Set",
+    "want": "net/http",
+    "got": [
+     "context.go#Context.Set (ambiguous)"
+    ]
+   },
+   {
+    "at": "binding/binding_test.go:535",
+    "callee": "Close",
+    "want": "mime/multipart",
+    "got": [
+     "binding/binding_test.go#failRead.Close (ambiguous)"
+    ]
+   },
+   {
+    "at": "binding/binding_test.go:543",
+    "callee": "Close",
+    "want": "os",
+    "got": [
+     "binding/binding_test.go#failRead.Close (ambiguous)"
+    ]
+   },
+   {
+    "at": "binding/binding_test.go:560",
+    "callee": "Close",
+    "want": "mime/multipart",
+    "got": [
+     "binding/binding_test.go#failRead.Close (ambiguous)"
+    ]
+   },
+   {
+    "at": "binding/binding_test.go:568",
+    "callee": "Close",
+    "want": "os",
+    "got": [
+     "binding/binding_test.go#failRead.Close (ambiguous)"
+    ]
+   },
+   {
+    "at": "binding/binding_test.go:585",
+    "callee": "Close",
+    "want": "mime/multipart",
+    "got": [
+     "binding/binding_test.go#failRead.Close (ambiguous)"
+    ]
+   }
+  ],
+  "falseEdgeNosym": [],
+  "unresolved": [
+   {
+    "at": "binding/binding_test.go:437",
+    "callee": "Bind",
+    "want": "binding/binding.go#Binding.Bind",
+    "got": []
+   },
+   {
+    "at": "binding/binding_test.go:446",
+    "callee": "Bind",
+    "want": "binding/binding.go#Binding.Bind",
+    "got": []
+   },
+   {
+    "at": "binding/binding_test.go:792",
+    "callee": "Name",
+    "want": "binding/binding.go#Binding.Name",
+    "got": []
+   },
+   {
+    "at": "binding/binding_test.go:801",
+    "callee": "Bind",
+    "want": "binding/binding.go#Binding.Bind",
+    "got": []
+   },
+   {
+    "at": "binding/binding_test.go:811",
+    "callee": "Bind",
+    "want": "binding/binding.go#Binding.Bind",
+    "got": []
+   },
+   {
+    "at": "binding/binding_test.go:817",
+    "callee": "Name",
+    "want": "binding/binding.go#BindingUri.Name",
+    "got": []
+   },
+   {
+    "at": "binding/binding_test.go:860",
+    "callee": "Name",
+    "want": "binding/binding.go#Binding.Name",
+    "got": []
+   },
+   {
+    "at": "binding/binding_test.go:867",
+    "callee": "Bind",
+    "want": "binding/binding.go#Binding.Bind",
+    "got": []
+   },
+   {
+    "at": "binding/binding_test.go:876",
+    "callee": "Name",
+    "want": "binding/binding.go#Binding.Name",
+    "got": []
+   },
+   {
+    "at": "binding/binding_test.go:883",
+    "callee": "Bind",
+    "want": "binding/binding.go#Binding.Bind",
+    "got": []
+   },
+   {
+    "at": "binding/binding_test.go:896",
+    "callee": "Name",
+    "want": "binding/binding.go#Binding.Name",
+    "got": []
+   },
+   {
+    "at": "binding/binding_test.go:903",
+    "callee": "Bind",
+    "want": "binding/binding.go#Binding.Bind",
+    "got": []
+   }
+  ]
+ }
+}

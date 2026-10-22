@@ -1,4 +1,4 @@
-# Oracle evaluation (TypeScript compiler, Python Jedi)
+# Oracle evaluation (TypeScript compiler, Python Jedi, Go type checker)
 
 The earlier evaluations ([`PRECISION.md`](PRECISION.md), [`EVALUATION.md`](EVALUATION.md)) were labeled by the
 analyzer author's LLM on a few hundred call sites. They were also partly on repos the resolver was tuned against.
@@ -230,9 +230,77 @@ Python coverage is better than TypeScript's: only 9% of call sites are `unknown`
 TypeScript checker without dependencies installed. A known limit is that Jedi infers types less completely than a
 type checker, so calls on untyped receivers are not scored.
 
+## Go (the Go type checker as the oracle)
+
+Go is the third language, and the only one added after the oracle method existed, so it was built against the oracle
+from the start (`scripts/eval/go-oracle/`, a Go program using `go/packages` and `go/types`). The oracle type-checks
+every package of a repository, tests included, on linux/amd64 with its real dependencies, and reports for each call
+`f()`, `pkg.F()` and `x.M()` the declaration it binds to: `internal` (a function, method or interface method of the
+repo that has a graph node), `external` (standard library, a dependency or a built-in), or `nosym` (a function value held
+in a variable or field, or a type conversion). Type errors would make a site `unknown`; none occurred.
+
+**What was tuned on, in order.** The resolver was developed against a hand-written fixture and **chi** (`go-chi/chi`),
+which is a development repository and not evidence. Cobra, Gin, Logrus and gorilla/mux were chosen and cloned before the
+first measurement, and their first-run output was saved before any resolver change
+(`docs/eval/oracle/go-*.first-run.json`). The fixes that run prompted were made afterwards, so the second set of numbers
+is not a blind test.
+
+| First run, before any change | internal call sites | recall | `resolved` | name-guess (`ambiguous`) | calls to outside code given an edge |
+|---|---|---|---|---|---|
+| Cobra | 1,921 | 99.8% | 1,884/1,884 | 33/52 | 19/2,117 |
+| Gin | 3,636 | 97.0% | 3,517/3,517 | 11/242 | 115/5,098 |
+| Logrus | 1,141 | 98.8% | 1,120/1,123 | 7/66 | 22/1,380 |
+| mux | 964 | 87.2% | 815/815 | 26/44 | 1/784 |
+| **Pooled** | 7,662 | **96.8%** | 7,336/7,339 (**99.96%**) | 77/404 (19.1%) | 157/9,379 |
+
+Nothing was labeled `probable`: Go's static types make an edge either proven or absent. The three `resolved` errors were
+all in Logrus, where a function is declared once per platform (`terminal_check_unix.go`, `…_bsd.go`) and CodeGraph
+picked a different file from the one the type checker builds on Linux.
+
+What the first run exposed, and the change that followed each:
+- **Platform variants** (the three errors above): files are now chosen by their `_linux.go`-style suffix and `//go:build`
+  line, as for linux/amd64.
+- **Typed constants** (`const ( Debug Level = iota; Info )`, then `Debug.String()`), **`new(T).M()`**, **indexed
+  receivers** (`r.items[i].M()`), and **`x := packageVar`** aliases were not typed.
+- **Closures sharing a scope**: a function literal's parameter replaced an outer variable of the same name (chi's
+  `r := chi.NewRouter()` against `func(r *http.Request)`), so each literal now has its own scope, and where a name is
+  declared more than once the nearest declaration above the call wins.
+- **The name-guess fallback was removed.** When a receiver's type could not be worked out, CodeGraph used to offer
+  same-named methods nearby as `ambiguous`. Over the four repositories that was right 77 times in 404, and it made 157
+  edges into standard-library or dependency code. Go is statically typed, so not knowing the type usually means the
+  receiver is outside the repo. It now gives no edge.
+
+| After the fixes | recall | `resolved` | calls to outside code given an edge |
+|---|---|---|---|
+| Cobra | 98.1% | 1,884/1,884 | 0/2,117 |
+| Gin | 98.5% | 3,580/3,580 | 0/5,098 |
+| Logrus | 98.9% | 1,128/1,128 | 0/1,380 |
+| mux | 99.4% | 958/958 | 0/784 |
+| **Pooled** | **98.5%** | 7,550/7,550 | 0/9,379 |
+| *chi (development)* | 99.1% | 1,315/1,315 | 0/2,038 |
+
+Recall fell a little where the guess was removed (it had found some calls correctly) and rose where the fixes added
+typing. Per-repo JSON is in `docs/eval/oracle/go-*.json`. Another 615 `nosym` sites (function values, conversions) got
+no edge.
+
+Go-specific limits:
+- **Interfaces.** A call through an interface goes to the interface's method, which is what the type checker reports
+  too. CodeGraph does not add edges to the types that implement the interface, so the blast radius of a change to an
+  implementation misses callers that only hold the interface.
+- **One platform.** Build constraints are evaluated for linux/amd64 with cgo on; code only built for other platforms is
+  indexed but its calls are matched against that platform's choices.
+- **Not tracked:** results of a function-typed field (`s.hook(x).Foo()`), type switches (`switch v := x.(type)`),
+  generic type parameters (`T` in `func F[T Stringer]`), reflection, and generated code that is not checked in. The
+  remaining 1.5% of calls the type checker resolves and CodeGraph does not find (112 of 7,662) were not categorized
+  one by one; the ones looked at were calls on values whose type comes through a route not listed above (an
+  interface-typed result, a loop variable over a call's result).
+- **Variable lineage** (`codegraph vars`) is not implemented for Go.
+- **Import edges** connect a file to every non-test file of the package it imports, since a change in any of them can
+  reach the importer. A package with many files makes many edges.
+
 ## Limits of this evaluation
 
-- **Scope.** TypeScript (compiler) and Python (Jedi) are covered; JavaScript (Express, Immer's JS tests) is not. Only the
+- **Scope.** TypeScript (compiler), Python (Jedi) and Go (type checker) are covered; JavaScript (Express, Immer's JS tests) is not. Only the
   call shapes CodeGraph extracts are scored, and JSX is skipped.
 - **Coverage.** With dependencies not installed, `unknown` is large. It is mostly test-framework globals (`expect`,
   `describe`), so it is mostly external anyway. Even so, a share of CodeGraph's edges cannot be scored at all:
@@ -258,3 +326,16 @@ node scripts/eval/score-oracle.mjs hono.sites.jsonl hono.oracle.jsonl --examples
 ```
 
 Each repo takes well under a minute.
+
+Go:
+
+```bash
+git clone https://github.com/spf13/cobra && git -C cobra checkout adbc8813901bba65827259daa8e22ff94ec1f30e
+# gin 0f09c3a9b4626d9fe9979cf4d0521d6ae32ab646 · logrus 6ef0748d1177dadaeee9aa79ffef604570f487d7
+# mux db9d1d0073d27a0a2d9a8c1bc52aa0af4374d265 · chi 9f8adb1aabaa8a91180a821111d3f8e668d1c0bf (development)
+(cd cobra && go mod download)
+npm run cg -- index cobra
+npx tsx scripts/eval/dump-call-sites.mts cobra cobra.sites.jsonl
+(cd scripts/eval/go-oracle && go run . ../../../cobra ../../../cobra/.codegraph/graph.json ../../../cobra.oracle.jsonl)
+node scripts/eval/score-oracle.mjs cobra.sites.jsonl cobra.oracle.jsonl --examples 10
+```

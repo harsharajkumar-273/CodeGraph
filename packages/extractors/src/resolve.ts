@@ -1,5 +1,6 @@
 import * as p from './posix';
 import { CodeGraph, externalId, fileId, symbolId, variableId, type Confidence, type GraphNode } from '@codegraph/core';
+import { GoResolver } from './resolve-go';
 import type { CallFact, CallTypeHint, ExportFact, FileFacts, ImportBinding, ImportFact, SymbolFact, VarFact } from './types';
 
 interface Entry {
@@ -128,7 +129,16 @@ export function buildGraph(
   root = '.',
   trace?: (t: CallTrace) => void,
 ): { graph: CodeGraph; stats: BuildStats } {
-  return new Resolver(factsList, configs, root, trace).build();
+  const go = factsList.filter((f) => f.family === 'go');
+  const res = new Resolver(go.length ? factsList.filter((f) => f.family !== 'go') : factsList, configs, root, trace).build();
+  if (go.length) {
+    new GoResolver(res.graph, go, configs, res.stats, trace).build();
+    res.stats.files += go.length;
+    res.stats.symbols += go.reduce((n, f) => n + f.symbols.length, 0);
+    res.stats.importEdges = res.graph.edges('imports').length;
+    res.stats.callEdges = res.graph.edges('calls').length;
+  }
+  return res;
 }
 
 class Resolver {

@@ -1,0 +1,212 @@
+{
+ "all": {
+  "sites": {
+   "internal": 964,
+   "nosym": 100,
+   "external": 784,
+   "abstract": 0,
+   "unknown": 0
+  },
+  "internal": {
+   "found": 841,
+   "wrongOnly": 0,
+   "unresolved": 123,
+   "notExtracted": 0
+  },
+  "nosym": {
+   "clean": 100,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 783,
+   "falseEdge": 1
+  },
+  "edges": {
+   "correct": 841,
+   "incorrect": 18,
+   "byTier": {
+    "resolved": {
+     "correct": 815,
+     "incorrect": 0,
+     "precision": 100
+    },
+    "ambiguous": {
+     "correct": 26,
+     "incorrect": 18,
+     "precision": 59.1
+    }
+   }
+  },
+  "emitted": 859,
+  "precision": 97.9,
+  "recall": 87.2,
+  "externalFalseEdgeRate": 0.1,
+  "nosymFalseEdgeRate": 0
+ },
+ "src": {
+  "sites": {
+   "internal": 964,
+   "nosym": 100,
+   "external": 784,
+   "abstract": 0,
+   "unknown": 0
+  },
+  "internal": {
+   "found": 841,
+   "wrongOnly": 0,
+   "unresolved": 123,
+   "notExtracted": 0
+  },
+  "nosym": {
+   "clean": 100,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 783,
+   "falseEdge": 1
+  },
+  "edges": {
+   "correct": 841,
+   "incorrect": 18,
+   "byTier": {
+    "resolved": {
+     "correct": 815,
+     "incorrect": 0,
+     "precision": 100
+    },
+    "ambiguous": {
+     "correct": 26,
+     "incorrect": 18,
+     "precision": 59.1
+    }
+   }
+  },
+  "emitted": 859,
+  "precision": 97.9,
+  "recall": 87.2,
+  "externalFalseEdgeRate": 0.1,
+  "nosymFalseEdgeRate": 0
+ },
+ "test": {
+  "sites": {
+   "internal": 0,
+   "nosym": 0,
+   "external": 0,
+   "abstract": 0,
+   "unknown": 0
+  },
+  "internal": {
+   "found": 0,
+   "wrongOnly": 0,
+   "unresolved": 0,
+   "notExtracted": 0
+  },
+  "nosym": {
+   "clean": 0,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 0,
+   "falseEdge": 0
+  },
+  "edges": {
+   "correct": 0,
+   "incorrect": 0,
+   "byTier": {}
+  },
+  "emitted": 0,
+  "precision": null,
+  "recall": null,
+  "externalFalseEdgeRate": null,
+  "nosymFalseEdgeRate": null
+ },
+ "examples": {
+  "wrongOnly": [],
+  "falseEdgeExternal": [
+   {
+    "at": "mux_test.go:3207",
+    "callee": "Write",
+    "want": "net/http",
+    "got": [
+     "mux_test.go#TestA301ResponseWriter.Write (ambiguous)",
+     "old_test.go#ResponseRecorder.Write (ambiguous)"
+    ]
+   }
+  ],
+  "falseEdgeNosym": [],
+  "unresolved": [
+   {
+    "at": "mux.go:157",
+    "callee": "Middleware",
+    "want": "middleware.go#middleware.Middleware",
+    "got": []
+   },
+   {
+    "at": "mux_test.go:60",
+    "callee": "Host",
+    "want": "route.go#Route.Host",
+    "got": []
+   },
+   {
+    "at": "mux_test.go:69",
+    "callee": "Host",
+    "want": "route.go#Route.Host",
+    "got": []
+   },
+   {
+    "at": "mux_test.go:78",
+    "callee": "Host",
+    "want": "route.go#Route.Host",
+    "got": []
+   },
+   {
+    "at": "mux_test.go:87",
+    "callee": "Host",
+    "want": "route.go#Route.Host",
+    "got": []
+   },
+   {
+    "at": "mux_test.go:96",
+    "callee": "Host",
+    "want": "route.go#Route.Host",
+    "got": []
+   },
+   {
+    "at": "mux_test.go:105",
+    "callee": "Host",
+    "want": "route.go#Route.Host",
+    "got": []
+   },
+   {
+    "at": "mux_test.go:114",
+    "callee": "Host",
+    "want": "route.go#Route.Host",
+    "got": []
+   },
+   {
+    "at": "mux_test.go:123",
+    "callee": "Host",
+    "want": "route.go#Route.Host",
+    "got": []
+   },
+   {
+    "at": "mux_test.go:132",
+    "callee": "Host",
+    "want": "route.go#Route.Host",
+    "got": []
+   },
+   {
+    "at": "mux_test.go:142",
+    "callee": "Host",
+    "want": "route.go#Route.Host",
+    "got": []
+   },
+   {
+    "at": "mux_test.go:152",
+    "callee": "Host",
+    "want": "route.go#Route.Host",
+    "got": []
+   }
+  ]
+ }
+}

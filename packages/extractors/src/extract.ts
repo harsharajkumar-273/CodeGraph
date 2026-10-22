@@ -1,4 +1,5 @@
 import { familyOf, langForPath, parse } from '@codegraph/parser';
+import { extractGo } from './go';
 import { extractJs } from './js';
 import { extractPython } from './python';
 import type { FileFacts } from './types';
@@ -9,7 +10,8 @@ export async function extractFile(path: string, source: string): Promise<FileFac
   if (!lang) return undefined;
   const tree = await parse(lang, source);
   try {
-    const facts = familyOf(lang) === 'python' ? extractPython(path, lang, tree.rootNode) : extractJs(path, lang, tree.rootNode);
+    const family = familyOf(lang);
+    const facts = family === 'python' ? extractPython(path, lang, tree.rootNode) : family === 'go' ? extractGo(path, lang, tree.rootNode) : extractJs(path, lang, tree.rootNode);
     facts.lineCount = source.split('\n').length;
     return facts;
   } finally {
