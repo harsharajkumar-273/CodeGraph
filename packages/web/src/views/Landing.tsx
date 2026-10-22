@@ -1,15 +1,10 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { IconArrowRight, IconGithub, IconLogo, IconUpload } from '../ui/icons';
-import { entriesFromDrop, entriesFromFileList, type FolderFile } from '../sources/local';
+import { entriesFromDrop, entriesFromFileList, type Picked } from '../sources/local';
 
 export interface LandingError {
   message: string;
   hint?: string;
-}
-
-export interface FolderPick {
-  name: string;
-  files: FolderFile[];
 }
 
 const EXAMPLES: { repo: string; lang: string; note?: string }[] = [
@@ -27,19 +22,20 @@ export function Landing({
   error,
   initialValue = '',
   onRepo,
-  onFolder,
+  onPick,
   onGraphFile,
 }: {
   error?: LandingError | null;
   initialValue?: string;
   onRepo: (input: string) => void;
-  onFolder: (folder: FolderPick) => void;
+  /** A folder, some files or a .zip from this machine. `resolve` reads them; the app shows progress while it runs. */
+  onPick: (resolve: () => Promise<Picked>) => void;
   onGraphFile: (file: File) => void;
 }) {
   const [value, setValue] = useState(initialValue);
   const [dragging, setDragging] = useState(false);
-  const [dropError, setDropError] = useState<string | null>(null);
   const folderInput = useRef<HTMLInputElement>(null);
+  const filesInput = useRef<HTMLInputElement>(null);
   const graphInput = useRef<HTMLInputElement>(null);
   const depth = useRef(0);
 
@@ -67,11 +63,8 @@ export function Landing({
       setDragging(false);
       const dt = e.dataTransfer;
       if (!dt) return;
-      setDropError(null);
-      void entriesFromDrop(dt).then((folder) => {
-        if (folder) onFolder(folder);
-        else setDropError('Drop a single project folder, not individual files.');
-      });
+      const picked = entriesFromDrop(dt); // must start inside the event: the dropped entries expire after it
+      onPick(() => picked);
     };
     window.addEventListener('dragenter', enter);
     window.addEventListener('dragover', over);
@@ -83,14 +76,14 @@ export function Landing({
       window.removeEventListener('dragleave', leave);
       window.removeEventListener('drop', drop);
     };
-  }, [onFolder]);
+  }, [onPick]);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
     onRepo(value);
   };
 
-  const shown = error ?? (dropError ? { message: dropError } : null);
+  const shown = error ?? null;
 
   return (
     <div className="landing">
@@ -114,7 +107,7 @@ export function Landing({
           See what breaks <em>before</em> you change it
         </h1>
         <p className="lede">
-          Paste a GitHub repository or drop a project folder. CodeGraph maps the imports and calls across TypeScript, JavaScript and Python, then shows exactly which functions, files and tests a change could reach.
+          Paste a GitHub repository, or drop a folder, some files or a .zip from your computer. CodeGraph maps the imports and calls across TypeScript, JavaScript and Python, then shows exactly which functions, files and tests a change could reach.
         </p>
 
         <form className="repo-form" onSubmit={submit}>
@@ -155,22 +148,42 @@ export function Landing({
           <span>or</span>
         </div>
 
-        <button type="button" className="drop" onClick={() => folderInput.current?.click()}>
+        <div className="drop">
           <IconUpload width={26} height={26} />
           <span className="drop-text">
-            <strong>Drop a project folder here</strong>
-            <span>or click to choose one. It is read inside this tab and never uploaded.</span>
+            <strong>Drop a folder, files or a .zip here</strong>
+            <span>Read inside this tab and never uploaded. Dragging a folder in is faster than choosing it: node_modules and .git are skipped before anything is read.</span>
           </span>
-        </button>
+          <span className="drop-actions">
+            <button type="button" className="ghost sm" onClick={() => folderInput.current?.click()}>
+              Choose a folder
+            </button>
+            <button type="button" className="ghost sm" onClick={() => filesInput.current?.click()}>
+              Choose files or a .zip
+            </button>
+          </span>
+        </div>
         <input
           ref={folderInput}
           type="file"
           hidden
           {...({ webkitdirectory: '', directory: '' } as Record<string, string>)}
           onChange={(e) => {
-            const list = e.target.files;
-            if (list?.length) onFolder(entriesFromFileList(list));
+            const files = Array.from(e.target.files ?? []); // copy: clearing the input below empties the live list
             e.target.value = '';
+            if (files.length) onPick(() => entriesFromFileList(files));
+          }}
+        />
+        <input
+          ref={filesInput}
+          type="file"
+          multiple
+          hidden
+          accept=".ts,.tsx,.mts,.cts,.js,.jsx,.mjs,.cjs,.py,.zip"
+          onChange={(e) => {
+            const files = Array.from(e.target.files ?? []);
+            e.target.value = '';
+            if (files.length) onPick(() => entriesFromFileList(files));
           }}
         />
         <input
@@ -198,7 +211,7 @@ export function Landing({
       {dragging && (
         <div className="drop-overlay" aria-hidden>
           <IconUpload width={40} height={40} />
-          <strong>Drop your project folder</strong>
+          <strong>Drop a folder, files or a .zip</strong>
           <span>It is read in this tab and never uploaded</span>
         </div>
       )}
