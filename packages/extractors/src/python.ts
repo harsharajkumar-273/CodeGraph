@@ -151,21 +151,23 @@ export function extractPython(path: string, lang: string, root: Node): FileFacts
     if (body) for (const c of named(body)) visit(c, { caller: qname, cls: qname });
   }
 
-  function handleImport(node: Node, typeOnly: boolean) {
-    const bindings: ImportBinding[] = [];
+  function handleImport(node: Node, ctx: Ctx) {
+    const typeOnly = ctx.typeOnly ?? false;
+    const scope = ctx.caller ? { scope: ctx.caller } : {};
     for (const c of named(node)) {
       if (c.type === 'dotted_name') {
-        facts.imports.push({ specifier: c.text, bindings: [{ local: c.text, imported: '*' }], line: line(node), ...(typeOnly ? { typeOnly } : {}) });
+        facts.imports.push({ specifier: c.text, bindings: [{ local: c.text, imported: '*' }], line: line(node), ...scope, ...(typeOnly ? { typeOnly } : {}) });
       } else if (c.type === 'aliased_import') {
         const nm = c.childForFieldName('name');
         const al = c.childForFieldName('alias');
-        if (nm) facts.imports.push({ specifier: nm.text, bindings: [{ local: (al ?? nm).text, imported: '*' }], line: line(node), ...(typeOnly ? { typeOnly } : {}) });
+        if (nm) facts.imports.push({ specifier: nm.text, bindings: [{ local: (al ?? nm).text, imported: '*' }], line: line(node), ...scope, ...(typeOnly ? { typeOnly } : {}) });
       }
     }
-    void bindings;
   }
 
-  function handleFrom(node: Node, typeOnly: boolean) {
+  function handleFrom(node: Node, ctx: Ctx) {
+    const typeOnly = ctx.typeOnly ?? false;
+    const scope = ctx.caller ? { scope: ctx.caller } : {};
     const mod = node.childForFieldName('module_name');
     if (!mod) return;
     let level = 0;
@@ -190,7 +192,7 @@ export function extractPython(path: string, lang: string, root: Node): FileFacts
         if (nm) bindings.push({ local: (al ?? nm).text, imported: nm.text });
       }
     }
-    facts.imports.push({ specifier, bindings, line: line(node), level, star, ...(typeOnly ? { typeOnly } : {}) });
+    facts.imports.push({ specifier, bindings, line: line(node), level, star, ...scope, ...(typeOnly ? { typeOnly } : {}) });
   }
 
   function push(c: Omit<CallFact, 'caller'>, ctx: Ctx) {
@@ -223,10 +225,10 @@ export function extractPython(path: string, lang: string, root: Node): FileFacts
   function visit(node: Node, ctx: Ctx) {
     switch (node.type) {
       case 'import_statement':
-        handleImport(node, ctx.typeOnly ?? false);
+        handleImport(node, ctx);
         return;
       case 'import_from_statement':
-        handleFrom(node, ctx.typeOnly ?? false);
+        handleFrom(node, ctx);
         return;
       case 'if_statement': {
         const cond = node.childForFieldName('condition');

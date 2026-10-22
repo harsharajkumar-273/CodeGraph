@@ -40,6 +40,8 @@ export interface ImportFact {
   star?: boolean;
   /** Inside `if TYPE_CHECKING:` (Python) — erased at runtime, not a real dependency edge. */
   typeOnly?: boolean;
+  /** qname of the function the import sits inside (Python `def f(): from x import y`); absent for module-level imports. */
+  scope?: string;
 }
 
 export interface ExportFact {

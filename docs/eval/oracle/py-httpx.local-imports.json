@@ -1,0 +1,149 @@
+{
+ "all": {
+  "sites": {
+   "internal": 2071,
+   "nosym": 1,
+   "external": 1540,
+   "abstract": 0,
+   "unknown": 576
+  },
+  "internal": {
+   "found": 1973,
+   "wrongOnly": 75,
+   "unresolved": 16,
+   "notExtracted": 7
+  },
+  "nosym": {
+   "clean": 1,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 1386,
+   "falseEdge": 154
+  },
+  "edges": {
+   "correct": 1975,
+   "incorrect": 309,
+   "byTier": {
+    "resolved": {
+     "correct": 1839,
+     "incorrect": 10,
+     "precision": 99.5
+    },
+    "probable": {
+     "correct": 124,
+     "incorrect": 71,
+     "precision": 63.6
+    },
+    "ambiguous": {
+     "correct": 12,
+     "incorrect": 228,
+     "precision": 5
+    }
+   }
+  },
+  "emitted": 2284,
+  "precision": 86.5,
+  "recall": 95.3,
+  "externalFalseEdgeRate": 10,
+  "nosymFalseEdgeRate": 0
+ },
+ "src": {
+  "sites": {
+   "internal": 496,
+   "nosym": 1,
+   "external": 851,
+   "abstract": 0,
+   "unknown": 210
+  },
+  "internal": {
+   "found": 474,
+   "wrongOnly": 6,
+   "unresolved": 9,
+   "notExtracted": 7
+  },
+  "nosym": {
+   "clean": 1,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 780,
+   "falseEdge": 71
+  },
+  "edges": {
+   "correct": 476,
+   "incorrect": 125,
+   "byTier": {
+    "resolved": {
+     "correct": 446,
+     "incorrect": 8,
+     "precision": 98.2
+    },
+    "probable": {
+     "correct": 22,
+     "incorrect": 2,
+     "precision": 91.7
+    },
+    "ambiguous": {
+     "correct": 8,
+     "incorrect": 115,
+     "precision": 6.5
+    }
+   }
+  },
+  "emitted": 601,
+  "precision": 79.2,
+  "recall": 95.6,
+  "externalFalseEdgeRate": 8.3,
+  "nosymFalseEdgeRate": 0
+ },
+ "test": {
+  "sites": {
+   "internal": 1575,
+   "nosym": 0,
+   "external": 689,
+   "abstract": 0,
+   "unknown": 366
+  },
+  "internal": {
+   "found": 1499,
+   "wrongOnly": 69,
+   "unresolved": 7,
+   "notExtracted": 0
+  },
+  "nosym": {
+   "clean": 0,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 606,
+   "falseEdge": 83
+  },
+  "edges": {
+   "correct": 1499,
+   "incorrect": 184,
+   "byTier": {
+    "resolved": {
+     "correct": 1393,
+     "incorrect": 2,
+     "precision": 99.9
+    },
+    "probable": {
+     "correct": 102,
+     "incorrect": 69,
+     "precision": 59.6
+    },
+    "ambiguous": {
+     "correct": 4,
+     "incorrect": 113,
+     "precision": 3.4
+    }
+   }
+  },
+  "emitted": 1683,
+  "precision": 89.1,
+  "recall": 95.2,
+  "externalFalseEdgeRate": 12,
+  "nosymFalseEdgeRate": null
+ }
+}
