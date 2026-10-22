@@ -23,7 +23,7 @@ Impact   3 symbols in 6 files  (3 resolved · 0 probable · 0 ambiguous)
   d3  resolved  src/flask/app.py#Flask.__call__
 ```
 
-Every edge is labelled **resolved / probable / ambiguous**, so you can see *how much* of a blast radius is proven vs. guessed, and filter accordingly. Checked against independent oracles on every call site of six repos CodeGraph was never tuned on, not a sample:
+Every edge is labelled **resolved / probable / ambiguous**, so you can see *how much* of a blast radius is proven vs. guessed, and filter accordingly. Checked against independent oracles (the TypeScript compiler, and Jedi for Python) on every call site of six open-source repositories, not a sample. The repositories were chosen before measuring, but fixes the checks prompted are included, so a fresh repository may score a little lower:
 
 | | `resolved` | `probable` | `ambiguous` |
 |---|---|---|---|
