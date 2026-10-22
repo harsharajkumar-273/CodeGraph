@@ -7,6 +7,8 @@
   "dependencies": {
     "@codegraph/analysis": "*",
     "@codegraph/core": "*",
+    "@codegraph/extractors": "*",
+    "@codegraph/parser": "*",
     "@dagrejs/dagre": "^1.1.4",
     "@xyflow/react": "^12.3.0",
     "react": "^18.3.1",
