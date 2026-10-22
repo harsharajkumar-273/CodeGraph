@@ -8,7 +8,7 @@
 
 ![CodeGraph's blast radius for url_for() in Flask: 40 symbols in 19 files, with the affected test files folded together](docs/screenshots/workspace.png)
 
-Paste a GitHub repository or drop a project folder into the web app and it builds a multi-granular graph (folders → file imports → function calls → local variable dataflow). Nothing is uploaded: the parser is WebAssembly running in a Web Worker, and a GitHub repository is downloaded straight from GitHub into your tab. Then it answers:
+Paste a GitHub repository into the web app, or drop a folder, some files or a `.zip` from your computer, and it builds a multi-granular graph (folders → file imports → function calls → local variable dataflow). Nothing is uploaded: the parser is WebAssembly running in a Web Worker, and a GitHub repository is downloaded straight from GitHub into your tab. Then it answers:
 
 - **Blast radius** — *"If I change this function (or this diff), what else can break, how confident are we, and which tests should I run?"*
 - **Slice** — *"Show me only the code relevant to this function"*: its callers and callees, with exact line ranges.
@@ -34,10 +34,10 @@ Trust `resolved`; treat `probable` as a lead to check and `ambiguous` as a list 
 
 ## Web app
 
-Open the app, then paste `owner/repo` (or `owner/repo@branch`, or any `github.com` link), or drop a folder from your machine. You land on a map of the repository's folders and a short list of the code that is riskiest to change. Pick any function, class or file to see its blast radius: what could break, how sure CodeGraph is about each link, and which tests to run. Share an analysis with `?repo=owner/repo` on the app's URL.
+Open the app, then paste `owner/repo` (or `owner/repo@branch`, or any `github.com` link), or drop a folder, some `.ts`/`.js`/`.py` files or a `.zip` (such as GitHub's "Download ZIP") from your machine. You land on a map of the repository's folders and a short list of the code that is riskiest to change. Pick any function, class or file to see its blast radius: what could break, how sure CodeGraph is about each link, and which tests to run. Share an analysis with `?repo=owner/repo` on the app's URL.
 
-- **Public GitHub repositories and local folders**, in TypeScript, JavaScript and Python. Private repositories need a local folder or the CLI.
-- **Anonymous GitHub API limits** apply: about 30 analyses an hour per visitor. Local folders don't use GitHub.
+- **Public GitHub repositories, or anything on your own machine** (a folder, loose files, a `.zip`), in TypeScript, JavaScript and Python. Private repositories: download or clone them and use the folder or the CLI. Local files are read in the page and never uploaded.
+- **Anonymous GitHub API limits** apply: about 30 analyses an hour per visitor. Local files, folders and zips don't use GitHub. Dragging a folder in is faster than choosing it, because `node_modules` and `.git` are skipped before anything is read.
 - **Large repositories** are trimmed to 3,000 source files, tests and examples first, and the page says so.
 - Host it yourself as a static site, for free on Vercel: see [`docs/DEPLOY.md`](docs/DEPLOY.md).
 

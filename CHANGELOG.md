@@ -10,6 +10,8 @@ All notable changes to [`codegraph-engine`](https://www.npmjs.com/package/codegr
   Shareable `?repo=owner/repo` links, a "where to start" overview, search (`/`), a file tree, an inspector with the
   blast radius, callers, callees and source, and a layout that stays readable on large repositories (test functions and
   very large blast radii fold into one node per file; selecting a file shows its import neighbourhood).
+- **Your own files in the web app**: drop or choose a folder, one or more source files, a mix of both, or a `.zip`
+  (GitHub's "Download ZIP" works; its wrapper folder is removed). Everything is read in the page and never uploaded.
 - `@codegraph/parser` and `@codegraph/extractors` have browser entry points; the in-memory indexing path no longer
   imports `node:path` or `node:fs`.
 

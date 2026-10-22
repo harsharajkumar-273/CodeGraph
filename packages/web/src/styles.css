@@ -369,8 +369,9 @@ button.link.more {
 .drop {
   width: 100%;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 16px;
+  gap: 14px 16px;
   text-align: left;
   padding: 20px 22px;
   background: rgba(17, 22, 31, 0.6);
@@ -378,6 +379,12 @@ button.link.more {
   border-radius: 14px;
   color: var(--dim);
   transition: border-color 0.15s, background 0.15s;
+}
+.drop-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-left: auto;
 }
 .drop:hover {
   border-color: var(--accent);
@@ -388,6 +395,7 @@ button.link.more {
   color: var(--accent-2);
 }
 .drop-text {
+  flex: 1 1 280px;
   display: flex;
   flex-direction: column;
   gap: 2px;
