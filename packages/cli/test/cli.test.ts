@@ -94,6 +94,29 @@ describe('pull request comment', () => {
   });
 });
 
+describe('grouping by edited symbol', () => {
+  it('lists callers under the edit that reaches them, most callers first, and marks top-level code', () => {
+    const seeds = ['src/math.ts#add', 'src/math.ts#mul'].flatMap((q) => resolveTargets(graph, q).map((n) => n.id));
+    const r = blastRadius(graph, seeds, { minConfidence: 'probable' });
+    const md = impactMarkdown(graph, r, { changedFiles: new Set(['src/math.ts']) });
+    expect(md).toContain('Which edit reaches whom');
+    expect(md).toMatch(/- `src\/math\.ts#\w+` is reached by \*\*\d+\*\* in \d+ files?/);
+    const counts = [...md.matchAll(/is reached by \*\*(\d+)\*\*/g)].map((m) => Number(m[1]));
+    expect(counts).toEqual([...counts].sort((a, b) => b - a));
+  });
+
+  it('shows the test list only when it adds something beyond the command', () => {
+    const seeds = resolveTargets(graph, 'src/math.ts#add').map((n) => n.id);
+    const r = blastRadius(graph, seeds, { minConfidence: 'probable' });
+    const many = { ...r, tests: Array.from({ length: 12 }, (_, i) => `t/a${i}.test.ts`) };
+    const withCmd = impactMarkdown(graph, many, { jsRunner: 'vitest', changedFiles: new Set() });
+    expect(withCmd).toContain('npx vitest run');
+    expect(withCmd).not.toContain('- `t/a0.test.ts`');
+    const noCmd = impactMarkdown(graph, many, { changedFiles: new Set() });
+    expect(noCmd).toContain('- `t/a0.test.ts`');
+  });
+});
+
 describe('test commands', () => {
   it('gives one command per ecosystem, and Go packages rather than files', () => {
     expect(testCommands(['a/x_test.go', 'a/y_test.go', 'b/z_test.go', 'tests/test_a.py', 'web/a.test.ts'], 'vitest')).toEqual([
