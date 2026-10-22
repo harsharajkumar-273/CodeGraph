@@ -70,7 +70,7 @@ export function buildTools(getGraph: () => Promise<{ graph: CodeGraph; root: str
         const { stdout } = await exec('git', ['diff', '-U0', range], { cwd: root, maxBuffer: 64 * 1024 * 1024 });
         const { nodes } = changedNodes(graph, parseUnifiedDiff(stdout));
         if (!nodes.length) return 'No changed source symbols in that diff.';
-        const res = blastRadius(graph, nodes.map((n) => n.id), { maxDepth: 4, minConfidence: 'probable' });
+        const res = blastRadius(graph, nodes.map((n) => n.id), { maxDepth: 4, minConfidence: 'probable', expandFiles: false });
         const s = summarizeImpact(graph, res);
         const lines = [`${nodes.length} changed symbols can reach ${s.impactedSymbols} symbols in ${s.files} files (${s.byConfidence.resolved} proven, ${s.byConfidence.probable} probable).`];
         for (const i of res.impacted.slice(0, 30)) lines.push(`  hop ${i.depth} ${i.confidence.padEnd(9)} ${where(graph, i.id)}`);

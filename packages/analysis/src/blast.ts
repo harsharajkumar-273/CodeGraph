@@ -7,6 +7,12 @@ export interface ImpactOptions {
   minConfidence?: Confidence;
   /** Also report files that import the changed files (default true). */
   includeImporters?: boolean;
+  /**
+   * A file seed stands for every symbol it defines (default true: "this file changed, anything in it may have"). Pass
+   * false for a diff whose edit sat outside every symbol (an import line, a constant): the importers are still
+   * reported, but the symbols are not all counted as changed.
+   */
+  expandFiles?: boolean;
 }
 
 export interface ImpactedNode {
@@ -56,7 +62,7 @@ export function blastRadius(graph: CodeGraph, seedIds: string[], opts: ImpactOpt
     const n = graph.node(id);
     if (!n) continue;
     seeds.add(id);
-    if (n.kind === 'file' && n.file) for (const s of graph.symbolsInFile(n.file)) seeds.add(s.id);
+    if (n.kind === 'file' && n.file && opts.expandFiles !== false) for (const s of graph.symbolsInFile(n.file)) seeds.add(s.id);
   }
   for (const s of seeds) {
     state.set(s, { conf: 'resolved', depth: 0 });

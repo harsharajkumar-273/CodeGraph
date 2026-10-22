@@ -4,7 +4,7 @@ import { indexRepo } from '@codegraph/extractors';
 import { blastRadius, resolveTargets } from '@codegraph/analysis';
 import { fixture } from '../../extractors/test/helpers';
 import { buildTools, handle } from '../src/mcp';
-import { COMMENT_MARKER, impactMarkdown } from '../src/report';
+import { COMMENT_MARKER, impactMarkdown, testCommands } from '../src/report';
 
 let graph: CodeGraph;
 let tools: ReturnType<typeof buildTools>;
@@ -70,5 +70,40 @@ describe('pull request comment', () => {
     const seeds = resolveTargets(graph, 'src/app.ts#main').map((n) => n.id);
     const md = impactMarkdown(graph, blastRadius(graph, seeds, { minConfidence: 'probable' }));
     expect(md).toContain(COMMENT_MARKER);
+  });
+
+  it('counts only callers outside the files the change edits', () => {
+    const seeds = resolveTargets(graph, 'src/math.ts#add').map((n) => n.id);
+    const r = blastRadius(graph, seeds, { minConfidence: 'probable' });
+    const everyFile = new Set(r.impacted.map((i) => graph.node(i.id)?.file as string).concat('src/math.ts'));
+    const md = impactMarkdown(graph, r, { changedFiles: everyFile });
+    expect(md).toMatch(/nothing outside the files it edits calls/);
+    expect(md).not.toMatch(/\*\*\d+ symbols in/);
+  });
+
+  it('says plainly when a change only adds code', () => {
+    const empty = blastRadius(graph, [], { minConfidence: 'probable' });
+    const md = impactMarkdown(graph, empty, { created: 12 });
+    expect(md).toMatch(/only adds new code \(12 new symbols\)/);
+  });
+
+  it('notes new symbols and deleted files next to a real change', () => {
+    const seeds = resolveTargets(graph, 'src/math.ts#add').map((n) => n.id);
+    const md = impactMarkdown(graph, blastRadius(graph, seeds, { minConfidence: 'probable' }), { changedFiles: new Set(['src/math.ts']), created: 3, deletedFiles: ['old.ts'] });
+    expect(md).toMatch(/adds 3 new symbols; deletes 1 file/);
+  });
+});
+
+describe('test commands', () => {
+  it('gives one command per ecosystem, and Go packages rather than files', () => {
+    expect(testCommands(['a/x_test.go', 'a/y_test.go', 'b/z_test.go', 'tests/test_a.py', 'web/a.test.ts'], 'vitest')).toEqual([
+      'go test ./a ./b',
+      'pytest tests/test_a.py',
+      'npx vitest run web/a.test.ts',
+    ]);
+  });
+
+  it('offers no JavaScript command when the runner is unknown', () => {
+    expect(testCommands(['web/a.test.ts'])).toEqual([]);
   });
 });

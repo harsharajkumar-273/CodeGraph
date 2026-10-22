@@ -40,6 +40,17 @@ async function load(repoArg: string, flags: Flags): Promise<{ graph: CodeGraph; 
   return { graph, root };
 }
 
+/** How the project runs its JavaScript tests, from package.json. */
+async function jsRunner(root: string): Promise<'vitest' | 'jest' | undefined> {
+  try {
+    const pkg = JSON.parse(await fs.readFile(join(root, 'package.json'), 'utf8'));
+    const all = { ...pkg.dependencies, ...pkg.devDependencies };
+    return 'vitest' in all ? 'vitest' : 'jest' in all ? 'jest' : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 // Default to 'probable': ambiguous edges are, by design, low-confidence name-only
 // matches, and a blast radius or slice that defaults to including them is more
 // likely to mislead than help. Pass --min-confidence ambiguous to see everything.
@@ -66,13 +77,16 @@ export async function cmdImpact(pos: string[], flags: Flags) {
   const repo = typeof flags.repo === 'string' ? flags.repo : '.';
   const { graph, root } = await load(repo, flags);
   let seeds: string[] = [];
+  let diffInfo: { changedFiles: Set<string>; created: number; deletedFiles: string[] } | undefined;
   if (flags.diff) {
     const range = [typeof flags.range === 'string' ? flags.range : 'HEAD'];
     const { stdout } = await exec('git', ['diff', '-U0', ...range], { cwd: root, maxBuffer: 64 * 1024 * 1024 });
-    const { nodes, unmapped } = changedNodes(graph, parseUnifiedDiff(stdout));
+    const changes = parseUnifiedDiff(stdout);
+    const { nodes, created, unmapped } = changedNodes(graph, changes);
     seeds = nodes.map((n) => n.id);
+    diffInfo = { changedFiles: new Set(changes.filter((c) => !c.deleted).map((c) => c.file)), created: created.length, deletedFiles: changes.filter((c) => c.deleted).map((c) => c.file) };
     if (unmapped.length) console.error(`${color.dim}not in graph (non-source or new): ${unmapped.slice(0, 8).join(', ')}${color.off}`);
-    if (!seeds.length) {
+    if (!seeds.length && !(flags.format === 'markdown' && created.length)) {
       return console.log(flags.format === 'markdown' ? '' : 'No changed source symbols found in diff.');
     }
   } else {
@@ -85,9 +99,10 @@ export async function cmdImpact(pos: string[], flags: Flags) {
   const res = blastRadius(graph, seeds, {
     maxDepth: flags.depth ? Number(flags.depth) : undefined,
     minConfidence: minConf(flags),
+    expandFiles: !flags.diff,
   });
   if (flags.format === 'markdown') {
-    console.log(impactMarkdown(graph, res));
+    console.log(impactMarkdown(graph, res, { ...diffInfo, jsRunner: await jsRunner(root) }));
     return;
   }
   if (flags.json) {
