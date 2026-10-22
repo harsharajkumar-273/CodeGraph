@@ -10,6 +10,7 @@ import {
   blastRadius, changedNodes, importCycles, parseUnifiedDiff, resolveTargets, slice, summarizeImpact, variableLineage,
 } from '@codegraph/analysis';
 import { resolveRepo } from './repo';
+import { impactMarkdown, symbolLabel } from './report';
 
 const exec = promisify(execFile);
 
@@ -71,7 +72,9 @@ export async function cmdImpact(pos: string[], flags: Flags) {
     const { nodes, unmapped } = changedNodes(graph, parseUnifiedDiff(stdout));
     seeds = nodes.map((n) => n.id);
     if (unmapped.length) console.error(`${color.dim}not in graph (non-source or new): ${unmapped.slice(0, 8).join(', ')}${color.off}`);
-    if (!seeds.length) return console.log('No changed source symbols found in diff.');
+    if (!seeds.length) {
+      return console.log(flags.format === 'markdown' ? '' : 'No changed source symbols found in diff.');
+    }
   } else {
     if (!pos[0]) throw new Error('usage: codegraph impact <target> | --diff [range]');
     const found = resolveTargets(graph, pos[0]);
@@ -83,6 +86,10 @@ export async function cmdImpact(pos: string[], flags: Flags) {
     maxDepth: flags.depth ? Number(flags.depth) : undefined,
     minConfidence: minConf(flags),
   });
+  if (flags.format === 'markdown') {
+    console.log(impactMarkdown(graph, res));
+    return;
+  }
   if (flags.json) {
     console.log(JSON.stringify({ summary: summarizeImpact(graph, res), impacted: res.impacted.map((i) => ({ ...i, label: label(graph, i.id) })), files: res.files, tests: res.tests, testsTransitive: res.testsTransitive }, null, 2));
     return;
