@@ -40,6 +40,8 @@ export interface ImportFact {
   star?: boolean;
   /** Inside `if TYPE_CHECKING:` (Python) — erased at runtime, not a real dependency edge. */
   typeOnly?: boolean;
+  /** qname of the function the import sits inside (Python `def f(): from x import y`); absent for module-level imports. */
+  scope?: string;
 }
 
 export interface ExportFact {
@@ -67,6 +69,12 @@ export interface CallFact {
    */
   kind: 'plain' | 'member' | 'this' | 'new' | 'ref';
   line: number;
+  /** Go: the receiver is a composite literal or conversion of this type (`T{}.M()`). */
+  recvType?: string;
+  /** Go: the receiver is the result of this call (`NewX().Run()`, `a.B().C()`). */
+  recvCall?: Omit<CallFact, 'caller' | 'line'>;
+  /** Go: the lexical scope of the call: the function's qname, plus `/λN` for each function literal around it. */
+  scope?: string;
 }
 
 /** Declared/inferred type of a variable, parameter or field: enables `x.method()` resolution. */
@@ -77,6 +85,8 @@ export interface TypeHint {
   name: string;
   /** Class name as written (`Foo`, `ns.Foo`). */
   type: string;
+  /** Go: where the variable is declared, to pick the nearest preceding declaration when a name is reused. */
+  line?: number;
 }
 
 /**
@@ -89,6 +99,8 @@ export interface CallTypeHint {
   name: string;
   call: Omit<CallFact, 'caller'>;
   awaited: boolean;
+  /** Go: which of the call's results the variable takes (`a, err := f()` => 0 and 1). */
+  index?: number;
 }
 
 /**
@@ -107,10 +119,24 @@ export interface VarFact {
   reads: string[];
 }
 
+/** What only Go needs: its unit is the package (a directory), and its types carry fields, embedding and results. */
+export interface GoFacts {
+  /** The `package` clause. */
+  pkg: string;
+  /** The `//go:build` expression, if the file has one. */
+  build?: string;
+  /** Result types of each function or method, as written (`error`, `*Server`, `[]Item`). */
+  results: Record<string, string[]>;
+  /** Struct fields by type name; an embedded type is a field named after itself. */
+  fields: Record<string, Record<string, string>>;
+  /** Every name declared in a function (parameters, receiver, variables), typed or not: such a name is not a package or a function. */
+  locals: Record<string, string[]>;
+}
+
 export interface FileFacts {
   path: string;
   lang: string;
-  family: 'js' | 'python';
+  family: 'js' | 'python' | 'go';
   symbols: SymbolFact[];
   imports: ImportFact[];
   exports: ExportFact[];
@@ -118,5 +144,6 @@ export interface FileFacts {
   types: TypeHint[];
   vars: VarFact[];
   callTypes?: CallTypeHint[];
+  go?: GoFacts;
   lineCount?: number;
 }

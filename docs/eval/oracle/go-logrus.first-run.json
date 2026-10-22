@@ -1,0 +1,346 @@
+{
+ "all": {
+  "sites": {
+   "internal": 1141,
+   "nosym": 174,
+   "external": 1380,
+   "abstract": 0,
+   "unknown": 0
+  },
+  "internal": {
+   "found": 1127,
+   "wrongOnly": 3,
+   "unresolved": 11,
+   "notExtracted": 0
+  },
+  "nosym": {
+   "clean": 174,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 1358,
+   "falseEdge": 22
+  },
+  "edges": {
+   "correct": 1127,
+   "incorrect": 62,
+   "byTier": {
+    "resolved": {
+     "correct": 1120,
+     "incorrect": 3,
+     "precision": 99.7
+    },
+    "ambiguous": {
+     "correct": 7,
+     "incorrect": 59,
+     "precision": 10.6
+    }
+   }
+  },
+  "emitted": 1189,
+  "precision": 94.8,
+  "recall": 98.8,
+  "externalFalseEdgeRate": 1.6,
+  "nosymFalseEdgeRate": 0
+ },
+ "src": {
+  "sites": {
+   "internal": 1105,
+   "nosym": 174,
+   "external": 1325,
+   "abstract": 0,
+   "unknown": 0
+  },
+  "internal": {
+   "found": 1091,
+   "wrongOnly": 3,
+   "unresolved": 11,
+   "notExtracted": 0
+  },
+  "nosym": {
+   "clean": 174,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 1303,
+   "falseEdge": 22
+  },
+  "edges": {
+   "correct": 1091,
+   "incorrect": 62,
+   "byTier": {
+    "resolved": {
+     "correct": 1084,
+     "incorrect": 3,
+     "precision": 99.7
+    },
+    "ambiguous": {
+     "correct": 7,
+     "incorrect": 59,
+     "precision": 10.6
+    }
+   }
+  },
+  "emitted": 1153,
+  "precision": 94.6,
+  "recall": 98.7,
+  "externalFalseEdgeRate": 1.7,
+  "nosymFalseEdgeRate": 0
+ },
+ "test": {
+  "sites": {
+   "internal": 36,
+   "nosym": 0,
+   "external": 55,
+   "abstract": 0,
+   "unknown": 0
+  },
+  "internal": {
+   "found": 36,
+   "wrongOnly": 0,
+   "unresolved": 0,
+   "notExtracted": 0
+  },
+  "nosym": {
+   "clean": 0,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 55,
+   "falseEdge": 0
+  },
+  "edges": {
+   "correct": 36,
+   "incorrect": 0,
+   "byTier": {
+    "resolved": {
+     "correct": 36,
+     "incorrect": 0,
+     "precision": 100
+    }
+   }
+  },
+  "emitted": 36,
+  "precision": 100,
+  "recall": 100,
+  "externalFalseEdgeRate": 0,
+  "nosymFalseEdgeRate": null
+ },
+ "examples": {
+  "wrongOnly": [
+   {
+    "at": "terminal_check_notappengine.go:17",
+    "callee": "isTerminal",
+    "want": "terminal_check_unix.go#isTerminal",
+    "got": [
+     "terminal_check_bsd.go#isTerminal (resolved)"
+    ]
+   },
+   {
+    "at": "text_formatter.go:122",
+    "callee": "checkIfTerminal",
+    "want": "terminal_check_notappengine.go#checkIfTerminal",
+    "got": [
+     "terminal_check_appengine.go#checkIfTerminal (resolved)"
+    ]
+   },
+   {
+    "at": "text_formatter_test.go:579",
+    "callee": "checkIfTerminal",
+    "want": "terminal_check_notappengine.go#checkIfTerminal",
+    "got": [
+     "terminal_check_appengine.go#checkIfTerminal (resolved)"
+    ]
+   }
+  ],
+  "falseEdgeExternal": [
+   {
+    "at": "hooks/slog/handler_test.go:25",
+    "callee": "Info",
+    "want": "log/slog",
+    "got": [
+     "entry.go#Entry.Info (ambiguous)",
+     "logger.go#Logger.Info (ambiguous)",
+     "logrus.go#InfoLogger.Info (ambiguous)"
+    ]
+   },
+   {
+    "at": "hooks/slog/handler_test.go:143",
+    "callee": "Info",
+    "want": "log/slog",
+    "got": [
+     "entry.go#Entry.Info (ambiguous)",
+     "logger.go#Logger.Info (ambiguous)",
+     "logrus.go#InfoLogger.Info (ambiguous)"
+    ]
+   },
+   {
+    "at": "hooks/slog/handler_test.go:159",
+    "callee": "Info",
+    "want": "log/slog",
+    "got": [
+     "entry.go#Entry.Info (ambiguous)",
+     "logger.go#Logger.Info (ambiguous)",
+     "logrus.go#InfoLogger.Info (ambiguous)"
+    ]
+   },
+   {
+    "at": "hooks/slog/handler_test.go:160",
+    "callee": "Warn",
+    "want": "log/slog",
+    "got": [
+     "entry.go#Entry.Warn (ambiguous)",
+     "logger.go#Logger.Warn (ambiguous)",
+     "logrus.go#WarnLogger.Warn (ambiguous)"
+    ]
+   },
+   {
+    "at": "hooks/slog/handler_test.go:177",
+    "callee": "WithGroup",
+    "want": "log/slog",
+    "got": [
+     "hooks/slog/slog_test.go#errorHandler.WithGroup (ambiguous)",
+     "hooks/slog/handler.go#Handler.WithGroup (ambiguous)"
+    ]
+   },
+   {
+    "at": "hooks/slog/handler_test.go:179",
+    "callee": "Info",
+    "want": "log/slog",
+    "got": [
+     "entry.go#Entry.Info (ambiguous)",
+     "logger.go#Logger.Info (ambiguous)",
+     "logrus.go#InfoLogger.Info (ambiguous)"
+    ]
+   },
+   {
+    "at": "hooks/slog/handler_test.go:260",
+    "callee": "Info",
+    "want": "log/slog",
+    "got": [
+     "entry.go#Entry.Info (ambiguous)",
+     "logger.go#Logger.Info (ambiguous)",
+     "logrus.go#InfoLogger.Info (ambiguous)"
+    ]
+   },
+   {
+    "at": "hooks/slog/handler_test.go:280",
+    "callee": "WithGroup",
+    "want": "log/slog",
+    "got": [
+     "hooks/slog/slog_test.go#errorHandler.WithGroup (ambiguous)",
+     "hooks/slog/handler.go#Handler.WithGroup (ambiguous)"
+    ]
+   },
+   {
+    "at": "hooks/slog/handler_test.go:281",
+    "callee": "Info",
+    "want": "log/slog",
+    "got": [
+     "entry.go#Entry.Info (ambiguous)",
+     "logger.go#Logger.Info (ambiguous)",
+     "logrus.go#InfoLogger.Info (ambiguous)"
+    ]
+   },
+   {
+    "at": "hooks/slog/level_example_test.go:39",
+    "callee": "Info",
+    "want": "log/slog",
+    "got": [
+     "entry.go#Entry.Info (ambiguous)",
+     "logger.go#Logger.Info (ambiguous)",
+     "logrus.go#InfoLogger.Info (ambiguous)"
+    ]
+   },
+   {
+    "at": "hooks/slog/level_example_test.go:45",
+    "callee": "Info",
+    "want": "log/slog",
+    "got": [
+     "entry.go#Entry.Info (ambiguous)",
+     "logger.go#Logger.Info (ambiguous)",
+     "logrus.go#InfoLogger.Info (ambiguous)"
+    ]
+   },
+   {
+    "at": "hooks/slog/level_example_test.go:46",
+    "callee": "Warn",
+    "want": "log/slog",
+    "got": [
+     "entry.go#Entry.Warn (ambiguous)",
+     "logger.go#Logger.Warn (ambiguous)",
+     "logrus.go#WarnLogger.Warn (ambiguous)"
+    ]
+   }
+  ],
+  "falseEdgeNosym": [],
+  "unresolved": [
+   {
+    "at": "entry_test.go:119",
+    "callee": "Error",
+    "want": "entry.go#Entry.Error",
+    "got": []
+   },
+   {
+    "at": "hooks/slog/slog_test.go:188",
+    "callee": "String",
+    "want": "logrus.go#Level.String",
+    "got": []
+   },
+   {
+    "at": "logrus_test.go:531",
+    "callee": "String",
+    "want": "logrus.go#Level.String",
+    "got": []
+   },
+   {
+    "at": "logrus_test.go:532",
+    "callee": "String",
+    "want": "logrus.go#Level.String",
+    "got": []
+   },
+   {
+    "at": "logrus_test.go:533",
+    "callee": "String",
+    "want": "logrus.go#Level.String",
+    "got": []
+   },
+   {
+    "at": "logrus_test.go:534",
+    "callee": "String",
+    "want": "logrus.go#Level.String",
+    "got": []
+   },
+   {
+    "at": "logrus_test.go:535",
+    "callee": "String",
+    "want": "logrus.go#Level.String",
+    "got": []
+   },
+   {
+    "at": "logrus_test.go:536",
+    "callee": "String",
+    "want": "logrus.go#Level.String",
+    "got": []
+   },
+   {
+    "at": "logrus_test.go:537",
+    "callee": "String",
+    "want": "logrus.go#Level.String",
+    "got": []
+   },
+   {
+    "at": "text_formatter_test.go:318",
+    "callee": "String",
+    "want": "logrus.go#Level.String",
+    "got": []
+   },
+   {
+    "at": "text_formatter_test.go:319",
+    "callee": "String",
+    "want": "logrus.go#Level.String",
+    "got": []
+   }
+  ]
+ }
+}

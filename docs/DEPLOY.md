@@ -26,7 +26,7 @@ Share a ready-made analysis with a link such as `https://<project>.vercel.app/?r
 **Limits to know about**
 - GitHub allows 60 anonymous API requests per hour per visitor IP. One analysis uses 2 (1 when the branch is given),
   so a visitor can run about 30 analyses an hour. The page explains it when a visitor hits the limit.
-- Only public repositories can be read from GitHub by a browser. For a private one, download it (or clone it) and drop the folder or the .zip onto the page, or use the CLI.
+- Visitors can read a private repository by pasting a GitHub personal access token on the home page. The token stays in their tab (`sessionStorage`) and is sent only to `api.github.com`, never to your host. Files are then fetched through the contents API, which counts against the token's 5,000 requests an hour. Without a token, only public repositories are readable; for a private one, drop a clone or a .zip onto the page, or use the CLI.
 - Very large repositories are trimmed to 3,000 source files (tests and examples first), and files over 1 MB are
   skipped; the page says when it does this.
 

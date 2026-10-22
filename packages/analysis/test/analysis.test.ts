@@ -64,6 +64,17 @@ describe('slice', () => {
   });
 });
 
+describe('file seeds', () => {
+  it('expand to every symbol the file defines unless told not to', () => {
+    const file = resolveTargets(g, 'src/math.ts').map((n) => n.id);
+    const all = blastRadius(g, file);
+    const fileOnly = blastRadius(g, file, { expandFiles: false });
+    expect(all.seeds.length).toBeGreaterThan(fileOnly.seeds.length);
+    expect(fileOnly.seeds).toEqual(file);
+    expect(fileOnly.files.some((f) => f.path === 'src/app.ts')).toBe(true); // importers are still reported
+  });
+});
+
 describe('diff mapping', () => {
   it('maps changed line ranges to the innermost symbol', () => {
     const diff = ['--- a/src/math.ts', '+++ b/src/math.ts', '@@ -6,0 +7,1 @@ ', '+  // touch'].join('\n');
@@ -72,10 +83,48 @@ describe('diff mapping', () => {
   });
 
   it('attributes a module-level variable edit to that variable, not the whole file', () => {
-    const diff = ['+++ b/src/app.ts', '@@ -5,0 +6,1 @@'].join('\n'); // `const svc = new UserService(...)`
+    const diff = ['+++ b/src/app.ts', '@@ -6 +6 @@'].join('\n'); // `const svc = new UserService(...)` rewritten
     const { nodes } = changedNodes(g, parseUnifiedDiff(diff));
     expect(nodes.map((n) => n.kind)).toEqual(['variable']);
     expect(nodes[0].qualifiedName).toBe('svc');
+  });
+
+  it('treats a symbol inserted in full as new, so it is not a change that can break callers', () => {
+    // src/math.ts: `mul` starts on line 6; a pure insertion covering all of it is a new function
+    const mul = g.nodes('function').find((n) => n.qualifiedName === 'mul')!;
+    const diff = ['--- a/src/math.ts', '+++ b/src/math.ts', `@@ -${mul.startLine! - 1},0 +${mul.startLine},${mul.endLine! - mul.startLine! + 1} @@`].join('\n');
+    const r = changedNodes(g, parseUnifiedDiff(diff));
+    expect(r.created.map((n) => n.qualifiedName)).toEqual(['mul']);
+    expect(r.nodes.map((n) => n.qualifiedName)).not.toContain('mul');
+  });
+
+  it('attributes an edit to a local variable declaration to the function around it', () => {
+    const mul = g.nodes('function').find((n) => n.qualifiedName === 'mul')!;
+    const local = g.symbolsInFile('src/math.ts').find((n) => n.kind === 'variable' && n.parent === mul.id)!;
+    const diff = ['--- a/src/math.ts', '+++ b/src/math.ts', `@@ -${local.startLine} +${local.startLine} @@`].join('\n');
+    expect(changedNodes(g, parseUnifiedDiff(diff)).nodes.map((n) => n.qualifiedName)).toEqual(['mul']);
+  });
+
+  it('keeps a function modified when lines are inserted inside it', () => {
+    const mul = g.nodes('function').find((n) => n.qualifiedName === 'mul')!;
+    const diff = ['--- a/src/math.ts', '+++ b/src/math.ts', `@@ -${mul.startLine},0 +${mul.startLine! + 1},1 @@`].join('\n');
+    const r = changedNodes(g, parseUnifiedDiff(diff));
+    expect(r.nodes.map((n) => n.qualifiedName)).toEqual(['mul']);
+    expect(r.created).toHaveLength(0);
+  });
+
+  it('treats every symbol of an added file as new and ignores deleted files', () => {
+    const diff = [
+      'diff --git a/src/math.ts b/src/math.ts', '--- /dev/null', '+++ b/src/math.ts', '@@ -0,0 +1,20 @@',
+      'diff --git a/old.ts b/old.ts', '--- a/old.ts', '+++ /dev/null', '@@ -1,3 +0,0 @@',
+    ].join('\n');
+    const changes = parseUnifiedDiff(diff);
+    expect(changes.find((c) => c.file === 'src/math.ts')?.added).toBe(true);
+    expect(changes.find((c) => c.file === 'old.ts')?.deleted).toBe(true);
+    const r = changedNodes(g, changes);
+    expect(r.nodes).toHaveLength(0);
+    expect(r.created.length).toBeGreaterThan(0);
+    expect(r.unmapped).not.toContain('old.ts');
   });
 
   it('falls back to the file when the line matches no tracked symbol', () => {

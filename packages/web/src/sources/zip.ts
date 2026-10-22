@@ -9,7 +9,7 @@ import { LIMITS, LoadError } from './types';
 const MAX_ZIP_BYTES = 250_000_000;
 const KEEP_NAMES = new Set(['.gitignore', '.codegraphignore']);
 /** Files that say "this folder is a project root". */
-const PROJECT_MARKERS = new Set(['package.json', 'pyproject.toml', 'setup.py', 'setup.cfg', 'requirements.txt', 'tsconfig.json']);
+const PROJECT_MARKERS = new Set(['package.json', 'pyproject.toml', 'setup.py', 'setup.cfg', 'requirements.txt', 'tsconfig.json', 'go.mod']);
 const base = (p: string) => p.slice(p.lastIndexOf('/') + 1);
 
 export const isZip = (f: File) => /\.zip$/i.test(f.name) || f.type === 'application/zip' || f.type === 'application/x-zip-compressed';

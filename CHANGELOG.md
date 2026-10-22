@@ -4,7 +4,15 @@ All notable changes to [`codegraph-engine`](https://www.npmjs.com/package/codegr
 
 ## Unreleased
 
+### Fixed
+- **Diffs no longer inflate the blast radius.** An edit on a line that declares a local variable is a change to its function (it used to be attributed to the variable, which has no callers, so the function's blast radius came out empty), and a module-level edit such as an import line no longer counts every symbol in the file as changed. Symbols a diff adds in full are reported as new instead of as changes. The pull request comment now counts only callers outside the files the change edits, says plainly when a change only adds code, and gives a test command per ecosystem (`go test ./pkg`, `pytest`, `vitest`/`jest`).
+- **Python function-local imports** (`def f(): from x import y`) are scoped to that function instead of replacing the file's import of the same name, and shadow a same-named function outside it. Removes one `resolved` error each in Flask and Rich in the Jedi check.
+
 ### Added
+- **Go support.** `.go` files are indexed (CLI, web app, MCP, pull request comments): packages resolved through `go.mod`, methods attached to their types, struct embedding and promoted methods, interfaces, typed variables through constructors, results, ranges and fields, and `//go:build` for linux/amd64. Checked against the Go type checker on Cobra, Gin, Logrus and gorilla/mux: 98.5% of the calls it resolves are found, and every one of 7,550 edges is correct (first run, before any fix: 96.8% and 7,336 of 7,339). Details and limits in `docs/ORACLE-EVAL.md`.
+- **Private repositories in the web app**: paste a GitHub personal access token on the home page. It stays in the browser tab, is sent only to `api.github.com`, and also raises GitHub's limit from 60 to 5,000 requests an hour.
+- **`codegraph mcp`**: an MCP server (stdio) so AI agents can ask what a change touches: impact of a symbol or of the current diff, callers and callees, symbol search, an overview of the riskiest code.
+- **A GitHub Action** (`uses: harsharajkumar-273/CodeGraph@main`) that comments on pull requests with the symbols, files and tests a change can reach, with an optional `fail-above` limit. `codegraph impact --format markdown` prints the same text.
 - **A proper website around the app.** A new homepage with an animated pipeline (get the code, parse it, link it, label every edge, show the blast radius), a product preview, features, the accuracy results with their caveats, and the CLI commands. Analyzing now shows the same pipeline live, stage by stage, with real progress. Fonts are bundled (no third-party requests), the page works on phones, respects reduced-motion settings and passes an automated accessibility check.
 - **The web app analyzes any repository, in the browser.** Paste a public GitHub repository (or `owner/repo@branch`, or
   a `github.com` link) or drop a project folder; the parser (WebAssembly) runs in a Web Worker and nothing is uploaded.

@@ -116,7 +116,7 @@ const FEATURES: { title: string; text: string; icon: ReactNode }[] = [
   },
   {
     title: 'Bring your own code',
-    text: 'A public GitHub repository, a folder, a few files, or a .zip. TypeScript, JavaScript and Python, in one graph.',
+    text: 'A public GitHub repository, a folder, a few files, or a .zip. TypeScript, JavaScript, Python and Go, in one graph.',
     icon: <path d="M4 7a2 2 0 0 1 2-2h4l2 2.2h6a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7ZM12 11v5M9.5 13.5 12 16l2.5-2.5" />,
   },
   {
@@ -149,7 +149,7 @@ export function Features() {
 }
 
 interface Row {
-  label: 'resolved' | 'probable' | 'ambiguous';
+  label: 'resolved' | 'probable' | 'ambiguous' | 'found';
   value: number;
   note: string;
 }
@@ -162,6 +162,11 @@ const PY_ROWS: Row[] = [
   { label: 'resolved', value: 99.8, note: 'proven through imports and scope' },
   { label: 'probable', value: 80, note: 'one plausible name match nearby' },
   { label: 'ambiguous', value: 16, note: 'several candidates share the name' },
+];
+
+const GO_ROWS: Row[] = [
+  { label: 'resolved', value: 100, note: 'every link follows the types' },
+  { label: 'found', value: 98.5, note: 'of the calls the Go type checker resolves' },
 ];
 
 function Panel({ title, oracle, repos, rows }: { title: string; oracle: string; repos: string; rows: Row[] }) {
@@ -179,7 +184,7 @@ function Panel({ title, oracle, repos, rows }: { title: string; oracle: string; 
               <span className={`meter-label t-${r.label}`}>{r.label}</span>
               <span className="meter-value">{r.value}%</span>
             </div>
-            <div className="meter" role="img" aria-label={`${r.value}% of ${r.label} links were correct`}>
+            <div className="meter" role="img" aria-label={r.label === 'found' ? `${r.value}% of the calls were found` : `${r.value}% of ${r.label} links were correct`}>
               <i className={`m-${r.label}`} />
             </div>
             <small>{r.note}</small>
@@ -201,7 +206,7 @@ export function Accuracy() {
           Measured, <span className="grad">not claimed</span>
         </>
       }
-      sub="We checked every call in six open-source repositories against tools that know the right answer, and publish the numbers, including the weak ones."
+      sub="We checked every call in ten open-source repositories against tools that know the right answer, and publish the numbers, including the weak ones."
     >
       <div className="panels">
         <Reveal>
@@ -209,6 +214,9 @@ export function Accuracy() {
         </Reveal>
         <Reveal delay={120}>
           <Panel title="Python" oracle="Jedi" repos="Requests, HTTPX and Rich: 9,067 correct links found" rows={PY_ROWS} />
+        </Reveal>
+        <Reveal delay={240}>
+          <Panel title="Go" oracle="the Go type checker" repos="Cobra, Gin, Logrus and mux: 7,550 correct links found" rows={GO_ROWS} />
         </Reveal>
       </div>
       <Reveal delay={160}>

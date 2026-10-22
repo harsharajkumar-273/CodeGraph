@@ -1,0 +1,149 @@
+{
+ "all": {
+  "sites": {
+   "internal": 6233,
+   "nosym": 46,
+   "external": 3065,
+   "abstract": 0,
+   "unknown": 491
+  },
+  "internal": {
+   "found": 6062,
+   "wrongOnly": 0,
+   "unresolved": 155,
+   "notExtracted": 16
+  },
+  "nosym": {
+   "clean": 44,
+   "falseEdge": 2
+  },
+  "external": {
+   "clean": 2839,
+   "falseEdge": 226
+  },
+  "edges": {
+   "correct": 6062,
+   "incorrect": 401,
+   "byTier": {
+    "resolved": {
+     "correct": 5647,
+     "incorrect": 5,
+     "precision": 99.9
+    },
+    "probable": {
+     "correct": 335,
+     "incorrect": 44,
+     "precision": 88.4
+    },
+    "ambiguous": {
+     "correct": 80,
+     "incorrect": 352,
+     "precision": 18.5
+    }
+   }
+  },
+  "emitted": 6463,
+  "precision": 93.8,
+  "recall": 97.3,
+  "externalFalseEdgeRate": 7.4,
+  "nosymFalseEdgeRate": 4.3
+ },
+ "src": {
+  "sites": {
+   "internal": 2848,
+   "nosym": 40,
+   "external": 2010,
+   "abstract": 0,
+   "unknown": 170
+  },
+  "internal": {
+   "found": 2679,
+   "wrongOnly": 0,
+   "unresolved": 153,
+   "notExtracted": 16
+  },
+  "nosym": {
+   "clean": 40,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 1812,
+   "falseEdge": 198
+  },
+  "edges": {
+   "correct": 2679,
+   "incorrect": 335,
+   "byTier": {
+    "resolved": {
+     "correct": 2408,
+     "incorrect": 1,
+     "precision": 100
+    },
+    "probable": {
+     "correct": 217,
+     "incorrect": 43,
+     "precision": 83.5
+    },
+    "ambiguous": {
+     "correct": 54,
+     "incorrect": 291,
+     "precision": 15.7
+    }
+   }
+  },
+  "emitted": 3014,
+  "precision": 88.9,
+  "recall": 94.1,
+  "externalFalseEdgeRate": 9.9,
+  "nosymFalseEdgeRate": 0
+ },
+ "test": {
+  "sites": {
+   "internal": 3385,
+   "nosym": 6,
+   "external": 1055,
+   "abstract": 0,
+   "unknown": 321
+  },
+  "internal": {
+   "found": 3383,
+   "wrongOnly": 0,
+   "unresolved": 2,
+   "notExtracted": 0
+  },
+  "nosym": {
+   "clean": 4,
+   "falseEdge": 2
+  },
+  "external": {
+   "clean": 1027,
+   "falseEdge": 28
+  },
+  "edges": {
+   "correct": 3383,
+   "incorrect": 66,
+   "byTier": {
+    "resolved": {
+     "correct": 3239,
+     "incorrect": 4,
+     "precision": 99.9
+    },
+    "probable": {
+     "correct": 118,
+     "incorrect": 1,
+     "precision": 99.2
+    },
+    "ambiguous": {
+     "correct": 26,
+     "incorrect": 61,
+     "precision": 29.9
+    }
+   }
+  },
+  "emitted": 3449,
+  "precision": 98.1,
+  "recall": 99.9,
+  "externalFalseEdgeRate": 2.7,
+  "nosymFalseEdgeRate": 33.3
+ }
+}
