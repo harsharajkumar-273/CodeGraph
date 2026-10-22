@@ -17,12 +17,15 @@ tag.
 ## Vercel (recommended: static, free)
 
 The demo needs no server: `npm run build:demo` builds the UI and indexes the demo repo into a static `graph.json`,
-and `vercel.json` routes the UI's `/api/graph` request to it.
+and `packages/web/vercel.json` routes the UI's `/api/graph` request to it. This is the only Vercel config, so
+Root Directory must be `packages/web`.
 
 1. Sign in at <https://vercel.com> with GitHub. The free Hobby plan is enough.
-2. Click **Add New → Project**, import `harsharajkumar-273/CodeGraph` and click **Deploy**. Leave every setting as
-   it is; `vercel.json` provides the install command, build command and output folder.
-3. Vercel prints a `https://<project>.vercel.app` URL. Every push to `main` redeploys it.
+2. Click **Add New → Project** and import `harsharajkumar-273/CodeGraph`.
+3. Vercel detects two apps (the `Dockerfile` and `packages/web`) and offers a multi-service import. Don't use it.
+   Set **Root Directory** to `packages/web` instead, so it is imported as one Vite project. Its `vercel.json`
+   supplies the install command, build command and output folder, so leave those alone, and click **Deploy**.
+4. Vercel prints a `https://<project>.vercel.app` URL. Every push to `main` redeploys it.
 
 To show a different repo, set `DEMO_REPO` (a git URL) and `DEMO_REF` (a branch or tag) under **Settings →
 Environment Variables**, then redeploy. To try the static build locally, run `npm run build:demo` and serve
