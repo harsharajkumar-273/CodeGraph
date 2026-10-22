@@ -10,6 +10,8 @@
     "@codegraph/extractors": "*",
     "@codegraph/parser": "*",
     "@dagrejs/dagre": "^1.1.4",
+    "@fontsource-variable/inter": "5.3.0",
+    "@fontsource-variable/jetbrains-mono": "5.3.0",
     "@xyflow/react": "^12.3.0",
     "fflate": "0.8.2",
     "react": "^18.3.1",
