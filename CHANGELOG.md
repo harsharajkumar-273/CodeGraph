@@ -4,6 +4,9 @@ All notable changes to [`codegraph-engine`](https://www.npmjs.com/package/codegr
 
 ## Unreleased
 
+### Fixed
+- **Python function-local imports** (`def f(): from x import y`) are scoped to that function instead of replacing the file's import of the same name, and shadow a same-named function outside it. Removes one `resolved` error each in Flask and Rich in the Jedi check.
+
 ### Added
 - **`codegraph mcp`**: an MCP server (stdio) so AI agents can ask what a change touches: impact of a symbol or of the current diff, callers and callees, symbol search, an overview of the riskiest code.
 - **A GitHub Action** (`uses: harsharajkumar-273/CodeGraph@main`) that comments on pull requests with the symbols, files and tests a change can reach, with an optional `fail-above` limit. `codegraph impact --format markdown` prints the same text.

@@ -7,6 +7,8 @@ interface Entry {
   symbols: Map<string, SymbolFact>;
   exportsByName: Map<string, ExportFact>;
   bindings: Map<string, { imp: ImportFact; b: ImportBinding }>;
+  /** Imports inside a function body, keyed `scope|local`; they shadow the file-level ones for code in that function. */
+  scopedBindings: Map<string, { imp: ImportFact; b: ImportBinding }>;
   methods: Map<string, Map<string, SymbolFact>>; // class qname -> method name -> symbol
   types: Map<string, string>; // `${scope}|${name}` -> class name
   /** Variables typed by a call's declared return type (see inferCallTypes), already resolved to a class. */
@@ -163,12 +165,14 @@ class Resolver {
         }
       }
       const bindings = new Map<string, { imp: ImportFact; b: ImportBinding }>();
-      for (const imp of f.imports) for (const b of imp.bindings) bindings.set(b.local, { imp, b });
+      const scopedBindings = new Map<string, { imp: ImportFact; b: ImportBinding }>();
+      for (const imp of f.imports) for (const b of imp.bindings) (imp.scope ? scopedBindings : bindings).set(imp.scope ? `${imp.scope}|${b.local}` : b.local, { imp, b });
       this.entries.set(f.path, {
         facts: f,
         symbols,
         exportsByName: new Map(f.exports.map((e) => [e.name, e])),
         bindings,
+        scopedBindings,
         methods,
         types: new Map(f.types.map((t) => [`${t.scope ?? ''}|${t.name}`, t.type])),
         callTypes: new Map(),
@@ -473,7 +477,7 @@ class Resolver {
     if (dot < 0) {
       const s = this.scopeLookup(entry, caller, name);
       if (s?.kind === 'class') return { file: entry.facts.path, sym: s };
-      const b = entry.bindings.get(name);
+      const b = this.bindingOf(entry, caller, name);
       if (b) {
         const t = this.resolveBinding(entry.facts.path, b.imp, b.b);
         if (t?.type === 'symbol' && t.sym.kind === 'class') return { file: t.file, sym: t.sym };
@@ -482,7 +486,7 @@ class Resolver {
     }
     const head = name.slice(0, dot);
     const rest = name.slice(dot + 1);
-    const b = entry.bindings.get(head) ?? entry.bindings.get(name.slice(0, name.lastIndexOf('.')));
+    const b = this.bindingOf(entry, caller, head) ?? this.bindingOf(entry, caller, name.slice(0, name.lastIndexOf('.')));
     if (b) {
       const t = this.resolveBinding(entry.facts.path, b.imp, b.b);
       if (t?.type === 'module') {
@@ -690,6 +694,11 @@ class Resolver {
     return this.scoped(entry.types, caller, recv);
   }
 
+  /** The import that binds `name` where `caller` runs: a function-local import first, then the file's. */
+  private bindingOf(entry: Entry, caller: string | null, name: string) {
+    return (caller && entry.scopedBindings.size ? this.scoped(entry.scopedBindings, caller, name) : undefined) ?? entry.bindings.get(name);
+  }
+
   /** `name` looked up from the caller's scope outwards (`a.b|x`, `a|x`, `|x`). */
   private scoped<V>(map: Map<string, V>, caller: string | null, name: string): V | undefined {
     const parts = caller ? caller.split('.') : [];
@@ -844,9 +853,11 @@ class Resolver {
     const strength: Confidence = call.kind === 'ref' ? 'probable' : 'resolved';
 
     if (call.kind === 'plain' || call.kind === 'new' || call.kind === 'ref') {
-      const local = this.scopeLookup(entry, call.caller, call.callee);
+      // `def f(): from x import f; f()`: a function-local import shadows a same-named function declared outside it.
+      const shadowed = !!call.caller && entry.scopedBindings.size > 0 && this.scoped(entry.scopedBindings, call.caller, call.callee) !== undefined;
+      const local = shadowed ? undefined : this.scopeLookup(entry, call.caller, call.callee);
       if (local && !(call.kind === 'new' && local.kind !== 'class')) return one(path, local, strength);
-      const b = entry.bindings.get(call.callee);
+      const b = this.bindingOf(entry, call.caller, call.callee);
       if (b) {
         const t = this.resolveBinding(path, b.imp, b.b);
         if (t?.type === 'symbol') return one(t.file, t.sym, strength);
@@ -917,11 +928,11 @@ class Resolver {
         if (m) return one(m.file, m.sym, 'resolved');
       }
       // imported module / class
-      let b = entry.bindings.get(recv);
+      let b = this.bindingOf(entry, call.caller, recv);
       let rest = '';
       if (!b) {
         const head = recv.split('.')[0];
-        b = entry.bindings.get(head);
+        b = this.bindingOf(entry, call.caller, head);
         rest = recv.slice(head.length + 1);
       }
       if (b) {

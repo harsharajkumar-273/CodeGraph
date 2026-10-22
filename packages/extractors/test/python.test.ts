@@ -87,4 +87,47 @@ describe('Python extraction', () => {
     expect(edge(graph, 'calls', 'classes.py#Derived.__init__', 'classes.py#Other.__init__')).toBeFalsy();
     expect(graph.edges('calls').filter((e) => label(graph, e.from) === 'classes.py#Derived.__init__')).toHaveLength(0);
   });
+
+  it('uses a function-local import only inside that function', async () => {
+    const { graph } = await indexFiles({
+      'a.py': 'class Alpha:\n    pass\n',
+      'b.py': 'class Beta:\n    pass\n',
+      'use.py': [
+        'def one():',
+        '    from a import Alpha as cls',
+        '    return cls()',
+        '',
+        'def two():',
+        '    from b import Beta as cls',
+        '    return cls()',
+        '',
+        'def three():',
+        '    from a import Alpha',
+        '    return Alpha.make()',
+      ].join('\n'),
+    });
+    // Both functions import a different class under the same local name; each call must follow its own import.
+    expect(conf(graph, 'calls', 'use.py#one', 'a.py#Alpha')).toBe('resolved');
+    expect(conf(graph, 'calls', 'use.py#two', 'b.py#Beta')).toBe('resolved');
+    expect(edge(graph, 'calls', 'use.py#one', 'b.py#Beta')).toBeFalsy();
+    expect(edge(graph, 'calls', 'use.py#two', 'a.py#Alpha')).toBeFalsy();
+  });
+
+  it('does not leak a function-local import to other functions', async () => {
+    const { graph } = await indexFiles({
+      'a.py': 'def helper():\n    pass\n',
+      'use.py': ['def one():', '    from a import helper', '    helper()', '', 'def two():', '    helper()'].join('\n'),
+    });
+    expect(conf(graph, 'calls', 'use.py#one', 'a.py#helper')).toBe('resolved');
+    expect(conf(graph, 'calls', 'use.py#two', 'a.py#helper')).not.toBe('resolved');
+  });
+
+  it('lets a function-local import shadow a function of the same name', async () => {
+    const { graph } = await indexFiles({
+      'impl.py': 'def probe():\n    pass\n',
+      'use.py': ['def probe():', '    from impl import probe', '    return probe()'].join('\n'),
+    });
+    expect(conf(graph, 'calls', 'use.py#probe', 'impl.py#probe')).toBe('resolved');
+    expect(edge(graph, 'calls', 'use.py#probe', 'use.py#probe')).toBeFalsy();
+  });
 });

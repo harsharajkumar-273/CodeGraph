@@ -214,10 +214,13 @@ Pooled over the three fresh repos: `resolved` 8,251 / 8,267 (**99.8%**), `probab
 1,798/1,798.
 
 Real CodeGraph errors this surfaced:
-- **Function-local imports are ignored.** Flask's `test_client` does `from .testing import FlaskClient as cls` and
-  calls `cls(…)`, but the edge goes to `FlaskCliRunner`, which another function imports under the same local name.
-  Rich's `get_windows_console_features` imports a same-named function inside its body, and the call is linked to the
-  enclosing function. These are the only `resolved` errors found in Python.
+- **Function-local imports were ignored (fixed).** Flask's `test_client` does `from .testing import FlaskClient as cls`
+  and calls `cls(…)`, but the edge went to `FlaskCliRunner`, which another function imports under the same local name.
+  Imports inside a function body are now scoped to that function, and shadow a same-named function declared outside
+  it (`docs/eval/oracle/py-*.local-imports.json`). Re-run on the same four repositories, this removes one error each
+  in Flask (`resolved` 1,040/1,040) and Rich (`resolved` 5,647/5,652, where `get_windows_console_features` had its
+  own-name import linked to the enclosing function), and changes nothing in Requests or HTTPX. The fix is correct but
+  its effect on these four repositories is small.
 - **Sync/async twins:** `client.get()` on an `httpx.AsyncClient` goes to `Client.get`. This is most of HTTPX's
   `probable` errors.
 - **Built-in collisions, as in TypeScript:** `str.rstrip` → `Text.rstrip`, `list.extend` → `Lines.extend`, and
