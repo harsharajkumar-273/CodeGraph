@@ -1,0 +1,333 @@
+{
+ "all": {
+  "sites": {
+   "internal": 6233,
+   "nosym": 46,
+   "external": 3065,
+   "abstract": 0,
+   "unknown": 491
+  },
+  "internal": {
+   "found": 6061,
+   "wrongOnly": 1,
+   "unresolved": 155,
+   "notExtracted": 16
+  },
+  "nosym": {
+   "clean": 44,
+   "falseEdge": 2
+  },
+  "external": {
+   "clean": 2839,
+   "falseEdge": 226
+  },
+  "edges": {
+   "correct": 6061,
+   "incorrect": 402,
+   "byTier": {
+    "resolved": {
+     "correct": 5646,
+     "incorrect": 6,
+     "precision": 99.9
+    },
+    "probable": {
+     "correct": 335,
+     "incorrect": 44,
+     "precision": 88.4
+    },
+    "ambiguous": {
+     "correct": 80,
+     "incorrect": 352,
+     "precision": 18.5
+    }
+   }
+  },
+  "emitted": 6463,
+  "precision": 93.8,
+  "recall": 97.2,
+  "externalFalseEdgeRate": 7.4,
+  "nosymFalseEdgeRate": 4.3
+ },
+ "src": {
+  "sites": {
+   "internal": 2848,
+   "nosym": 40,
+   "external": 2010,
+   "abstract": 0,
+   "unknown": 170
+  },
+  "internal": {
+   "found": 2678,
+   "wrongOnly": 1,
+   "unresolved": 153,
+   "notExtracted": 16
+  },
+  "nosym": {
+   "clean": 40,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 1812,
+   "falseEdge": 198
+  },
+  "edges": {
+   "correct": 2678,
+   "incorrect": 336,
+   "byTier": {
+    "resolved": {
+     "correct": 2407,
+     "incorrect": 2,
+     "precision": 99.9
+    },
+    "probable": {
+     "correct": 217,
+     "incorrect": 43,
+     "precision": 83.5
+    },
+    "ambiguous": {
+     "correct": 54,
+     "incorrect": 291,
+     "precision": 15.7
+    }
+   }
+  },
+  "emitted": 3014,
+  "precision": 88.9,
+  "recall": 94,
+  "externalFalseEdgeRate": 9.9,
+  "nosymFalseEdgeRate": 0
+ },
+ "test": {
+  "sites": {
+   "internal": 3385,
+   "nosym": 6,
+   "external": 1055,
+   "abstract": 0,
+   "unknown": 321
+  },
+  "internal": {
+   "found": 3383,
+   "wrongOnly": 0,
+   "unresolved": 2,
+   "notExtracted": 0
+  },
+  "nosym": {
+   "clean": 4,
+   "falseEdge": 2
+  },
+  "external": {
+   "clean": 1027,
+   "falseEdge": 28
+  },
+  "edges": {
+   "correct": 3383,
+   "incorrect": 66,
+   "byTier": {
+    "resolved": {
+     "correct": 3239,
+     "incorrect": 4,
+     "precision": 99.9
+    },
+    "probable": {
+     "correct": 118,
+     "incorrect": 1,
+     "precision": 99.2
+    },
+    "ambiguous": {
+     "correct": 26,
+     "incorrect": 61,
+     "precision": 29.9
+    }
+   }
+  },
+  "emitted": 3449,
+  "precision": 98.1,
+  "recall": 99.9,
+  "externalFalseEdgeRate": 2.7,
+  "nosymFalseEdgeRate": 33.3
+ },
+ "examples": {
+  "wrongOnly": [
+   {
+    "at": "rich/console.py:572",
+    "callee": "get_windows_console_features",
+    "want": "rich/_windows.py#get_windows_console_features",
+    "got": [
+     "rich/console.py#get_windows_console_features (resolved)"
+    ]
+   }
+  ],
+  "falseEdgeExternal": [
+   {
+    "at": "examples/downloader.py:56",
+    "callee": "write",
+    "want": "/usr/lib/python3.13/typing.py",
+    "got": [
+     "rich/progress.py#_Reader.write (ambiguous)"
+    ]
+   },
+   {
+    "at": "examples/file_progress.py:15",
+    "callee": "decode",
+    "want": "/tmp/claude-0/-home-user-CodeGraph/df3ce567-4aec-5cb3-837b-57ef53906f0a/scratchpad/pyenv/lib/python3.13/site-packages/jedi/third_party/typeshed/stdlib/3/builtins.pyi",
+    "got": [
+     "rich/ansi.py#AnsiDecoder.decode (ambiguous)"
+    ]
+   },
+   {
+    "at": "examples/print_calendar.py:55",
+    "callee": "append",
+    "want": "/tmp/claude-0/-home-user-CodeGraph/df3ce567-4aec-5cb3-837b-57ef53906f0a/scratchpad/pyenv/lib/python3.13/site-packages/jedi/third_party/typeshed/stdlib/3/builtins.pyi",
+    "got": [
+     "rich/text.py#Text.append (ambiguous)"
+    ]
+   },
+   {
+    "at": "examples/print_calendar.py:52",
+    "callee": "append",
+    "want": "/tmp/claude-0/-home-user-CodeGraph/df3ce567-4aec-5cb3-837b-57ef53906f0a/scratchpad/pyenv/lib/python3.13/site-packages/jedi/third_party/typeshed/stdlib/3/builtins.pyi",
+    "got": [
+     "rich/text.py#Text.append (ambiguous)"
+    ]
+   },
+   {
+    "at": "rich/_log_render.py:71",
+    "callee": "append",
+    "want": "/tmp/claude-0/-home-user-CodeGraph/df3ce567-4aec-5cb3-837b-57ef53906f0a/scratchpad/pyenv/lib/python3.13/site-packages/jedi/third_party/typeshed/stdlib/3/builtins.pyi",
+    "got": [
+     "rich/containers.py#Renderables.append (ambiguous)",
+     "rich/containers.py#Lines.append (ambiguous)",
+     "rich/text.py#Text.append (ambiguous)"
+    ]
+   },
+   {
+    "at": "rich/_log_render.py:69",
+    "callee": "append",
+    "want": "/tmp/claude-0/-home-user-CodeGraph/df3ce567-4aec-5cb3-837b-57ef53906f0a/scratchpad/pyenv/lib/python3.13/site-packages/jedi/third_party/typeshed/stdlib/3/builtins.pyi",
+    "got": [
+     "rich/containers.py#Renderables.append (ambiguous)",
+     "rich/containers.py#Lines.append (ambiguous)",
+     "rich/text.py#Text.append (ambiguous)"
+    ]
+   },
+   {
+    "at": "rich/_log_render.py:83",
+    "callee": "append",
+    "want": "/tmp/claude-0/-home-user-CodeGraph/df3ce567-4aec-5cb3-837b-57ef53906f0a/scratchpad/pyenv/lib/python3.13/site-packages/jedi/third_party/typeshed/stdlib/3/builtins.pyi",
+    "got": [
+     "rich/containers.py#Renderables.append (ambiguous)",
+     "rich/containers.py#Lines.append (ambiguous)",
+     "rich/text.py#Text.append (ambiguous)"
+    ]
+   },
+   {
+    "at": "rich/_log_render.py:64",
+    "callee": "append",
+    "want": "/tmp/claude-0/-home-user-CodeGraph/df3ce567-4aec-5cb3-837b-57ef53906f0a/scratchpad/pyenv/lib/python3.13/site-packages/jedi/third_party/typeshed/stdlib/3/builtins.pyi",
+    "got": [
+     "rich/containers.py#Renderables.append (ambiguous)",
+     "rich/containers.py#Lines.append (ambiguous)",
+     "rich/text.py#Text.append (ambiguous)"
+    ]
+   },
+   {
+    "at": "rich/_log_render.py:66",
+    "callee": "append",
+    "want": "/tmp/claude-0/-home-user-CodeGraph/df3ce567-4aec-5cb3-837b-57ef53906f0a/scratchpad/pyenv/lib/python3.13/site-packages/jedi/third_party/typeshed/stdlib/3/builtins.pyi",
+    "got": [
+     "rich/containers.py#Renderables.append (ambiguous)",
+     "rich/containers.py#Lines.append (ambiguous)",
+     "rich/text.py#Text.append (ambiguous)"
+    ]
+   },
+   {
+    "at": "rich/_wrap.py:18",
+    "callee": "match",
+    "want": "/tmp/claude-0/-home-user-CodeGraph/df3ce567-4aec-5cb3-837b-57ef53906f0a/scratchpad/pyenv/lib/python3.13/site-packages/jedi/third_party/typeshed/stdlib/3/typing.pyi",
+    "got": [
+     "rich/palette.py#Palette.match (ambiguous)"
+    ]
+   }
+  ],
+  "falseEdgeNosym": [
+   {
+    "at": "tests/test_segment.py:280",
+    "callee": "Segment",
+    "want": "rich/segment.py:61",
+    "got": [
+     "rich/segment.py#Segment (resolved)"
+    ]
+   },
+   {
+    "at": "tests/test_segment.py:289",
+    "callee": "Segment",
+    "want": "rich/segment.py:61",
+    "got": [
+     "rich/segment.py#Segment (resolved)"
+    ]
+   }
+  ],
+  "unresolved": [
+   {
+    "at": "examples/fullscreen.py:157",
+    "callee": "update",
+    "want": "rich/layout.py#Layout.update",
+    "got": []
+   },
+   {
+    "at": "examples/fullscreen.py:158",
+    "callee": "update",
+    "want": "rich/layout.py#Layout.update",
+    "got": []
+   },
+   {
+    "at": "examples/fullscreen.py:159",
+    "callee": "update",
+    "want": "rich/layout.py#Layout.update",
+    "got": []
+   },
+   {
+    "at": "examples/fullscreen.py:160",
+    "callee": "update",
+    "want": "rich/layout.py#Layout.update",
+    "got": []
+   },
+   {
+    "at": "examples/fullscreen.py:161",
+    "callee": "update",
+    "want": "rich/layout.py#Layout.update",
+    "got": []
+   },
+   {
+    "at": "examples/jobs.py:29",
+    "callee": "log",
+    "want": "rich/console.py#Console.log",
+    "got": []
+   },
+   {
+    "at": "examples/jobs.py:21",
+    "callee": "log",
+    "want": "rich/console.py#Console.log",
+    "got": []
+   },
+   {
+    "at": "examples/jobs.py:28",
+    "callee": "log",
+    "want": "rich/console.py#Console.log",
+    "got": []
+   },
+   {
+    "at": "rich/_inspect.py:188",
+    "callee": "add_row",
+    "want": "rich/table.py#Table.add_row",
+    "got": []
+   },
+   {
+    "at": "rich/_inspect.py:209",
+    "callee": "add_row",
+    "want": "rich/table.py#Table.add_row",
+    "got": []
+   }
+  ]
+ }
+}

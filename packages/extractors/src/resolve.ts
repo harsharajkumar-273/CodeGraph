@@ -1,6 +1,6 @@
 import { posix as p } from 'node:path';
 import { CodeGraph, externalId, fileId, symbolId, variableId, type Confidence, type GraphNode } from '@codegraph/core';
-import type { CallFact, ExportFact, FileFacts, ImportBinding, ImportFact, SymbolFact, VarFact } from './types';
+import type { CallFact, CallTypeHint, ExportFact, FileFacts, ImportBinding, ImportFact, SymbolFact, VarFact } from './types';
 
 interface Entry {
   facts: FileFacts;
@@ -9,6 +9,8 @@ interface Entry {
   bindings: Map<string, { imp: ImportFact; b: ImportBinding }>;
   methods: Map<string, Map<string, SymbolFact>>; // class qname -> method name -> symbol
   types: Map<string, string>; // `${scope}|${name}` -> class name
+  /** Variables typed by a call's declared return type (see inferCallTypes), already resolved to a class. */
+  callTypes: Map<string, { file: string; sym: SymbolFact } | 'builtin'>;
 }
 
 type Target =
@@ -51,6 +53,9 @@ const JS_BUILTIN_TYPES = new Set([
   'WritableStream', 'TransformStream', 'AbortController', 'AbortSignal', 'TextEncoder', 'TextDecoder', 'ArrayBuffer',
   'Uint8Array', 'DataView', 'WebSocket', 'Buffer',
 ]);
+
+/** Python built-in types: a value returned as one has no repo method. */
+const PY_BUILTIN_TYPES = new Set(['str', 'bytes', 'bytearray', 'int', 'float', 'bool', 'list', 'dict', 'set', 'frozenset', 'tuple']);
 
 export function parseJsonc(text: string): any {
   try {
@@ -166,6 +171,7 @@ class Resolver {
         bindings,
         methods,
         types: new Map(f.types.map((t) => [`${t.scope ?? ''}|${t.name}`, t.type])),
+        callTypes: new Map(),
       });
     }
     for (const [path, text] of configs) {
@@ -513,6 +519,7 @@ class Resolver {
     for (const f of this.factsList) this.addNodes(f);
     for (const f of this.factsList) this.addImports(f);
     for (const f of this.factsList) this.addExtends(f);
+    this.inferCallTypes();
     for (const f of this.factsList) this.addCalls(f);
     for (const f of this.factsList) this.addVariables(f);
     this.stats.files = this.factsList.length;
@@ -680,13 +687,69 @@ class Resolver {
       const cls = this.enclosingClass(entry, caller);
       return cls ? entry.types.get(`class:${cls}|${recv}`) : undefined;
     }
+    return this.scoped(entry.types, caller, recv);
+  }
+
+  /** `name` looked up from the caller's scope outwards (`a.b|x`, `a|x`, `|x`). */
+  private scoped<V>(map: Map<string, V>, caller: string | null, name: string): V | undefined {
     const parts = caller ? caller.split('.') : [];
     for (let i = parts.length; i >= 0; i--) {
-      const t = entry.types.get(`${parts.slice(0, i).join('.')}|${recv}`);
-      if (t) return t;
+      const t = map.get(`${parts.slice(0, i).join('.')}|${name}`);
+      if (t !== undefined) return t;
     }
     return undefined;
   }
+
+  /**
+   * `const res = await app.request('/')` / `resp = client.get(url)`: when the call resolves with certainty
+   * ('resolved') to a function with a declared return type, the variable gets that type. The type name is resolved
+   * in the CALLEE's file, where it is in scope, and stored as a class, or as 'builtin' for Response, Map, str, ...
+   * (whose methods are never repo code).
+   *
+   * Types are not flow-sensitive, so a variable is typed only when EVERY definition of it in that scope is such a
+   * call and they all agree: a parameter reassigned in one branch (`cookiejar = cookiejar_from_dict(...)`) keeps
+   * its other meaning elsewhere, so it is left alone. Two rounds let one inferred variable type the next.
+   */
+  private inferCallTypes() {
+    const same = (a: { file: string; sym: SymbolFact } | 'builtin', b: { file: string; sym: SymbolFact } | 'builtin') =>
+      a === b || (a !== 'builtin' && b !== 'builtin' && a.file === b.file && a.sym.qname === b.sym.qname);
+    for (let round = 0; round < 2; round++) {
+      for (const entry of this.entries.values()) {
+        const groups = new Map<string, CallTypeHint[]>();
+        for (const h of entry.facts.callTypes ?? []) {
+          const key = `${h.scope ?? ''}|${h.name}`;
+          (groups.get(key) ?? groups.set(key, []).get(key)!).push(h);
+        }
+        for (const [key, hints] of groups) {
+          if (entry.callTypes.has(key)) continue;
+          const defs = entry.facts.vars.filter((v) => `${v.scope ?? ''}|${v.name}` === key).length;
+          if (defs !== hints.length) continue;
+          let type: { file: string; sym: SymbolFact } | 'builtin' | undefined;
+          for (const h of hints) {
+            const t = this.callReturnType(entry, h);
+            if (!t || (type && !same(type, t))) {
+              type = undefined;
+              break;
+            }
+            type = t;
+          }
+          if (type) entry.callTypes.set(key, type);
+        }
+      }
+    }
+  }
+
+  private callReturnType(entry: Entry, h: CallTypeHint): { file: string; sym: SymbolFact } | 'builtin' | undefined {
+    const targets = this.resolveCall(entry, { caller: h.scope, ...h.call });
+    if (targets.length !== 1 || targets[0].confidence !== 'resolved') return undefined;
+    const { file, sym } = targets[0];
+    const ret = h.awaited ? (sym.returnsAwaited ?? sym.returns) : sym.returns;
+    if (!ret) return undefined;
+    const cls = this.resolveClassName(this.entries.get(file)!, ret, sym.qname);
+    if (cls) return cls;
+    return (entry.facts.family === 'js' ? JS_BUILTIN_TYPES : PY_BUILTIN_TYPES).has(ret) ? 'builtin' : undefined;
+  }
+
 
   /** Every internal file reachable from `file` through its imports (transitively, barrels included). */
   private closureCache = new Map<string, Set<string>>();
@@ -839,6 +902,13 @@ class Resolver {
         if (m) return one(m.file, m.sym, 'resolved');
         // `const seen = new Map()` -> `seen.get(k)` is Map#get, not some repo class's `get`.
         if (!cls && entry.facts.family === 'js' && JS_BUILTIN_TYPES.has(T)) return [];
+      }
+      // typed by a call's declared return type; a declared type that resolved to a class above takes precedence
+      const R = recv.includes('.') ? undefined : this.scoped(entry.callTypes, call.caller, recv);
+      if (R === 'builtin') return [];
+      if (R) {
+        const m = this.findMethod(R.file, R.sym.qname, call.callee);
+        if (m) return one(m.file, m.sym, 'resolved');
       }
       // local class (static call)
       const localCls = this.scopeLookup(entry, call.caller, recv);

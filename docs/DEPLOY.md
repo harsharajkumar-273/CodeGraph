@@ -1,9 +1,9 @@
 # Deploying the public demo
 
-The `Dockerfile` builds a **read-only demo**: it indexes one repo at image build time (Flask 3.1.0 by default) and
-runs `codegraph serve --graph` on it. Visitors can browse that graph; they cannot make the server clone or parse
-anything, so there is no untrusted input beyond URL paths. The container runs as a non-root user and listens on
-`$PORT`, defaulting to 8080.
+Every option below publishes a **read-only demo**: the graph of one repo (Flask 3.1.0 by default), built ahead of
+time. Visitors can browse that graph, but nothing they do makes anything clone or parse code. Vercel serves it as a
+static site. For Cloud Run and AWS, the `Dockerfile` indexes the repo at image build time and runs
+`codegraph serve --graph` on it, as a non-root user listening on `$PORT` (default 8080).
 
 ```bash
 docker build -t codegraph-demo .
@@ -14,7 +14,21 @@ To show a different repo, pass build args:
 `--build-arg DEMO_REPO=https://github.com/honojs/hono --build-arg DEMO_REF=v4.6.0`. `DEMO_REF` must be a branch or a
 tag.
 
-## Google Cloud Run (recommended)
+## Vercel (recommended: static, free)
+
+The demo needs no server: `npm run build:demo` builds the UI and indexes the demo repo into a static `graph.json`,
+and `vercel.json` routes the UI's `/api/graph` request to it.
+
+1. Sign in at <https://vercel.com> with GitHub. The free Hobby plan is enough.
+2. Click **Add New → Project**, import `harsharajkumar-273/CodeGraph` and click **Deploy**. Leave every setting as
+   it is; `vercel.json` provides the install command, build command and output folder.
+3. Vercel prints a `https://<project>.vercel.app` URL. Every push to `main` redeploys it.
+
+To show a different repo, set `DEMO_REPO` (a git URL) and `DEMO_REF` (a branch or tag) under **Settings →
+Environment Variables**, then redeploy. To try the static build locally, run `npm run build:demo` and serve
+`packages/web/dist` with the same rewrite.
+
+## Google Cloud Run
 
 Cloud Run scales to zero, so an idle demo costs nothing, and its free tier covers a low-traffic demo. You still need
 a billing account attached to the project.

@@ -16,7 +16,7 @@ const key = (r) => `${r.file}|${r.line}|${r.callee}`;
 const group = (arr) => arr.reduce((m, x) => (m.get(key(x)) ?? m.set(key(x), []).get(key(x))).push(x) && m, new Map());
 const cg = group(rd(sitesPath).filter((r) => r.kind !== 'ref'));
 const oracle = group(rd(oraclePath));
-const isTest = (f) => /(^|\/)(tests?|__tests__|spec)(\/|$)|\.(test|spec)\.[mc]?tsx?$/.test(f);
+const isTest = (f) => /(^|\/)(tests?|__tests__|spec)(\/|$)|\.(test|spec)\.[mc]?tsx?$|(^|\/)test_[^/]*\.py$|_test\.py$/.test(f);
 
 const blank = () => ({
   sites: { internal: 0, nosym: 0, external: 0, abstract: 0, unknown: 0 },

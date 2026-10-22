@@ -5,3 +5,5 @@ dist
 .DS_Store
 coverage
 packages/web/vite.config.ts.timestamp-*
+packages/cli/README.md
+packages/cli/LICENSE
