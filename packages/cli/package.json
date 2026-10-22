@@ -1,6 +1,6 @@
 {
   "name": "codegraph-engine",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "AST dependency, call-graph, variable-lineage and blast-radius engine for TypeScript/JavaScript/Python repos, with confidence-labeled edges (resolved/probable/ambiguous) and a React Flow UI.",
   "type": "module",
   "license": "MIT",

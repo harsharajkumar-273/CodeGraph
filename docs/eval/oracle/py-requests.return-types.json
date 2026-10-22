@@ -1,0 +1,299 @@
+{
+ "all": {
+  "sites": {
+   "internal": 1076,
+   "nosym": 9,
+   "external": 1108,
+   "abstract": 0,
+   "unknown": 491
+  },
+  "internal": {
+   "found": 1033,
+   "wrongOnly": 0,
+   "unresolved": 35,
+   "notExtracted": 8
+  },
+  "nosym": {
+   "clean": 9,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 1034,
+   "falseEdge": 74
+  },
+  "edges": {
+   "correct": 1033,
+   "incorrect": 163,
+   "byTier": {
+    "resolved": {
+     "correct": 971,
+     "incorrect": 0,
+     "precision": 100
+    },
+    "ambiguous": {
+     "correct": 53,
+     "incorrect": 161,
+     "precision": 24.8
+    },
+    "probable": {
+     "correct": 9,
+     "incorrect": 2,
+     "precision": 81.8
+    }
+   }
+  },
+  "emitted": 1196,
+  "precision": 86.4,
+  "recall": 96,
+  "externalFalseEdgeRate": 6.7,
+  "nosymFalseEdgeRate": 0
+ },
+ "src": {
+  "sites": {
+   "internal": 292,
+   "nosym": 8,
+   "external": 617,
+   "abstract": 0,
+   "unknown": 75
+  },
+  "internal": {
+   "found": 279,
+   "wrongOnly": 0,
+   "unresolved": 5,
+   "notExtracted": 8
+  },
+  "nosym": {
+   "clean": 8,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 576,
+   "falseEdge": 41
+  },
+  "edges": {
+   "correct": 279,
+   "incorrect": 78,
+   "byTier": {
+    "resolved": {
+     "correct": 275,
+     "incorrect": 0,
+     "precision": 100
+    },
+    "ambiguous": {
+     "correct": 3,
+     "incorrect": 76,
+     "precision": 3.8
+    },
+    "probable": {
+     "correct": 1,
+     "incorrect": 2,
+     "precision": 33.3
+    }
+   }
+  },
+  "emitted": 357,
+  "precision": 78.2,
+  "recall": 95.5,
+  "externalFalseEdgeRate": 6.6,
+  "nosymFalseEdgeRate": 0
+ },
+ "test": {
+  "sites": {
+   "internal": 784,
+   "nosym": 1,
+   "external": 491,
+   "abstract": 0,
+   "unknown": 416
+  },
+  "internal": {
+   "found": 754,
+   "wrongOnly": 0,
+   "unresolved": 30,
+   "notExtracted": 0
+  },
+  "nosym": {
+   "clean": 1,
+   "falseEdge": 0
+  },
+  "external": {
+   "clean": 458,
+   "falseEdge": 33
+  },
+  "edges": {
+   "correct": 754,
+   "incorrect": 85,
+   "byTier": {
+    "resolved": {
+     "correct": 696,
+     "incorrect": 0,
+     "precision": 100
+    },
+    "ambiguous": {
+     "correct": 50,
+     "incorrect": 85,
+     "precision": 37
+    },
+    "probable": {
+     "correct": 8,
+     "incorrect": 0,
+     "precision": 100
+    }
+   }
+  },
+  "emitted": 839,
+  "precision": 89.9,
+  "recall": 96.2,
+  "externalFalseEdgeRate": 6.7,
+  "nosymFalseEdgeRate": 0
+ },
+ "examples": {
+  "wrongOnly": [],
+  "falseEdgeExternal": [
+   {
+    "at": "src/requests/adapters.py:232",
+    "callee": "items",
+    "want": "/tmp/claude-0/-home-user-CodeGraph/df3ce567-4aec-5cb3-837b-57ef53906f0a/scratchpad/pyenv/lib/python3.13/site-packages/jedi/third_party/typeshed/stdlib/3/builtins.pyi",
+    "got": [
+     "src/requests/_types.py#SupportsItems.items (ambiguous)",
+     "src/requests/cookies.py#RequestsCookieJar.items (ambiguous)"
+    ]
+   },
+   {
+    "at": "src/requests/adapters.py:562",
+    "callee": "values",
+    "want": "/tmp/claude-0/-home-user-CodeGraph/df3ce567-4aec-5cb3-837b-57ef53906f0a/scratchpad/pyenv/lib/python3.13/site-packages/jedi/third_party/typeshed/stdlib/3/builtins.pyi",
+    "got": [
+     "src/requests/cookies.py#RequestsCookieJar.values (ambiguous)"
+    ]
+   },
+   {
+    "at": "src/requests/auth.py:291",
+    "callee": "get",
+    "want": "/tmp/claude-0/-home-user-CodeGraph/df3ce567-4aec-5cb3-837b-57ef53906f0a/scratchpad/pyenv/lib/python3.13/site-packages/jedi/third_party/typeshed/stdlib/3/typing.pyi",
+    "got": [
+     "src/requests/cookies.py#RequestsCookieJar.get (ambiguous)"
+    ]
+   },
+   {
+    "at": "src/requests/cookies.py:161",
+    "callee": "get",
+    "want": "/tmp/claude-0/-home-user-CodeGraph/df3ce567-4aec-5cb3-837b-57ef53906f0a/scratchpad/pyenv/lib/python3.13/site-packages/jedi/third_party/typeshed/stdlib/3/typing.pyi",
+    "got": [
+     "src/requests/cookies.py#RequestsCookieJar.get (ambiguous)"
+    ]
+   },
+   {
+    "at": "src/requests/cookies.py:522",
+    "callee": "update",
+    "want": "/tmp/claude-0/-home-user-CodeGraph/df3ce567-4aec-5cb3-837b-57ef53906f0a/scratchpad/pyenv/lib/python3.13/site-packages/jedi/third_party/typeshed/stdlib/3/builtins.pyi",
+    "got": [
+     "src/requests/cookies.py#RequestsCookieJar.update (ambiguous)"
+    ]
+   },
+   {
+    "at": "src/requests/cookies.py:87",
+    "callee": "get",
+    "want": "/tmp/claude-0/-home-user-CodeGraph/df3ce567-4aec-5cb3-837b-57ef53906f0a/scratchpad/pyenv/lib/python3.13/site-packages/jedi/third_party/typeshed/stdlib/3/typing.pyi",
+    "got": [
+     "src/requests/cookies.py#RequestsCookieJar.get (ambiguous)"
+    ]
+   },
+   {
+    "at": "src/requests/cookies.py:87",
+    "callee": "get",
+    "want": "/tmp/claude-0/-home-user-CodeGraph/df3ce567-4aec-5cb3-837b-57ef53906f0a/scratchpad/pyenv/lib/python3.13/site-packages/jedi/third_party/typeshed/stdlib/3/typing.pyi",
+    "got": [
+     "src/requests/cookies.py#RequestsCookieJar.get (ambiguous)"
+    ]
+   },
+   {
+    "at": "src/requests/cookies.py:456",
+    "callee": "copy",
+    "want": "/tmp/claude-0/-home-user-CodeGraph/df3ce567-4aec-5cb3-837b-57ef53906f0a/scratchpad/pyenv/lib/python3.13/site-packages/jedi/third_party/typeshed/stdlib/3/builtins.pyi",
+    "got": [
+     "src/requests/cookies.py#RequestsCookieJar.copy (ambiguous)",
+     "src/requests/models.py#PreparedRequest.copy (ambiguous)"
+    ]
+   },
+   {
+    "at": "src/requests/cookies.py:463",
+    "callee": "update",
+    "want": "/tmp/claude-0/-home-user-CodeGraph/df3ce567-4aec-5cb3-837b-57ef53906f0a/scratchpad/pyenv/lib/python3.13/site-packages/jedi/third_party/typeshed/stdlib/3/builtins.pyi",
+    "got": [
+     "src/requests/cookies.py#RequestsCookieJar.update (ambiguous)"
+    ]
+   },
+   {
+    "at": "src/requests/cookies.py:490",
+    "callee": "set_cookie",
+    "want": "/usr/lib/python3.13/http/cookiejar.py",
+    "got": [
+     "src/requests/cookies.py#RequestsCookieJar.set_cookie (probable)"
+    ]
+   }
+  ],
+  "falseEdgeNosym": [],
+  "unresolved": [
+   {
+    "at": "src/requests/auth.py:224",
+    "callee": "hash_utf8",
+    "want": "src/requests/auth.py#HTTPDigestAuth.build_digest_header.md5_utf8",
+    "got": []
+   },
+   {
+    "at": "src/requests/auth.py:225",
+    "callee": "hash_utf8",
+    "want": "src/requests/auth.py#HTTPDigestAuth.build_digest_header.md5_utf8",
+    "got": []
+   },
+   {
+    "at": "src/requests/auth.py:211",
+    "callee": "hash_utf8",
+    "want": "src/requests/auth.py#HTTPDigestAuth.build_digest_header.md5_utf8",
+    "got": []
+   },
+   {
+    "at": "src/requests/auth.py:239",
+    "callee": "hash_utf8",
+    "want": "src/requests/auth.py#HTTPDigestAuth.build_digest_header.md5_utf8",
+    "got": []
+   },
+   {
+    "at": "src/requests/auth.py:312",
+    "callee": "send",
+    "want": "src/requests/adapters.py#HTTPAdapter.send",
+    "got": []
+   },
+   {
+    "at": "tests/test_adapters.py:7",
+    "callee": "Request",
+    "want": "src/requests/models.py#Request",
+    "got": []
+   },
+   {
+    "at": "tests/test_lowlevel.py:150",
+    "callee": "HTTPDigestAuth",
+    "want": "src/requests/auth.py#HTTPDigestAuth",
+    "got": []
+   },
+   {
+    "at": "tests/test_lowlevel.py:206",
+    "callee": "HTTPDigestAuth",
+    "want": "src/requests/auth.py#HTTPDigestAuth",
+    "got": []
+   },
+   {
+    "at": "tests/test_lowlevel.py:249",
+    "callee": "HTTPDigestAuth",
+    "want": "src/requests/auth.py#HTTPDigestAuth",
+    "got": []
+   },
+   {
+    "at": "tests/test_requests.py:3088",
+    "callee": "JSONDecodeError",
+    "want": "src/requests/exceptions.py#JSONDecodeError",
+    "got": []
+   }
+  ]
+ }
+}

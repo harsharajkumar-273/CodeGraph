@@ -84,8 +84,36 @@ function typeName(n: Node | null | undefined): string | null {
   }
 }
 
+/** What `await` of a value of this type yields: `Promise<Foo>` / `PromiseLike<Foo>` give `Foo`, other types themselves. */
+function awaitedTypeName(n: Node | null | undefined): string | null {
+  if (!n) return null;
+  switch (n.type) {
+    case 'type_annotation':
+    case 'parenthesized_type':
+      return awaitedTypeName(named(n)[0]);
+    case 'generic_type': {
+      const nm = n.childForFieldName('name')?.text;
+      if (nm === 'Promise' || nm === 'PromiseLike') return typeName(named(n.childForFieldName('type_arguments'))[0]);
+      return typeName(n);
+    }
+    case 'union_type': {
+      // `Response | Promise<Response>` awaits to Response; members must agree, as in typeName.
+      const names: string[] = [];
+      for (const m of named(n)) {
+        if (/^(null|undefined|void)$/.test(m.text)) continue;
+        const t = awaitedTypeName(m);
+        if (!t) return null;
+        names.push(t);
+      }
+      return new Set(names).size === 1 ? names[0] : null;
+    }
+    default:
+      return typeName(n);
+  }
+}
+
 export function extractJs(path: string, lang: string, root: Node): FileFacts {
-  const facts: FileFacts = { path, lang, family: 'js', symbols: [], imports: [], exports: [], calls: [], types: [], vars: [] };
+  const facts: FileFacts = { path, lang, family: 'js', symbols: [], imports: [], exports: [], calls: [], types: [], vars: [], callTypes: [] };
   const declared = new Set<string>();
 
   const addSymbol = (s: SymbolFact) => {
@@ -191,6 +219,7 @@ export function extractJs(path: string, lang: string, root: Node): FileFacts {
       endLine: node.endPosition.row + 1,
       className: kind === 'method' ? (ctx.cls ?? undefined) : undefined,
       ...(local ? { local: true } : {}),
+      ...returnTypes(node.childForFieldName('return_type')),
     });
     // Parameter default values / body are visited with this symbol as the caller.
     const inner: Ctx = { caller: qname, cls: kind === 'method' ? ctx.cls : null };
@@ -380,19 +409,26 @@ export function extractJs(path: string, lang: string, root: Node): FileFacts {
   }
 
   function callFromFn(fn: Node, ctx: Ctx, node: Node, isNew: boolean) {
-    if (fn.type === 'identifier') {
-      pushCall({ callee: fn.text, kind: isNew ? 'new' : 'plain', line: line(node) }, ctx);
-    } else if (fn.type === 'member_expression') {
-      const obj = chain(fn.childForFieldName('object'));
-      const prop = fn.childForFieldName('property');
-      if (!prop) return;
-      if (obj === 'this' || obj === 'super') {
-        pushCall({ callee: prop.text, receiver: obj, kind: 'this', line: line(node) }, ctx);
-      } else {
-        pushCall({ callee: prop.text, receiver: obj ?? undefined, kind: isNew ? 'new' : 'member', line: line(node) }, ctx);
-      }
-    }
+    const c = callShape(fn, node, isNew);
+    if (c) pushCall(c, ctx);
   }
+
+  /** The call fact for `fn(...)` (null for computed callees such as `a[b]()`). */
+  function callShape(fn: Node, node: Node, isNew: boolean): Omit<CallFact, 'caller'> | null {
+    if (fn.type === 'identifier') return { callee: fn.text, kind: isNew ? 'new' : 'plain', line: line(node) };
+    if (fn.type !== 'member_expression') return null;
+    const obj = chain(fn.childForFieldName('object'));
+    const prop = fn.childForFieldName('property');
+    if (!prop) return null;
+    if (obj === 'this' || obj === 'super') return { callee: prop.text, receiver: obj, kind: 'this', line: line(node) };
+    return { callee: prop.text, receiver: obj ?? undefined, kind: isNew ? 'new' : 'member', line: line(node) };
+  }
+
+  const returnTypes = (rt: Node | null | undefined) => {
+    const returns = typeName(rt);
+    const returnsAwaited = awaitedTypeName(rt);
+    return { ...(returns ? { returns } : {}), ...(returnsAwaited ? { returnsAwaited } : {}) };
+  };
 
   function handleCall(node: Node, ctx: Ctx) {
     const fn = node.childForFieldName('function');
@@ -531,6 +567,13 @@ export function extractJs(path: string, lang: string, root: Node): FileFacts {
           if (nm?.type === 'identifier' && !(val && (FUNC_VALUE.has(val.type) || val.type === 'class'))) {
             const t = typeName(d.childForFieldName('type')) ?? ctorType(val);
             if (t) facts.types.push({ scope: ctx.caller, name: nm.text, type: t });
+            else {
+              // `const res = await app.request('/')`: typed later by the callee's declared return type.
+              const call = val?.type === 'await_expression' ? named(val)[0] : val;
+              const fn = call?.type === 'call_expression' ? call.childForFieldName('function') : null;
+              const shape = fn && callShape(fn, call!, false);
+              if (shape) facts.callTypes!.push({ scope: ctx.caller, name: nm.text, call: shape, awaited: val!.type === 'await_expression' });
+            }
             pushVar({ scope: ctx.caller, name: nm.text, kind: kw, line: line(d), reads: collectReads(val) });
           }
           if (nm?.type === 'identifier' && val && FUNC_VALUE.has(val.type)) declareFunction(nm.text, val, ctx);

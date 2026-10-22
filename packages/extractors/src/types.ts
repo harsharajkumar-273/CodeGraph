@@ -18,6 +18,10 @@ export interface SymbolFact {
    * Only code in the same file can plausibly call it, so name-based matching never offers it to other files.
    */
   local?: boolean;
+  /** Declared return type as written (`Response`, `Foo`), for functions and methods. */
+  returns?: string;
+  /** What `await f()` yields: `Promise<Foo>` and `Foo | Promise<Foo>` give `Foo`. */
+  returnsAwaited?: string;
 }
 
 export interface ImportBinding {
@@ -76,6 +80,18 @@ export interface TypeHint {
 }
 
 /**
+ * A variable initialised from a call (`const res = await app.request('/')`, `resp = client.get(url)`): typed by the
+ * declared return type of whatever that call resolves to, which only the resolver can know.
+ */
+export interface CallTypeHint {
+  /** Enclosing symbol qname, or null for module scope (as in TypeHint). */
+  scope: string | null;
+  name: string;
+  call: Omit<CallFact, 'caller'>;
+  awaited: boolean;
+}
+
+/**
  * One (re)definition of a local variable or parameter within a function/module scope.
  * Stage 1 is intra-procedural and lexical: `reads` only ever resolves against variables
  * declared in the SAME scope. Free variables, closures over an outer scope, and object
@@ -101,5 +117,6 @@ export interface FileFacts {
   calls: CallFact[];
   types: TypeHint[];
   vars: VarFact[];
+  callTypes?: CallTypeHint[];
   lineCount?: number;
 }

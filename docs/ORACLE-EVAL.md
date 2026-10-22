@@ -1,4 +1,4 @@
-# Compiler-oracle evaluation (TypeScript)
+# Oracle evaluation (TypeScript compiler, Python Jedi)
 
 The earlier evaluations ([`PRECISION.md`](PRECISION.md), [`EVALUATION.md`](EVALUATION.md)) were labeled by the
 analyzer author's LLM on a few hundred call sites. They were also partly on repos the resolver was tuned against.
@@ -151,9 +151,78 @@ Pooled over the three fresh repos after both fixes: `resolved` 21,828 / 22,241 (
 What is left is mostly untyped receivers. Hono's `const res = await app.request(…)` followed by `res.text()` (868
 false edges) can only be told apart from `Context.text` with return-type inference, which CodeGraph does not attempt.
 
+## Fix 3: declared return types
+
+`const res = await app.request('/')` followed by `res.text()` was the largest remaining TypeScript error: nothing
+said what `res` is, so `text` was name-matched to `Context.text`. CodeGraph now records each function's declared
+return type (`): Promise<Page>`, `-> Response`). A variable initialised from a call that resolves with certainty
+gets that type, with `Promise<X>` unwrapped when the call is awaited. The type is resolved in the callee's file,
+where the name is in scope. A built-in result (`Response`, `str`) means no repo edge at all.
+
+Types are not flow-sensitive, so a variable is typed only when every definition of it in its scope is such a call
+and they all agree. The first version typed a variable from any one call, and the Python re-run caught it: in
+Requests' `merge_cookies`, a `CookieJar` parameter reassigned in one branch was typed as `RequestsCookieJar`
+everywhere. That produced one new wrong `resolved` edge, which the stricter rule removes.
+
+Re-run on all eight repos (TypeScript compiler / Jedi), before → after:
+
+| | correct edges found | wrong edges | `resolved` | `probable` | `ambiguous` |
+|---|---|---|---|---|---|
+| TypeScript, fresh (Hono, Immer, NestJS) | 23,858 → 23,860 | 3,270 → **2,829** | 21,828/22,241 → 21,957/22,370 (98.2%) | 862/1,247 → 768/1,111 (69.1%) | 1,168/3,640 → 1,135/3,208 (35.4%) |
+| Python, fresh (Requests, HTTPX, Rich) | 9,051 → 9,067 | 922 → **874** | 8,251/8,267 → 8,456/8,472 (99.8%) | 617/734 → 468/585 (80.0%) | 185/974 → 145/886 (16.4%) |
+
+No repo gained a wrong `resolved` edge, and no repo lost a correct edge. Most of the gain is correct edges moving up
+from `probable`/`ambiguous` to `resolved`, plus Hono's `res.text()` → `Context.text` errors disappearing (wrong
+edges at external calls: 1,199 → 960). That shift is also why Python's `probable` percentage falls from 84.1% to
+80.0%. Its errors are unchanged (117), but 149 correct edges left the tier for `resolved`. The totals (fewer wrong
+edges, more `resolved` edges at the same precision) are the measure that matters. `*.return-types.json` holds the
+re-run; the tests are in `fixtures/ts-returns` and `fixtures/py-returns`.
+
+## Python (Jedi as the oracle)
+
+The same method for Python, with [Jedi](https://github.com/davidhalter/jedi) 0.19.2 as the oracle
+(`scripts/eval/py-oracle.py`). Jedi is the static-inference engine behind many editors' go-to-definition, and it is
+independent of CodeGraph. Requests `611c6162`, HTTPX `b5addb64` and Rich `9d8f9a37` were chosen before any result was
+seen. Flask `d086db85` is development data, included for comparison.
+
+Two oracle problems were found and fixed before the numbers below:
+- Jedi ships old third-party stubs, including stubs for `flask`, which made the repo's own code look external. They
+  are emptied before running.
+- For `@overload`ed functions Jedi points at the first stub, not the implementation, so the checker falls back to the
+  qualified name.
+
+| Repo | | oracle-resolved calls | recall | `resolved` | `probable` | `ambiguous` | all edges |
+|---|---|---|---|---|---|---|---|
+| **Requests** | all | 1,076 | 96.0% | 927/927 (100%) | 34/36 (94.4%) | 72/272 (26.5%) | 83.6% |
+| **HTTPX** | all | 2,071 | 95.1% | 1,788/1,798 (99.4%)¹ | 169/240 (70.4%) | 14/244 (5.7%) | 86.4% |
+| **Rich** | all | 6,222 | 97.2% | 5,536/5,542 (99.9%) | 414/458 (90.4%) | 99/458 (21.6%) | 93.7% |
+| *Flask (dev)* | all | 1,220 | 92.7% | 1,037/1,038 (99.9%) | 71/71 (100%) | 23/96 (24.0%) | 93.9% |
+
+Pooled over the three fresh repos: `resolved` 8,251 / 8,267 (**99.8%**), `probable` 617 / 734 (**84.1%**),
+`ambiguous` 185 / 974 (19.0%), recall 96.6% of the calls Jedi resolves. Per-repo JSON is in
+`docs/eval/oracle/py-*.json`.
+
+¹ All 10 HTTPX "errors" are Jedi's, not CodeGraph's. `codes` is an `IntEnum` with real classmethods
+(`codes.get_reason_phrase`), and Jedi treats it as a plain `int`. Counting those 10 as correct, HTTPX `resolved` is
+1,798/1,798.
+
+Real CodeGraph errors this surfaced:
+- **Function-local imports are ignored.** Flask's `test_client` does `from .testing import FlaskClient as cls` and
+  calls `cls(…)`, but the edge goes to `FlaskCliRunner`, which another function imports under the same local name.
+  Rich's `get_windows_console_features` imports a same-named function inside its body, and the call is linked to the
+  enclosing function. These are the only `resolved` errors found in Python.
+- **Sync/async twins:** `client.get()` on an `httpx.AsyncClient` goes to `Client.get`. This is most of HTTPX's
+  `probable` errors.
+- **Built-in collisions, as in TypeScript:** `str.rstrip` → `Text.rstrip`, `list.extend` → `Lines.extend`, and
+  `CookieJar.set_cookie` → `RequestsCookieJar.set_cookie`.
+
+Python coverage is better than TypeScript's: only 9% of call sites are `unknown` to Jedi, against 22–70% for the
+TypeScript checker without dependencies installed. A known limit is that Jedi infers types less completely than a
+type checker, so calls on untyped receivers are not scored.
+
 ## Limits of this evaluation
 
-- **Scope.** Only TypeScript is covered: no JavaScript (Express, Immer's JS tests) and no Python (Flask). Only the
+- **Scope.** TypeScript (compiler) and Python (Jedi) are covered; JavaScript (Express, Immer's JS tests) is not. Only the
   call shapes CodeGraph extracts are scored, and JSX is skipped.
 - **Coverage.** With dependencies not installed, `unknown` is large. It is mostly test-framework globals (`expect`,
   `describe`), so it is mostly external anyway. Even so, a share of CodeGraph's edges cannot be scored at all:

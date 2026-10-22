@@ -46,7 +46,7 @@ function annType(n: Node | null | undefined): string | null {
 }
 
 export function extractPython(path: string, lang: string, root: Node): FileFacts {
-  const facts: FileFacts = { path, lang, family: 'python', symbols: [], imports: [], exports: [], calls: [], types: [], vars: [] };
+  const facts: FileFacts = { path, lang, family: 'python', symbols: [], imports: [], exports: [], calls: [], types: [], vars: [], callTypes: [] };
   const declared = new Set<string>();
 
   const addSymbol = (s: SymbolFact) => {
@@ -119,6 +119,8 @@ export function extractPython(path: string, lang: string, root: Node): FileFacts
       startLine: line(node),
       endLine: node.endPosition.row + 1,
       className: isMethod ? (ctx.cls ?? undefined) : undefined,
+      // `-> Foo` (for `async def`, also what `await f()` yields).
+      ...(annType(node.childForFieldName('return_type')) ? { returns: annType(node.childForFieldName('return_type'))! } : {}),
     });
     for (const prm of named(node.childForFieldName('parameters'))) {
       if (prm.type !== 'typed_parameter' && prm.type !== 'typed_default_parameter') continue;
@@ -195,21 +197,22 @@ export function extractPython(path: string, lang: string, root: Node): FileFacts
     facts.calls.push({ caller: ctx.caller, ...c });
   }
 
-  function handleCall(node: Node, ctx: Ctx) {
+  /** The call fact for a `call` node (null for computed callees such as `fns[i]()`). */
+  function callShape(node: Node): Omit<CallFact, 'caller'> | null {
     const fn = node.childForFieldName('function');
+    if (fn?.type === 'identifier') return { callee: fn.text, kind: 'plain', line: line(node) };
+    if (fn?.type !== 'attribute') return null;
+    const obj = chain(fn.childForFieldName('object'));
+    const attr = fn.childForFieldName('attribute');
+    if (!attr) return null;
+    if (obj === 'self' || obj === 'cls' || obj === 'super') return { callee: attr.text, receiver: obj, kind: 'this', line: line(node) };
+    return { callee: attr.text, receiver: obj ?? undefined, kind: 'member', line: line(node) };
+  }
+
+  function handleCall(node: Node, ctx: Ctx) {
     const args = node.childForFieldName('arguments');
-    if (fn) {
-      if (fn.type === 'identifier') {
-        push({ callee: fn.text, kind: 'plain', line: line(node) }, ctx);
-      } else if (fn.type === 'attribute') {
-        const obj = chain(fn.childForFieldName('object'));
-        const attr = fn.childForFieldName('attribute');
-        if (attr) {
-          if (obj === 'self' || obj === 'cls' || obj === 'super') push({ callee: attr.text, receiver: obj, kind: 'this', line: line(node) }, ctx);
-          else push({ callee: attr.text, receiver: obj ?? undefined, kind: 'member', line: line(node) }, ctx);
-        }
-      }
-    }
+    const shape = callShape(node);
+    if (shape) push(shape, ctx);
     if (args) {
       for (const a of named(args)) {
         if (a.type === 'identifier') push({ callee: a.text, kind: 'ref', line: line(a) }, ctx);
@@ -271,6 +274,11 @@ export function extractPython(path: string, lang: string, root: Node): FileFacts
             if (isAttr && ctx.cls) facts.types.push({ scope: `class:${ctx.cls}`, name: ln, type: t });
             else if (!isAttr) facts.types.push({ scope: ctx.caller, name: ln, type: t });
           }
+          // `resp = client.get(url)` / `resp = await client.get(url)`: the call may be a function with `-> Response`
+          // rather than a class; the resolver decides once it knows what the call resolves to.
+          const call = right?.type === 'await' ? named(right)[0] : right;
+          const shape = !ln.includes('.') && !annType(node.childForFieldName('type')) && call?.type === 'call' ? callShape(call) : null;
+          if (shape) facts.callTypes!.push({ scope: ctx.caller, name: ln, call: shape, awaited: right!.type === 'await' });
           if (!ln.includes('.')) pushVar({ scope: ctx.caller, name: ln, kind: 'assign', line: line(node), reads: collectReads(right) });
         }
         visitChildren(node, ctx);

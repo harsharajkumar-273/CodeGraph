@@ -21,7 +21,14 @@ Impact   3 symbols in 6 files  (3 resolved · 0 probable · 0 ambiguous)
   d3  resolved  src/flask/app.py#Flask.__call__
 ```
 
-Every edge is labelled **resolved / probable / ambiguous**, so you can see *how much* of a blast radius is proven vs. guessed, and filter accordingly. Against the TypeScript compiler as an independent oracle on three repos CodeGraph was never tuned on (Hono, Immer, NestJS — every call site, not a sample), `resolved` edges are 98% correct (99.9–100% outside test code), but `probable` is only 69% and `ambiguous` 32%. Treat `probable` as a lead to check, not a fact. See [`docs/ORACLE-EVAL.md`](docs/ORACLE-EVAL.md) for the numbers and their limits (TypeScript only, no adoption or independent-user evidence yet). The earlier LLM-labeled samples are in [`docs/PRECISION.md`](docs/PRECISION.md) and [`docs/EVALUATION.md`](docs/EVALUATION.md).
+Every edge is labelled **resolved / probable / ambiguous**, so you can see *how much* of a blast radius is proven vs. guessed, and filter accordingly. Checked against independent oracles on every call site of six repos CodeGraph was never tuned on, not a sample:
+
+| | `resolved` | `probable` | `ambiguous` |
+|---|---|---|---|
+| TypeScript: Hono, Immer, NestJS (vs. the TypeScript compiler) | 98% | 69% | 35% |
+| Python: Requests, HTTPX, Rich (vs. Jedi) | 99.8% | 80% | 16% |
+
+Trust `resolved`; treat `probable` as a lead to check and `ambiguous` as a list of name matches. See [`docs/ORACLE-EVAL.md`](docs/ORACLE-EVAL.md) for the numbers and their limits (no JavaScript-only repos yet, no adoption or independent-user evidence yet). The earlier LLM-labeled samples are in [`docs/PRECISION.md`](docs/PRECISION.md) and [`docs/EVALUATION.md`](docs/EVALUATION.md).
 
 ## Install
 
@@ -63,7 +70,7 @@ npm run build:web && npm run cg -- serve .        # http://localhost:4173
 # or, with hot reload:  npm run cg -- serve .   +   npm run dev:web
 ```
 
-To host the UI as a public read-only demo (Docker, Google Cloud Run or AWS), see [`docs/DEPLOY.md`](docs/DEPLOY.md).
+To host the UI as a public read-only demo (Vercel, Docker, Google Cloud Run or AWS), see [`docs/DEPLOY.md`](docs/DEPLOY.md).
 
 Targets accepted by `impact` / `slice`: `src/a.ts`, `src/a.ts#Foo.bar`, `src/a.ts:42`, or a bare `Foo.bar`.
 
