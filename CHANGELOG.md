@@ -2,6 +2,21 @@
 
 All notable changes to [`codegraph-engine`](https://www.npmjs.com/package/codegraph-engine).
 
+## Unreleased
+
+### Added
+- **The web app analyzes any repository, in the browser.** Paste a public GitHub repository (or `owner/repo@branch`, or
+  a `github.com` link) or drop a project folder; the parser (WebAssembly) runs in a Web Worker and nothing is uploaded.
+  Shareable `?repo=owner/repo` links, a "where to start" overview, search (`/`), a file tree, an inspector with the
+  blast radius, callers, callees and source, and a layout that stays readable on large repositories (test functions and
+  very large blast radii fold into one node per file; selecting a file shows its import neighbourhood).
+- `@codegraph/parser` and `@codegraph/extractors` have browser entry points; the in-memory indexing path no longer
+  imports `node:path` or `node:fs`.
+
+### Changed
+- `codegraph serve` marks the page it serves, so the web app only probes for `/api/graph` when a graph is waiting.
+- The npm package is larger: it now ships the web app's WebAssembly grammars (about 6 MB unpacked).
+
 ## 0.2.0
 
 Accuracy fixes from an independent evaluation. Every call site in Hono, Immer and NestJS, repos CodeGraph was never
