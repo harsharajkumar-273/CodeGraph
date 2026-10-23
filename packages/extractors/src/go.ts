@@ -1,5 +1,5 @@
 import type { Node } from '@codegraph/parser';
-import { named } from './util';
+import { argCount, named } from './util';
 import type { CallFact, FileFacts, SymbolFact } from './types';
 
 const line = (n: Node) => n.startPosition.row + 1;
@@ -224,6 +224,17 @@ export function extractGo(path: string, lang: string, root: Node): FileFacts {
     return out;
   }
 
+  /** Go has no defaults or optional parameters: every named parameter is required, a `...T` makes the function variadic. */
+  function arityOf(fn: Node): { min: number; max: number | null } {
+    let n = 0;
+    let variadic = false;
+    for (const p of named(fn.childForFieldName('parameters'))) {
+      if (p.type === 'variadic_parameter_declaration') variadic = true;
+      else if (p.type === 'parameter_declaration') n += Math.max(1, named(p).filter((c) => c.type === 'identifier').length);
+    }
+    return { min: n, max: variadic ? null : n };
+  }
+
   function declareFunction(node: Node) {
     const nm = node.childForFieldName('name');
     if (!nm) return;
@@ -235,7 +246,7 @@ export function extractGo(path: string, lang: string, root: Node): FileFacts {
     go.results[qname] = res;
     addSymbol({
       name: nm.text, qname, kind: isMethod ? 'method' : 'function', startLine: line(node), endLine: node.endPosition.row + 1,
-      ...(isMethod ? { className: recvType } : {}), ...(res[0] && res[0] !== '?' ? { returns: res[0] } : {}),
+      ...(isMethod ? { className: recvType } : {}), arity: arityOf(node), ...(res[0] && res[0] !== '?' ? { returns: res[0] } : {}),
     });
     if (recv) for (const n of named(recv)) if (n.type === 'identifier') setType(qname, n.text, recvType, n);
     params(node.childForFieldName('parameters'), qname);
@@ -360,7 +371,7 @@ export function extractGo(path: string, lang: string, root: Node): FileFacts {
       }
       case 'call_expression': {
         const shape = callShape(node);
-        if (shape) facts.calls.push({ caller: ctx.caller, ...shape, line: line(node), ...(ctx.scope ? { scope: ctx.scope } : {}) });
+        if (shape) facts.calls.push({ caller: ctx.caller, ...shape, ...argCount(node.childForFieldName('arguments')), line: line(node), ...(ctx.scope ? { scope: ctx.scope } : {}) });
         for (const a of named(node.childForFieldName('arguments'))) {
           if (a.type === 'identifier') facts.calls.push({ caller: ctx.caller, callee: a.text, kind: 'ref', line: line(a), ...(ctx.scope ? { scope: ctx.scope } : {}) });
         }

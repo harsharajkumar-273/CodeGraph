@@ -189,3 +189,96 @@ describe('comparing a pull request with its base', () => {
     expect(await comment()).not.toMatch(/still there/);
   });
 });
+
+describe('the verdict', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'cg-verdict-'));
+  const git = (...a: string[]) => execFileSync('git', ['-c', 'user.email=t@t', '-c', 'user.name=t', ...a], { cwd: dir, stdio: 'pipe' });
+  const write = (name: string, text: string) => writeFileSync(join(dir, name), text);
+  afterAll(() => rmSync(dir, { recursive: true, force: true }));
+  async function comment() {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      await cmdImpact([], { diff: true, range: 'main...HEAD', repo: dir, format: 'markdown' });
+      return log.mock.calls.map((c) => c.join(' ')).join('\n');
+    } finally {
+      log.mockRestore();
+      err.mockRestore();
+    }
+  }
+  const reset = () => git('checkout', '-q', 'main') && undefined;
+
+  it('says likely breaking when a function now needs another argument, and names it', async () => {
+    git('init', '-q', '-b', 'main');
+    write('lib.py', 'def connect(host, port):\n    return host\n\ndef helper(x):\n    return x\n');
+    write('app.py', 'from lib import connect, helper\n\ndef run():\n    return connect("a", 1)\n\ndef other():\n    return helper(2)\n');
+    git('add', '-A');
+    git('commit', '-qm', 'base');
+    git('checkout', '-qb', 'sig');
+    write('lib.py', 'def connect(host, port, timeout):\n    return host\n\ndef helper(x):\n    return x + 1\n\ndef brand_new(a):\n    return a\n');
+    git('commit', '-qam', 'change');
+    const md = await comment();
+    expect(md).toMatch(/Verdict: 🔴 likely breaking/);
+    expect(md).toContain('`connect` now requires 1 more argument, but `app.py:4` passes 2');
+    expect(md).toMatch(/the 2 existing symbols this change edits/); // brand_new is new, not edited
+    reset();
+  });
+
+  it('does not say breaking when the callers were updated in the same change, but still notes the public signature', async () => {
+    git('checkout', '-q', 'main');
+    git('checkout', '-qb', 'sig-ok');
+    write('lib.py', 'def connect(host, port, timeout):\n    return host\n\ndef helper(x):\n    return x\n');
+    write('app.py', 'from lib import connect, helper\n\ndef run():\n    return connect("a", 1, 5)\n\ndef other():\n    return helper(2)\n');
+    git('commit', '-qam', 'update callers too');
+    const md = await comment();
+    expect(md).not.toMatch(/Verdict: 🔴/);
+    expect(md).toMatch(/Verdict: 🟠 may change public API/);
+    expect(md).toContain('every call in this repository already fits');
+    reset();
+  });
+
+  it('says additive for new code only, and lists the new public symbols', async () => {
+    git('checkout', '-qb', 'add');
+    write('extra.py', 'def fresh_feature(a):\n    return a\n\ndef _private(a):\n    return a\n');
+    git('add', '-A');
+    git('commit', '-qm', 'add');
+    const md = await comment();
+    expect(md).toMatch(/Verdict: 🟢 additive/);
+    expect(md).toContain('`fresh_feature`');
+    expect(md).not.toContain('`_private`');
+    reset();
+  });
+
+  it('says it may change public API when an unused exported function is deleted', async () => {
+    git('checkout', '-qb', 'rm');
+    write('lib.py', 'def connect(host, port):\n    return host\n');
+    git('commit', '-qam', 'remove helper');
+    // `other` in app.py still calls helper(): that is the louder finding
+    expect(await comment()).toMatch(/Verdict: 🔴/);
+    write('app.py', 'from lib import connect\n\ndef run():\n    return connect("a", 1)\n');
+    git('commit', '-qam', 'fix callers');
+    const md = await comment();
+    expect(md).toMatch(/Verdict: 🟠 may change public API/);
+    expect(md).toMatch(/removes .*`helper`/);
+    reset();
+  });
+
+  it('says contained when the edited code has no outside callers', async () => {
+    git('checkout', '-qb', 'inner');
+    write('solo.py', 'def only_here(a):\n    return a\n');
+    git('add', '-A');
+    git('commit', '-qm', 'solo');
+    git('checkout', '-qb', 'inner2');
+    write('solo.py', 'def only_here(a):\n    return a + 1\n');
+    git('commit', '-qam', 'edit');
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      await cmdImpact([], { diff: true, range: 'inner...HEAD', repo: dir, format: 'markdown' });
+      expect(log.mock.calls.map((c) => c.join(' ')).join('\n')).toMatch(/Verdict: 🟢 contained/);
+    } finally {
+      log.mockRestore();
+      err.mockRestore();
+    }
+  });
+});
