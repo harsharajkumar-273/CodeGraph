@@ -9,9 +9,10 @@ import { CodeGraph, type Confidence, type GraphJSON, type GraphNode } from '@cod
 import { indexRepo, type IndexOptions } from '@codegraph/extractors';
 import {
   blastRadius, changedNodes, importCycles, isTestPath, parseUnifiedDiff, removedButStillCalled, resolveTargets, slice, summarizeImpact, variableLineage,
-  changedSignatures, removedPublicApi, type CallSite, type DanglingCall,
+  changedSignatures, removedPublicApi, type CallSite, type DanglingCall, type FileChange,
 } from '@codegraph/analysis';
 import { resolveRepo } from './repo';
+import { inlineComments } from './inline';
 import { impactMarkdown, symbolLabel, type BaseComparison } from './report';
 
 const exec = promisify(execFile);
@@ -147,12 +148,14 @@ export async function cmdImpact(pos: string[], flags: Flags) {
     compare ? collectCalls(unresolved, sites) : undefined,
   );
   let comparison: BaseComparison | undefined;
+  let fileChanges: FileChange[] = [];
   let seeds: string[] = [];
   let diffInfo: { changedFiles: Set<string>; created: number; createdPublic: string[]; deletedFiles: string[] } | undefined;
   if (flags.diff) {
     const range = [typeof flags.range === 'string' ? flags.range : 'HEAD'];
     const { stdout } = await exec('git', ['diff', '-U0', ...range], { cwd: root, maxBuffer: 64 * 1024 * 1024 });
     const changes = parseUnifiedDiff(stdout);
+    fileChanges = changes;
     const changed = changedNodes(graph, changes);
     let { nodes, created } = changed;
     const { unmapped } = changed;
@@ -187,6 +190,11 @@ export async function cmdImpact(pos: string[], flags: Flags) {
   });
   if (flags.format === 'markdown') {
     console.log(impactMarkdown(graph, res, { ...diffInfo, comparison, jsRunner: await jsRunner(root) }));
+    if (typeof flags['inline-out'] === 'string' && diffInfo) {
+      const inline = inlineComments({ graph, res, changes: fileChanges, comparison, changedFiles: diffInfo.changedFiles, hotspots: flags['inline-hotspots'] === true });
+      await fs.writeFile(flags['inline-out'], JSON.stringify(inline, null, 1));
+      console.error(`${color.dim}wrote ${inline.length} inline comment${inline.length === 1 ? '' : 's'} to ${flags['inline-out']}${color.off}`);
+    }
     return;
   }
   if (flags.json) {

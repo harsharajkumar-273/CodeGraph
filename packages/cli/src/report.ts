@@ -106,6 +106,31 @@ function verdictLines(g: CodeGraph, v: { dangling: DanglingCall[]; signatures: S
   return [];
 }
 
+/**
+ * Callers outside the edited files, grouped under the edited symbol that reaches them (the first edit on the strongest
+ * path), the edit with the most callers first.
+ */
+export function reachByEdit(g: CodeGraph, r: ImpactResult, outside: ImpactResult['impacted']): [string, ImpactResult['impacted']][] {
+  const via = new Map(r.impacted.map((i) => [i.id, i.via]));
+  const seeds = new Set(r.seeds);
+  const groups = new Map<string, ImpactResult['impacted']>();
+  for (const i of outside) {
+    let root = i.id;
+    for (let n = 0; n < 30 && !seeds.has(root) && via.get(root); n++) root = via.get(root)!;
+    groups.set(root, [...(groups.get(root) ?? []), i]);
+  }
+  void g;
+  return [...groups].sort((x, y) => y[1].length - x[1].length || x[0].localeCompare(y[0]));
+}
+
+/** The callers that sit outside `inside`, the set of files a change edits. */
+export function callersOutside(g: CodeGraph, r: ImpactResult, inside: Set<string>) {
+  return r.impacted.filter((i) => {
+    const f = g.node(i.id)?.file;
+    return !!f && !inside.has(f);
+  });
+}
+
 export function impactMarkdown(g: CodeGraph, r: ImpactResult, opts: MarkdownOptions = {}): string {
   const limit = opts.limit ?? 10;
   const s = summarizeImpact(g, r);
@@ -147,16 +172,7 @@ export function impactMarkdown(g: CodeGraph, r: ImpactResult, opts: MarkdownOpti
       `**${outside.length} symbol${outside.length === 1 ? '' : 's'} in ${files.size} file${files.size === 1 ? '' : 's'}** you did not edit could be affected by the ${changed} existing symbol${changed === 1 ? '' : 's'} this change edits ` +
         `(🟢 ${by.resolved} proven · 🟡 ${by.probable} probable · 🔴 ${by.ambiguous} guessed by name).`,
     );
-    // Each caller is listed under the edit that reaches it, riskiest edit (most callers) first.
-    const via = new Map(r.impacted.map((i) => [i.id, i.via]));
-    const seeds = new Set(r.seeds);
-    const groups = new Map<string, typeof outside>();
-    for (const i of outside) {
-      let root = i.id;
-      for (let n = 0; n < 30 && !seeds.has(root) && via.get(root); n++) root = via.get(root)!;
-      groups.set(root, [...(groups.get(root) ?? []), i]);
-    }
-    const ranked = [...groups].sort((x, y) => y[1].length - x[1].length || x[0].localeCompare(y[0]));
+    const ranked = reachByEdit(g, r, outside);
     out.push('', '<details open><summary>Which edit reaches whom</summary>', '');
     for (const [root, callers] of ranked.slice(0, 6)) {
       const fs = new Set(callers.map((c) => g.node(c.id)?.file));
