@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import type { CodeGraph } from '@codegraph/core';
 import { indexFiles, indexRepo } from '@codegraph/extractors';
-import { blastRadius, changedNodes, importCycles, parseUnifiedDiff, resolveTargets, slice, variableLineage } from '../src';
+import { blastRadius, changedNodes, removedButStillCalled, importCycles, parseUnifiedDiff, resolveTargets, slice, variableLineage } from '../src';
 import { fixture } from '../../extractors/test/helpers';
 
 let g: CodeGraph;
@@ -217,5 +217,67 @@ describe('cycles', () => {
       ].join('\n'),
     });
     expect(importCycles(graph)).toEqual([]);
+  });
+});
+
+describe('removed but still called', () => {
+  /** Index a version of a project and collect its unresolved call sites the way the CLI does. */
+  async function version(files: Record<string, string>) {
+    const unresolved = new Map<string, Map<string, number>>();
+    const { graph } = await indexFiles(files, {}, '.', {
+      trace: (t) => {
+        if (t.targets.length || t.call.kind === 'ref') return;
+        const k = t.call.caller ? `${t.file}#${t.call.caller}` : t.file;
+        const m = unresolved.get(k) ?? new Map<string, number>();
+        m.set(t.call.callee, t.call.line);
+        unresolved.set(k, m);
+      },
+    });
+    return { graph, unresolved };
+  }
+  const lib = 'export function parse(x: string) { return x; }\nexport function keep() {}\n';
+  const useIt = "import { parse, keep } from './lib';\nexport function a() { return parse('1'); }\nexport function b() { keep(); }\n";
+
+  it('reports a function the change removed while a surviving caller still calls it', async () => {
+    const base = await version({ 'lib.ts': lib, 'use.ts': useIt });
+    const head = await version({ 'lib.ts': 'export function keep() {}\n', 'use.ts': useIt });
+    const r = removedButStillCalled(base.graph, head.graph, head.unresolved, base.unresolved);
+    expect(r.map((d) => [d.removed.qualifiedName, d.caller.qualifiedName])).toEqual([['parse', 'a']]);
+    expect(r[0].line).toBe(2);
+  });
+
+  it('is quiet when the callers were updated, or removed together with the function', async () => {
+    const base = await version({ 'lib.ts': lib, 'use.ts': useIt });
+    const updated = await version({
+      'lib.ts': 'export function keep() {}\nexport function parse2(x: string) { return x; }\n',
+      'use.ts': "import { parse2, keep } from './lib';\nexport function a() { return parse2('1'); }\nexport function b() { keep(); }\n",
+    });
+    expect(removedButStillCalled(base.graph, updated.graph, updated.unresolved, base.unresolved)).toEqual([]);
+    const gone = await version({ 'lib.ts': 'export function keep() {}\n', 'use.ts': "import { keep } from './lib';\nexport function b() { keep(); }\n" });
+    expect(removedButStillCalled(base.graph, gone.graph, gone.unresolved, base.unresolved)).toEqual([]);
+  });
+
+  it('catches a function lost with its whole file', async () => {
+    const base = await version({ 'lib.ts': lib, 'use.ts': useIt });
+    const head = await version({ 'use.ts': useIt });
+    const names = removedButStillCalled(base.graph, head.graph, head.unresolved, base.unresolved).map((d) => d.removed.qualifiedName);
+    expect(names).toContain('parse');
+  });
+
+  it('ignores a same-named call that was already unresolved in the base (an external `get`, say)', async () => {
+    const baseFiles = {
+      'lib.ts': 'export function get(k: string) { return k; }\n',
+      'use.ts': "import { get } from './lib';\nexport function f(m: Map<string, string>) { get('a'); return m.get('b'); }\n",
+    };
+    const base = await version(baseFiles);
+    const head = await version({ 'lib.ts': 'export function other() {}\n', 'use.ts': "export function f(m: Map<string, string>) { return m.get('b'); }\n" });
+    // `m.get` is external and unresolved both before and after: it says nothing about the removed `get`
+    expect(removedButStillCalled(base.graph, head.graph, head.unresolved, base.unresolved)).toEqual([]);
+  });
+
+  it('ignores a symbol that nothing called', async () => {
+    const base = await version({ 'lib.ts': lib + 'export function unused() {}\n', 'use.ts': useIt });
+    const head = await version({ 'lib.ts': lib, 'use.ts': useIt });
+    expect(removedButStillCalled(base.graph, head.graph, head.unresolved, base.unresolved)).toEqual([]);
   });
 });

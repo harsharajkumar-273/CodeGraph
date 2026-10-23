@@ -36,6 +36,7 @@ const { positionals, values } = parseArgs({
     diff: { type: 'boolean' },
     range: { type: 'string' },
     json: { type: 'boolean' },
+    'no-compare': { type: 'boolean' },
     format: { type: 'string' },
     print: { type: 'boolean' },
     help: { type: 'boolean', short: 'h' },
