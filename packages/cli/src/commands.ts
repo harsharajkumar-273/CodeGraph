@@ -102,7 +102,9 @@ async function danglingCalls(root: string, range: string, head: CodeGraph, unres
       await exec('sh', ['-c', 'git archive "$REV" | tar -x -C "$DIR"'], { cwd: root, env: { ...process.env, REV: rev, DIR: dir }, maxBuffer: 64 * 1024 * 1024 });
       const baseUnresolved = new Map<string, Map<string, number>>();
       const base = await indexRepo(dir, { trace: collectUnresolved(baseUnresolved) });
-      return removedButStillCalled(base.graph, head, unresolved, baseUnresolved);
+      const found = removedButStillCalled(base.graph, head, unresolved, baseUnresolved);
+      console.error(`${color.dim}compared with the base commit ${rev.slice(0, 10)}: ${base.stats.files} files, ${found.length} removed call${found.length === 1 ? '' : 's'} still used${color.off}`);
+      return found;
     } finally {
       await fs.rm(dir, { recursive: true, force: true });
     }
