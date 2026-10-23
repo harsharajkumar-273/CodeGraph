@@ -113,6 +113,17 @@ describe('diff mapping', () => {
     expect(r.created).toHaveLength(0);
   });
 
+  it('records the old-side lines a diff deletes or rewrites, including all of a deleted file', () => {
+    const diff = [
+      'diff --git a/x.ts b/x.ts', '--- a/x.ts', '+++ b/x.ts', '@@ -3,2 +3,1 @@', '@@ -10,0 +9,4 @@', '@@ -20 +23 @@',
+      'diff --git a/gone.ts b/gone.ts', '--- a/gone.ts', '+++ /dev/null', '@@ -1,7 +0,0 @@',
+    ].join('\n');
+    const ch = Object.fromEntries(parseUnifiedDiff(diff).map((c) => [c.file, c]));
+    expect(ch['x.ts'].removed).toEqual([[3, 4], [20, 20]]); // the pure insertion at -10,0 deletes nothing
+    expect(ch['x.ts'].ranges).toEqual([[3, 3], [9, 12], [23, 23]]);
+    expect(ch['gone.ts'].removed).toEqual([[1, 7]]);
+  });
+
   it('treats every symbol of an added file as new and ignores deleted files', () => {
     const diff = [
       'diff --git a/src/math.ts b/src/math.ts', '--- /dev/null', '+++ b/src/math.ts', '@@ -0,0 +1,20 @@',

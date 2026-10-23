@@ -131,6 +131,14 @@ broken.
 | 🟡 changes shared code | it edits code that other files call, with no incompatible signature change |
 | 🟢 contained / additive | it edits code nothing outside the edited files calls, or only adds new code (listing the new public symbols) |
 
+The findings that have a line are also left **on the diff** as review comments, because that is where a reviewer looks: a
+removed function that is still called goes on its deleted definition (GitHub only allows comments on lines of the diff,
+and the caller that was missed is in a file the pull request did not touch), and a changed signature goes on the new
+signature, naming the calls that no longer fit. They are replaced on each push and left alone once someone has replied.
+Only 🔴 and 🟠 findings get a line comment; `inline-comments: all` adds a note on edits to code many others depend on,
+and `inline-comments: false` turns them off. The action analyses the pull request's own commit, not the merge commit, so
+that its line numbers match GitHub's diff.
+
 What it can't see: it compares argument *counts* only (not names, order or types), reports calls only (not imports or
 type-only uses), and treats every top-level Python function as public. Checked on 132 real single commits from four
 repositories (Requests, Gin, Hono and this one) it raised no 🔴 or 🟠, and on a rename and on a new required argument

@@ -12,6 +12,9 @@ inputs:
   min-confidence:
     description: "Weakest link to count (resolved, probable or ambiguous)."
     default: probable
+  inline-comments:
+    description: "Line comments on the diff for findings that have a line (a removed function still called, a signature that call sites no longer fit, public API removed). Use 'all' to add a note on edits to code many others depend on, or 'false' for none."
+    default: 'true'
   fail-above:
     description: "Fail the check when more than this many symbols are affected. Leave empty to only comment."
     default: ''
@@ -32,20 +35,34 @@ runs:
       working-directory: ${{ github.action_path }}
       env:
         BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         MIN: ${{ inputs.min-confidence }}
         WORKSPACE: ${{ github.workspace }}
         OUT: ${{ runner.temp }}/codegraph-comment.md
+        INLINE: ${{ runner.temp }}/codegraph-inline.json
+        WANT_INLINE: ${{ inputs.inline-comments }}
       run: |
         if [ -z "$BASE_SHA" ]; then echo "::error::Run this action on pull_request events."; exit 1; fi
-        if ! git -C "$WORKSPACE" cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
-          echo "::error::The base commit is not in the checkout. Use actions/checkout with fetch-depth: 0."; exit 1
-        fi
-        npx tsx packages/cli/src/bin.ts impact --diff --range "$BASE_SHA...HEAD" --repo "$WORKSPACE" \
-          --min-confidence "$MIN" --format markdown > "$OUT"
+        for sha in "$BASE_SHA" "$HEAD_SHA"; do
+          if ! git -C "$WORKSPACE" cat-file -e "$sha^{commit}" 2>/dev/null; then
+            echo "::error::A commit of the pull request is not in the checkout. Use actions/checkout with fetch-depth: 0."; exit 1
+          fi
+        done
+        # Analyse the pull request's own commit, not the merge commit the checkout holds: GitHub numbers the lines of its diff
+        # (merge base to head) from that commit, and inline comments must land on those lines.
+        WT="$RUNNER_TEMP/codegraph-head"
+        git -C "$WORKSPACE" worktree add --quiet --detach "$WT" "$HEAD_SHA" > /dev/null 2>&1
+        EXTRA=""
+        if [ "$WANT_INLINE" = "true" ]; then EXTRA="--inline-out $INLINE"; fi
+        if [ "$WANT_INLINE" = "all" ]; then EXTRA="--inline-out $INLINE --inline-hotspots"; fi
+        npx tsx packages/cli/src/bin.ts impact --diff --range "$BASE_SHA...$HEAD_SHA" --repo "$WT" \
+          --min-confidence "$MIN" --format markdown $EXTRA > "$OUT"
+        git -C "$WORKSPACE" worktree remove --force "$WT" || true
         # The headline number in the comment is "**N symbols in M files**"; no match means nothing was affected.
         N=$(grep -oE '\*\*[0-9]+ symbols?' "$OUT" | grep -oE '[0-9]+' | head -1 || true)
         echo "symbols=${N:-0}" >> "$GITHUB_OUTPUT"
         echo "file=$OUT" >> "$GITHUB_OUTPUT"
+        if [ -s "$INLINE" ]; then echo "inline=$INLINE" >> "$GITHUB_OUTPUT"; fi
     - name: Post or update the comment
       if: steps.impact.outputs.file != ''
       uses: actions/github-script@v7
@@ -70,6 +87,18 @@ runs:
             core.warning(`Could not post the comment (${e.message}). Writing it to the job summary instead.`);
             await core.summary.addRaw(body).write();
           }
+    - name: Leave line comments on the diff
+      if: steps.impact.outputs.inline != ''
+      uses: actions/github-script@v7
+      env:
+        INLINE: ${{ steps.impact.outputs.inline }}
+        ACTION_PATH: ${{ github.action_path }}
+      with:
+        github-token: ${{ inputs.github-token }}
+        script: |
+          const post = require(`${process.env.ACTION_PATH}/action/post-review.cjs`);
+          const r = await post({ github, context, core, fs: require('fs'), file: process.env.INLINE });
+          core.info(`Inline comments: ${r.posted} posted, ${r.kept} kept, ${r.removed} replaced.`);
     - name: Enforce the limit
       if: inputs.fail-above != '' && steps.impact.outputs.symbols != ''
       shell: bash

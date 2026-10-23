@@ -10,6 +10,8 @@ export interface FileChange {
   added?: boolean;
   /** The file was deleted (it has no symbols in the new graph). */
   deleted?: boolean;
+  /** Old-side line ranges the diff deletes or rewrites, 1-based inclusive: where a removed function used to be. */
+  removed: [number, number][];
 }
 
 /** Parse `git diff -U0` output into per-file changed line ranges (new side). */
@@ -29,15 +31,19 @@ export function parseUnifiedDiff(text: string): FileChange[] {
     } else if (line.startsWith('+++ ')) {
       const f = line.slice(4).trim();
       file = f === '/dev/null' ? null : f.replace(/^b\//, '');
-      if (file && !out.has(file)) out.set(file, { file, ranges: [], inserted: [], ...(oldIsNull ? { added: true } : {}) });
-      else if (!file && oldFile && !out.has(oldFile)) out.set(oldFile, { file: oldFile, ranges: [], inserted: [], deleted: true });
-    } else if (line.startsWith('@@') && file) {
+      if (file && !out.has(file)) out.set(file, { file, ranges: [], inserted: [], removed: [], ...(oldIsNull ? { added: true } : {}) });
+      else if (!file && oldFile && !out.has(oldFile)) out.set(oldFile, { file: oldFile, ranges: [], inserted: [], removed: [], deleted: true });
+    } else if (line.startsWith('@@') && (file || oldFile)) {
       const m = /-(\d+)(?:,(\d+))?\s+\+(\d+)(?:,(\d+))?/.exec(line);
       if (!m) continue;
+      const target = out.get((file ?? oldFile)!)!;
+      const oldStart = Number(m[1]);
       const oldLen = m[2] === undefined ? 1 : Number(m[2]);
+      if (oldLen > 0) target.removed.push([oldStart, oldStart + oldLen - 1]);
+      if (!file) continue; // a deleted file has no new side
       const start = Number(m[3]);
       const len = m[4] === undefined ? 1 : Number(m[4]);
-      const ch = out.get(file)!;
+      const ch = target;
       ch.ranges.push(len === 0 ? [Math.max(start, 1), Math.max(start, 1)] : [start, start + len - 1]);
       if (oldLen === 0 && len > 0) ch.inserted.push([start, start + len - 1]);
     }
