@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import type { CodeGraph } from '@codegraph/core';
 import { indexFiles, indexRepo } from '@codegraph/extractors';
-import { blastRadius, changedNodes, removedButStillCalled, importCycles, parseUnifiedDiff, resolveTargets, slice, variableLineage } from '../src';
+import { blastRadius, changedNodes, changedSignatures, removedButStillCalled, removedPublicApi, importCycles, parseUnifiedDiff, resolveTargets, slice, variableLineage } from '../src';
 import { fixture } from '../../extractors/test/helpers';
 
 let g: CodeGraph;
@@ -279,5 +279,74 @@ describe('removed but still called', () => {
     const base = await version({ 'lib.ts': lib + 'export function unused() {}\n', 'use.ts': useIt });
     const head = await version({ 'lib.ts': lib, 'use.ts': useIt });
     expect(removedButStillCalled(base.graph, head.graph, head.unresolved, base.unresolved)).toEqual([]);
+  });
+});
+
+describe('signature changes and removed public API', () => {
+  const graphOf = async (files: Record<string, string>) => (await indexFiles(files)).graph;
+
+  it('flags a new required parameter and a dropped one, with the callers that are affected', async () => {
+    const base = await graphOf({ 'lib.ts': 'export function a(x: number) {}\nexport function b(x: number, y: number) {}\nexport function c(x: number) {}\n', 'use.ts': "import { a, b, c } from './lib';\nexport function go() { a(1); b(1, 2); c(1); }\n" });
+    const head = await graphOf({ 'lib.ts': 'export function a(x: number, y: number) {}\nexport function b(x: number) {}\nexport function c(x: number, y?: number) {}\n', 'use.ts': "import { a, b, c } from './lib';\nexport function go() { a(1); b(1, 2); c(1); }\n" });
+    const ch = changedSignatures(base, head);
+    const by = Object.fromEntries(ch.map((c) => [c.symbol.name, c]));
+    expect(by.a.kind).toEqual(['requires-more']);
+    expect(by.a.callers).toBe(1);
+    expect(by.b.kind).toEqual(['accepts-fewer']);
+    expect(by.c).toBeUndefined(); // an optional parameter cannot break anyone
+  });
+
+  it('checks the arguments each call passes, and drops a private change whose callers already fit', async () => {
+    const files = (lib: string, use: string) => ({ 'lib.ts': lib, 'use.ts': use });
+    const base = await graphOf(files('export function f(a: number) {}\nfunction g(a: number) {}\nexport function h(a: number) {}\n', "import {} from './lib';\n"));
+    const sitesOf = async (lib: string, use: string) => {
+      const sites = new Map<string, { caller: string; file: string; line: number; argc?: number }[]>();
+      const { graph } = await indexFiles(files(lib, use), {}, '.', {
+        trace: (t) => {
+          for (const x of t.targets) sites.set(`${x.file}#${x.qname}`, [...(sites.get(`${x.file}#${x.qname}`) ?? []), { caller: t.call.caller ?? '', file: t.file, line: t.call.line, argc: t.call.argc }]);
+        },
+      });
+      return { graph, sites };
+    };
+    const lib = 'export function f(a: number, b: number) {}\nfunction g(a: number, b: number) {}\nexport function h(a: number, b: number) {}\n';
+    const use = "import { f, g, h } from './lib';\nexport function go(xs: number[]) { f(1); g(1, 2); h(...xs); }\n";
+    const { graph, sites } = await sitesOf(lib, use);
+    const by = Object.fromEntries(changedSignatures(base, graph, sites).map((c) => [c.symbol.name, c]));
+    expect(by.f.violating.map((s) => s.argc)).toEqual([1]); // f(1) passes one argument to a function that needs two
+    expect(by.g).toBeUndefined(); // g is private and every call to it fits
+    expect(by.h.unchecked).toBe(1); // h(...xs) cannot be counted, and h is public: it stays listed
+  });
+
+  it('treats defaults, rest parameters and destructuring correctly', async () => {
+    const base = await graphOf({ 'p.py': 'def f(a, b=1): pass\ndef g(a): pass\n' });
+    const head = await graphOf({ 'p.py': 'def f(a, b=1, c=2): pass\ndef g(a, *args): pass\n' });
+    expect(changedSignatures(base, head)).toEqual([]); // both only widen what is accepted
+    const tighter = await graphOf({ 'p.py': 'def f(a, b, c=2): pass\ndef g(a, *args): pass\n' });
+    expect(changedSignatures(base, tighter).map((c) => c.symbol.name)).toEqual(['f']);
+  });
+
+  it('does not count the receiver as an argument, but does for a static method', async () => {
+    const stat = await graphOf({ 'p.py': 'class K:\n    @staticmethod\n    def s(a, b): pass\n' });
+    expect(stat.nodes('method').find((n) => n.name === 's')?.arity).toEqual({ min: 2, max: 2 });
+    const goG = await graphOf({ 'go.mod': 'module m\n', 'a.go': 'package a\ntype T struct{}\nfunc (t T) M(x int) {}\n' });
+    expect(goG.nodes('method').find((n) => n.name === 'M')?.arity).toEqual({ min: 1, max: 1 });
+  });
+
+  it('does not count self, cls or Go receivers as arguments', async () => {
+    const base = await graphOf({ 'p.py': 'class K:\n    def m(self, a): pass\n' });
+    const head = await graphOf({ 'p.py': 'class K:\n    def m(this_is_self, a): pass\n' });
+    expect(changedSignatures(base, head)).toEqual([]);
+  });
+
+  it('does not call a function removed when it only moved to another file', async () => {
+    const base = await graphOf({ 'old.ts': 'export function relocated() {}\nexport function removed() {}\n' });
+    const head = await graphOf({ 'new.ts': 'export function relocated() {}\n', 'old.ts': '' });
+    expect(removedPublicApi(base, head).map((n) => n.name)).toEqual(['removed']);
+  });
+
+  it('lists removed exported symbols, but not private names, tests, or what remains', async () => {
+    const base = await graphOf({ 'lib.ts': 'export function keep() {}\nexport function gone() {}\n', 'lib.test.ts': 'export function helper() {}\n', '_p.py': 'def _hidden(): pass\ndef shown(): pass\n' });
+    const head = await graphOf({ 'lib.ts': 'export function keep() {}\n', '_p.py': '' });
+    expect(removedPublicApi(base, head).map((n) => n.name).sort()).toEqual(['gone', 'shown']);
   });
 });

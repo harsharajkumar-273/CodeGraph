@@ -1,5 +1,5 @@
-import type { CodeGraph, Confidence } from '@codegraph/core';
-import { isTestPath, summarizeImpact, type DanglingCall, type ImpactResult } from '@codegraph/analysis';
+import type { CodeGraph, Confidence, GraphNode } from '@codegraph/core';
+import { isTestPath, summarizeImpact, type DanglingCall, type ImpactResult, type SignatureChange } from '@codegraph/analysis';
 
 export const COMMENT_MARKER = '<!-- codegraph-impact -->';
 
@@ -14,6 +14,17 @@ const refLabel = (g: CodeGraph, id: string) => (g.node(id)?.kind === 'file' ? `\
 
 const DOT: Record<Confidence, string> = { resolved: '🟢', probable: '🟡', ambiguous: '🔴' };
 
+/** What comparing with the base commit found. */
+export interface BaseComparison {
+  dangling: DanglingCall[];
+  signatures: SignatureChange[];
+  removedApi: GraphNode[];
+  /** `file#name` of every function, method and class the base commit had. */
+  baseSymbols?: Set<string>;
+  /** `kind:name` of the same, to tell a move from an addition. */
+  baseNames?: Set<string>;
+}
+
 export interface MarkdownOptions {
   limit?: number;
   title?: string;
@@ -22,8 +33,10 @@ export interface MarkdownOptions {
   /** Symbols the change adds in full, and files it deletes (whose symbols no longer exist to be checked). */
   created?: number;
   deletedFiles?: string[];
-  /** Functions the change removed that surviving code still calls (needs the base commit to find). */
-  dangling?: DanglingCall[];
+  /** What comparing with the base commit found (absent when it could not be done). */
+  comparison?: BaseComparison;
+  /** Public symbols the change adds, as `file#name`. */
+  createdPublic?: string[];
   /** How the project runs its JavaScript tests, when it can be told from package.json. */
   jsRunner?: 'vitest' | 'jest';
 }
@@ -44,6 +57,55 @@ export function testCommands(tests: string[], jsRunner?: 'vitest' | 'jest'): str
  * A pull request comment: how far a change reaches, how sure we are, and which tests to run. The headline counts only
  * code outside the files the change edits, because that is the code whose author did not look at the change.
  */
+const short = (s: string) => s.replace(/^.*#/, '');
+const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? '' : 's'}`;
+
+/**
+ * One line that says what kind of change this is, from evidence: the most serious thing found wins. It does not guess at
+ * intent (a bug fix and a feature look the same here); it says whether existing callers can break.
+ */
+function verdictLines(g: CodeGraph, v: { dangling: DanglingCall[]; signatures: SignatureChange[]; removedApi: GraphNode[]; outside: number; changed: number; createdPublic: string[]; created: number }): string[] {
+  const arg = (n: number) => `${n} more argument${n === 1 ? '' : 's'}`;
+  const name = (s: SignatureChange) => `\`${s.symbol.qualifiedName ?? s.symbol.name}\``;
+  const what = (s: SignatureChange) => {
+    const t: string[] = [];
+    if (s.kind.includes('requires-more')) t.push(`now requires ${arg(s.after.min - s.before.min)}`);
+    if (s.kind.includes('accepts-fewer')) t.push(`now accepts at most ${plural(s.after.max ?? 0, 'argument')}`);
+    return t.join(' and ');
+  };
+  const broken = v.signatures.filter((s) => s.violating.length);
+  if (v.dangling.length || broken.length) {
+    const reasons: string[] = [];
+    if (v.dangling.length) reasons.push(`${plural(v.dangling.length, 'call')} to code this change removes ${v.dangling.length === 1 ? 'is' : 'are'} still there (below)`);
+    for (const s of broken.slice(0, 4)) {
+      const sites = s.violating.slice(0, 3).map((x) => `\`${x.file}:${x.line}\` passes ${x.argc}`).join(', ');
+      reasons.push(`${name(s)} ${what(s)}, but ${sites}${s.violating.length > 3 ? ` and ${s.violating.length - 3} more call${s.violating.length - 3 === 1 ? '' : 's'}` : ''}`);
+    }
+    if (broken.length > 4) reasons.push(`…and ${broken.length - 4} more changed signatures with calls that no longer fit`);
+    return ['**Verdict: 🔴 likely breaking.** Existing callers can fail:', ...reasons.map((x) => `- ${x}`)];
+  }
+  const publicSigs = v.signatures;
+  if (publicSigs.length || v.removedApi.length) {
+    const lines: string[] = ['**Verdict: 🟠 may change public API.** Nothing in this repository is known to break; if these are used from outside it, they may:'];
+    for (const s of publicSigs.slice(0, 4)) {
+      lines.push(`- ${name(s)} ${what(s)}${s.unchecked ? ` (${plural(s.unchecked, 'call')} in this repository could not be checked)` : '; every call in this repository already fits'}`);
+    }
+    if (v.removedApi.length) {
+      const names = v.removedApi.slice(0, 4).map((n) => `\`${n.qualifiedName ?? n.name}\``).join(', ');
+      lines.push(`- removes ${names}${v.removedApi.length > 4 ? ` and ${v.removedApi.length - 4} more` : ''}, which nothing here still calls`);
+    }
+    return lines;
+  }
+  if (v.changed && v.outside) return ['**Verdict: 🟡 changes shared code.** No argument list changed incompatibly and nothing was removed, but the behaviour of code others call is different.'];
+  if (v.changed) return ['**Verdict: 🟢 contained.** It edits code that nothing outside the edited files calls.'];
+  if (v.created) {
+    const names = v.createdPublic.slice(0, 5).map((n) => `\`${short(n)}\``).join(', ');
+    return [`**Verdict: 🟢 additive.** New code only; nothing existing is edited.${v.createdPublic.length ? ` Adds ${plural(v.createdPublic.length, 'public symbol')}: ${names}${v.createdPublic.length > 5 ? ', …' : ''}.` : ''}`];
+  }
+  void g;
+  return [];
+}
+
 export function impactMarkdown(g: CodeGraph, r: ImpactResult, opts: MarkdownOptions = {}): string {
   const limit = opts.limit ?? 10;
   const s = summarizeImpact(g, r);
@@ -58,8 +120,13 @@ export function impactMarkdown(g: CodeGraph, r: ImpactResult, opts: MarkdownOpti
   const out: string[] = [COMMENT_MARKER, `### ${opts.title ?? 'CodeGraph: what this change can reach'}`, ''];
 
   const fileSeeds = r.seeds.filter((id) => g.node(id)?.kind === 'file').length;
-  if (opts.dangling?.length) {
-    const d = opts.dangling;
+  const dangling = opts.comparison?.dangling ?? [];
+  const signatures = opts.comparison?.signatures ?? [];
+  const removedApi = opts.comparison?.removedApi ?? [];
+  const verdict = verdictLines(g, { dangling, signatures, removedApi, outside: outside.length, changed: r.seeds.filter((id) => g.node(id)?.kind !== 'file').length, createdPublic: opts.createdPublic ?? [], created: opts.created ?? 0 });
+  if (verdict.length) out.push(...verdict, '');
+  if (dangling.length) {
+    const d = dangling;
     out.push(`⚠️ **${d.length} call${d.length === 1 ? '' : 's'} to code this change removes ${d.length === 1 ? 'is' : 'are'} still there.** Each function below existed before, is gone now, and the caller still calls a name that no longer resolves. A rename or removal that missed a caller looks like this.`, '');
     for (const x of d.slice(0, 8)) {
       const gone = x.removed.kind === 'file' ? x.removed.file : `${x.removed.file}#${x.removed.qualifiedName}`;

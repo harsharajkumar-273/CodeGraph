@@ -120,12 +120,22 @@ jobs:
         # with: { min-confidence: probable, fail-above: 200 }
 ```
 
-It also compares with the base commit: a function the change **removes or renames** while a surviving caller still calls the old
-name is listed at the top of the comment, since that is the bug a test suite catches last. It reports only calls (not type-only
-uses or imports), only callers that existed before and still exist, and nothing for a name the caller already called without
-resolving (an external `get`). On 132 real commits from five repositories it flagged nothing, and on an injected rename it named
-the real callers in Python, TypeScript and Go; it has not yet been run on a large number of real pull requests. Pass
-`--no-compare` to the CLI to skip it.
+It also compares with the base commit and opens with a **verdict** that says whether existing callers can fail. It is
+evidence, not a guess at intent: it cannot tell a bug fix from a feature, only whether something that exists is now
+broken.
+
+| Verdict | When |
+|---|---|
+| 🔴 likely breaking | a function was removed or renamed and a surviving caller still calls the old name; or a function now needs more arguments (or accepts fewer) and a call site passes a count that no longer fits (it names the file and line) |
+| 🟠 may change public API | an exported function's argument counts changed, or an exported function was removed, but nothing in the repository is known to break |
+| 🟡 changes shared code | it edits code that other files call, with no incompatible signature change |
+| 🟢 contained / additive | it edits code nothing outside the edited files calls, or only adds new code (listing the new public symbols) |
+
+What it can't see: it compares argument *counts* only (not names, order or types), reports calls only (not imports or
+type-only uses), and treats every top-level Python function as public. Checked on 132 real single commits from four
+repositories (Requests, Gin, Hono and this one) it raised no 🔴 or 🟠, and on a rename and on a new required argument
+injected into Requests, Hono and Gin it fired with the real call sites. It has not been run on many real pull requests
+that contain a genuine breaking change. `codegraph impact --no-compare` skips the comparison.
 
 `fail-above` makes the check fail when a change reaches more symbols than that. Pull requests from forks have a
 read-only token, so the result goes to the job summary instead of a comment. The same text is available locally with
