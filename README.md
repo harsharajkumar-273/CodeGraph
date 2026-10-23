@@ -120,6 +120,13 @@ jobs:
         # with: { min-confidence: probable, fail-above: 200 }
 ```
 
+It also compares with the base commit: a function the change **removes or renames** while a surviving caller still calls the old
+name is listed at the top of the comment, since that is the bug a test suite catches last. It reports only calls (not type-only
+uses or imports), only callers that existed before and still exist, and nothing for a name the caller already called without
+resolving (an external `get`). On 132 real commits from five repositories it flagged nothing, and on an injected rename it named
+the real callers in Python, TypeScript and Go; it has not yet been run on a large number of real pull requests. Pass
+`--no-compare` to the CLI to skip it.
+
 `fail-above` makes the check fail when a change reaches more symbols than that. Pull requests from forks have a
 read-only token, so the result goes to the job summary instead of a comment. The same text is available locally with
 `codegraph impact --diff --range main...HEAD --format markdown`.

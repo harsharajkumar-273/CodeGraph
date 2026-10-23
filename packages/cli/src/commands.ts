@@ -1,13 +1,15 @@
 import { execFile } from 'node:child_process';
 import { promises as fs, existsSync, createReadStream, readFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { createServer } from 'node:http';
 import { basename, dirname, extname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import { CodeGraph, type Confidence, type GraphJSON } from '@codegraph/core';
-import { indexRepo } from '@codegraph/extractors';
+import { indexRepo, type IndexOptions } from '@codegraph/extractors';
 import {
-  blastRadius, changedNodes, importCycles, parseUnifiedDiff, resolveTargets, slice, summarizeImpact, variableLineage,
+  blastRadius, changedNodes, importCycles, parseUnifiedDiff, removedButStillCalled, resolveTargets, slice, summarizeImpact, variableLineage,
+  type DanglingCall,
 } from '@codegraph/analysis';
 import { resolveRepo } from './repo';
 import { impactMarkdown, symbolLabel } from './report';
@@ -28,13 +30,13 @@ const label = (g: CodeGraph, id: string) => {
   return n.kind === 'file' ? n.file! : `${n.file}#${n.qualifiedName}`;
 };
 
-async function load(repoArg: string, flags: Flags): Promise<{ graph: CodeGraph; root: string }> {
+async function load(repoArg: string, flags: Flags, trace?: IndexOptions['trace']): Promise<{ graph: CodeGraph; root: string }> {
   if (typeof flags.graph === 'string') {
     const json = JSON.parse(await fs.readFile(flags.graph, 'utf8')) as GraphJSON;
     return { graph: CodeGraph.fromJSON(json), root: json.root };
   }
   const root = await resolveRepo(repoArg);
-  const { graph, stats, warnings } = await indexRepo(root);
+  const { graph, stats, warnings } = await indexRepo(root, { trace });
   console.error(`${color.dim}indexed ${stats.files} files, ${stats.symbols} symbols in ${stats.ms}ms${color.off}`);
   for (const w of warnings.slice(0, 5)) console.error(`${color.yellow}warn${color.off} ${w}`);
   return { graph, root };
@@ -73,9 +75,54 @@ export async function cmdIndex(pos: string[], flags: Flags) {
   console.log(`  graph written to ${out}`);
 }
 
+/** A trace callback that records, per caller, the call sites that resolved to nothing (`name -> line`). */
+function collectUnresolved(into: Map<string, Map<string, number>>): NonNullable<IndexOptions['trace']> {
+  return (t) => {
+    if (t.targets.length || t.call.kind === 'ref') return;
+    const k = t.call.caller ? `${t.file}#${t.call.caller}` : t.file;
+    const m = into.get(k) ?? new Map<string, number>();
+    m.set(t.call.callee, t.call.line);
+    into.set(k, m);
+  };
+}
+
+/**
+ * Functions the base had, the change removed, and a surviving caller still calls: the shape of a rename whose callers were
+ * not all updated. Needs the base commit, which it unpacks and indexes; any failure just means no comparison.
+ */
+async function danglingCalls(root: string, range: string, head: CodeGraph, unresolved: Map<string, Map<string, number>>): Promise<DanglingCall[]> {
+  try {
+    const threeDot = range.includes('...');
+    const [left, right] = range.split(threeDot ? '...' : '..');
+    let rev = left || 'HEAD';
+    if (threeDot) rev = (await exec('git', ['merge-base', rev, right || 'HEAD'], { cwd: root })).stdout.trim();
+    if (!/^[0-9A-Za-z][\w./~^@-]*$/.test(rev)) return [];
+    const dir = await fs.mkdtemp(join(tmpdir(), 'codegraph-base-'));
+    try {
+      await exec('sh', ['-c', 'git archive "$REV" | tar -x -C "$DIR"'], { cwd: root, env: { ...process.env, REV: rev, DIR: dir }, maxBuffer: 64 * 1024 * 1024 });
+      const baseUnresolved = new Map<string, Map<string, number>>();
+      const base = await indexRepo(dir, { trace: collectUnresolved(baseUnresolved) });
+      return removedButStillCalled(base.graph, head, unresolved, baseUnresolved);
+    } finally {
+      await fs.rm(dir, { recursive: true, force: true });
+    }
+  } catch (e) {
+    console.error(`${color.dim}could not compare with the base commit: ${(e as Error).message.split('\n')[0]}${color.off}`);
+    return [];
+  }
+}
+
 export async function cmdImpact(pos: string[], flags: Flags) {
   const repo = typeof flags.repo === 'string' ? flags.repo : '.';
-  const { graph, root } = await load(repo, flags);
+  // A pull request comment also compares with the base commit, so it needs every call site the new version could not resolve.
+  const compare = !!flags.diff && flags.format === 'markdown' && typeof flags.graph !== 'string' && flags['no-compare'] !== true;
+  const unresolved = new Map<string, Map<string, number>>();
+  const { graph, root } = await load(
+    repo,
+    flags,
+    compare ? collectUnresolved(unresolved) : undefined,
+  );
+  let dangling: DanglingCall[] = [];
   let seeds: string[] = [];
   let diffInfo: { changedFiles: Set<string>; created: number; deletedFiles: string[] } | undefined;
   if (flags.diff) {
@@ -86,7 +133,8 @@ export async function cmdImpact(pos: string[], flags: Flags) {
     seeds = nodes.map((n) => n.id);
     diffInfo = { changedFiles: new Set(changes.filter((c) => !c.deleted).map((c) => c.file)), created: created.length, deletedFiles: changes.filter((c) => c.deleted).map((c) => c.file) };
     if (unmapped.length) console.error(`${color.dim}not in graph (non-source or new): ${unmapped.slice(0, 8).join(', ')}${color.off}`);
-    if (!seeds.length && !(flags.format === 'markdown' && created.length)) {
+    if (compare) dangling = await danglingCalls(root, typeof flags.range === 'string' ? flags.range : 'HEAD', graph, unresolved);
+    if (!seeds.length && !(flags.format === 'markdown' && (created.length || dangling.length || diffInfo.deletedFiles.length))) {
       return console.log(flags.format === 'markdown' ? '' : 'No changed source symbols found in diff.');
     }
   } else {
@@ -102,7 +150,7 @@ export async function cmdImpact(pos: string[], flags: Flags) {
     expandFiles: !flags.diff,
   });
   if (flags.format === 'markdown') {
-    console.log(impactMarkdown(graph, res, { ...diffInfo, jsRunner: await jsRunner(root) }));
+    console.log(impactMarkdown(graph, res, { ...diffInfo, dangling, jsRunner: await jsRunner(root) }));
     return;
   }
   if (flags.json) {

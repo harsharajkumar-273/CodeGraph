@@ -1,8 +1,13 @@
-import { beforeAll, describe, expect, it } from 'vitest';
+import { execFileSync } from 'node:child_process';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { CodeGraph } from '@codegraph/core';
 import { indexRepo } from '@codegraph/extractors';
 import { blastRadius, resolveTargets } from '@codegraph/analysis';
 import { fixture } from '../../extractors/test/helpers';
+import { cmdImpact } from '../src/commands';
 import { buildTools, handle } from '../src/mcp';
 import { COMMENT_MARKER, impactMarkdown, testCommands } from '../src/report';
 
@@ -141,5 +146,46 @@ describe('test commands', () => {
 
   it('offers no JavaScript command when the runner is unknown', () => {
     expect(testCommands(['web/a.test.ts'])).toEqual([]);
+  });
+});
+
+describe('comparing a pull request with its base', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'cg-rename-'));
+  const git = (...a: string[]) => execFileSync('git', ['-c', 'user.email=t@t', '-c', 'user.name=t', ...a], { cwd: dir, stdio: 'pipe' });
+  const write = (name: string, text: string) => writeFileSync(join(dir, name), text);
+  afterAll(() => rmSync(dir, { recursive: true, force: true }));
+
+  async function comment(): Promise<string> {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      await cmdImpact([], { diff: true, range: 'main...HEAD', repo: dir, format: 'markdown' });
+      return log.mock.calls.map((c) => c.join(' ')).join('\n');
+    } finally {
+      log.mockRestore();
+      err.mockRestore();
+    }
+  }
+
+  it('flags a renamed function that one caller still uses, and not the caller that was updated', async () => {
+    git('init', '-q', '-b', 'main');
+    write('lib.ts', 'export function parseConfig(t: string) { return t; }\nexport function keep() { return 1; }\n');
+    write('app.ts', "import { parseConfig, keep } from './lib';\nexport function load(t: string) { return parseConfig(t); }\nexport function other(t: string) { return parseConfig(t); }\nexport function noop() { return keep(); }\n");
+    git('add', '-A');
+    git('commit', '-qm', 'base');
+    git('checkout', '-qb', 'feature');
+    write('lib.ts', 'export function parseSettings(t: string) { return t; }\nexport function keep() { return 1; }\n');
+    write('app.ts', "import { parseSettings, keep } from './lib';\nimport { parseConfig } from './lib';\nexport function load(t: string) { return parseSettings(t); }\nexport function other(t: string) { return parseConfig(t); }\nexport function noop() { return keep(); }\n");
+    git('commit', '-qam', 'rename');
+    const md = await comment();
+    expect(md).toMatch(/1 call to code this change removes is still there/);
+    expect(md).toContain('`lib.ts#parseConfig` was removed, but `app.ts#other` still calls `parseConfig`');
+    expect(md).not.toContain('app.ts#load');
+  });
+
+  it('says nothing about removals once every caller is updated', async () => {
+    write('app.ts', "import { parseSettings, keep } from './lib';\nexport function load(t: string) { return parseSettings(t); }\nexport function other(t: string) { return parseSettings(t); }\nexport function noop() { return keep(); }\n");
+    git('commit', '-qam', 'fix the missed caller');
+    expect(await comment()).not.toMatch(/still there/);
   });
 });

@@ -1,5 +1,5 @@
 import type { CodeGraph, Confidence } from '@codegraph/core';
-import { isTestPath, summarizeImpact, type ImpactResult } from '@codegraph/analysis';
+import { isTestPath, summarizeImpact, type DanglingCall, type ImpactResult } from '@codegraph/analysis';
 
 export const COMMENT_MARKER = '<!-- codegraph-impact -->';
 
@@ -22,6 +22,8 @@ export interface MarkdownOptions {
   /** Symbols the change adds in full, and files it deletes (whose symbols no longer exist to be checked). */
   created?: number;
   deletedFiles?: string[];
+  /** Functions the change removed that surviving code still calls (needs the base commit to find). */
+  dangling?: DanglingCall[];
   /** How the project runs its JavaScript tests, when it can be told from package.json. */
   jsRunner?: 'vitest' | 'jest';
 }
@@ -56,6 +58,16 @@ export function impactMarkdown(g: CodeGraph, r: ImpactResult, opts: MarkdownOpti
   const out: string[] = [COMMENT_MARKER, `### ${opts.title ?? 'CodeGraph: what this change can reach'}`, ''];
 
   const fileSeeds = r.seeds.filter((id) => g.node(id)?.kind === 'file').length;
+  if (opts.dangling?.length) {
+    const d = opts.dangling;
+    out.push(`⚠️ **${d.length} call${d.length === 1 ? '' : 's'} to code this change removes ${d.length === 1 ? 'is' : 'are'} still there.** Each function below existed before, is gone now, and the caller still calls a name that no longer resolves. A rename or removal that missed a caller looks like this.`, '');
+    for (const x of d.slice(0, 8)) {
+      const gone = x.removed.kind === 'file' ? x.removed.file : `${x.removed.file}#${x.removed.qualifiedName}`;
+      out.push(`- \`${gone}\` was removed, but ${refLabel(g, x.caller.id)} still calls \`${x.removed.name}\` (${x.caller.file}:${x.line})`);
+    }
+    if (d.length > 8) out.push(`- …and ${d.length - 8} more`);
+    out.push('');
+  }
   const changed = r.seeds.length - fileSeeds; // existing symbols edited; a module-level edit is counted apart
   if (!changed && fileSeeds && !outside.length) {
     out.push(`This change edits top-level code (imports, constants, statements) in ${fileSeeds} file${fileSeeds === 1 ? '' : 's'} and no function or class in them.${opts.created ? ` It also adds ${opts.created} new symbols.` : ''}`);
