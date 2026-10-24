@@ -139,6 +139,27 @@ Only 🔴 and 🟠 findings get a line comment; `inline-comments: all` adds a no
 and `inline-comments: false` turns them off. The action analyses the pull request's own commit, not the merge commit, so
 that its line numbers match GitHub's diff.
 
+### An optional reading by a model
+
+Everything above is a fact about the code's structure, which is why it can be trusted and also why it cannot say what a
+change is *for*. With an Anthropic API key the comment gains a short **reading of the change**: what it does in plain
+language, whether the diff matches what the author wrote in the description (it will notice a change the description does
+not mention), and up to three things worth checking. The deterministic verdict and facts are handed to the model as ground
+truth, and the verdict does not depend on it.
+
+```yaml
+      - uses: harsharajkumar-273/CodeGraph@main
+        with:
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+```
+
+It is off unless that key is set. When on, **the diff of the source files, the pull request title and description, and the
+comment's facts are sent to the Anthropic API** on every push, at a few thousand tokens in and at most 700 out. It never runs
+for a pull request from a fork. The title, description and diff are written by whoever opens the pull request, so they are
+quoted as untrusted data the model is told never to obey, and its answer is only ever shown as text (markup, links and
+mentions are stripped). It can still be wrong or miss things, so read it as a first pass from a reviewer, not a check. Its
+answers have not been evaluated here, because that needs a key: try it on a few of your own pull requests before relying on it.
+
 What it can't see: it compares argument *counts* only (not names, order or types), reports calls only (not imports or
 type-only uses), and treats every top-level Python function as public. Checked on 132 real single commits from four
 repositories (Requests, Gin, Hono and this one) it raised no 🔴 or 🟠, and on a rename and on a new required argument
