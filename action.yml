@@ -15,6 +15,12 @@ inputs:
   inline-comments:
     description: "Line comments on the diff for findings that have a line (a removed function still called, a signature that call sites no longer fit, public API removed). Use 'all' to add a note on edits to code many others depend on, or 'false' for none."
     default: 'true'
+  anthropic-api-key:
+    description: "Optional. An Anthropic API key (store it as a secret). When set, a model reads the diff and the description and adds a short reading of the change to the comment. Off when empty, and never used for a pull request from a fork. The source files of the diff and the description are sent to the Anthropic API."
+    default: ''
+  ai-model:
+    description: "The model that writes the reading (default claude-sonnet-5-5)."
+    default: ''
   fail-above:
     description: "Fail the check when more than this many symbols are affected. Leave empty to only comment."
     default: ''
@@ -41,6 +47,12 @@ runs:
         OUT: ${{ runner.temp }}/codegraph-comment.md
         INLINE: ${{ runner.temp }}/codegraph-inline.json
         WANT_INLINE: ${{ inputs.inline-comments }}
+        ANTHROPIC_API_KEY: ${{ inputs.anthropic-api-key }}
+        CODEGRAPH_AI_MODEL: ${{ inputs.ai-model }}
+        # A pull request from a fork is written by a stranger and cannot see secrets anyway: no model call for it.
+        SAME_REPO: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+        CODEGRAPH_PR_TITLE: ${{ github.event.pull_request.title }}
+        CODEGRAPH_PR_BODY: ${{ github.event.pull_request.body }}
       run: |
         if [ -z "$BASE_SHA" ]; then echo "::error::Run this action on pull_request events."; exit 1; fi
         for sha in "$BASE_SHA" "$HEAD_SHA"; do
@@ -55,6 +67,7 @@ runs:
         EXTRA=""
         if [ "$WANT_INLINE" = "true" ]; then EXTRA="--inline-out $INLINE"; fi
         if [ "$WANT_INLINE" = "all" ]; then EXTRA="--inline-out $INLINE --inline-hotspots"; fi
+        if [ -n "$ANTHROPIC_API_KEY" ] && [ "$SAME_REPO" = "true" ]; then EXTRA="$EXTRA --ai"; fi
         npx tsx packages/cli/src/bin.ts impact --diff --range "$BASE_SHA...$HEAD_SHA" --repo "$WT" \
           --min-confidence "$MIN" --format markdown $EXTRA > "$OUT"
         git -C "$WORKSPACE" worktree remove --force "$WT" || true

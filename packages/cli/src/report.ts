@@ -37,6 +37,8 @@ export interface MarkdownOptions {
   comparison?: BaseComparison;
   /** Public symbols the change adds, as `file#name`. */
   createdPublic?: string[];
+  /** A model's reading of the diff (already cleaned). Shown under the verdict, which does not depend on it. */
+  aiSummary?: string;
   /** How the project runs its JavaScript tests, when it can be told from package.json. */
   jsRunner?: 'vitest' | 'jest';
 }
@@ -150,6 +152,7 @@ export function impactMarkdown(g: CodeGraph, r: ImpactResult, opts: MarkdownOpti
   const removedApi = opts.comparison?.removedApi ?? [];
   const verdict = verdictLines(g, { dangling, signatures, removedApi, outside: outside.length, changed: r.seeds.filter((id) => g.node(id)?.kind !== 'file').length, createdPublic: opts.createdPublic ?? [], created: opts.created ?? 0 });
   if (verdict.length) out.push(...verdict, '');
+  if (opts.aiSummary) out.push('**Reading of the change** _(written by a model from the diff, the description and the facts in this comment; it can be wrong, and the verdict above does not depend on it)_', '', opts.aiSummary, '');
   if (dangling.length) {
     const d = dangling;
     out.push(`⚠️ **${d.length} call${d.length === 1 ? '' : 's'} to code this change removes ${d.length === 1 ? 'is' : 'are'} still there.** Each function below existed before, is gone now, and the caller still calls a name that no longer resolves. A rename or removal that missed a caller looks like this.`, '');

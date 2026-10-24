@@ -12,8 +12,9 @@ import {
   changedSignatures, removedPublicApi, type CallSite, type DanglingCall, type FileChange,
 } from '@codegraph/analysis';
 import { resolveRepo } from './repo';
+import { summarize } from './ai';
 import { inlineComments } from './inline';
-import { impactMarkdown, symbolLabel, type BaseComparison } from './report';
+import { COMMENT_MARKER, impactMarkdown, symbolLabel, type BaseComparison } from './report';
 
 const exec = promisify(execFile);
 
@@ -189,7 +190,20 @@ export async function cmdImpact(pos: string[], flags: Flags) {
     expandFiles: !flags.diff,
   });
   if (flags.format === 'markdown') {
-    console.log(impactMarkdown(graph, res, { ...diffInfo, comparison, jsRunner: await jsRunner(root) }));
+    const mdOptions = { ...diffInfo, comparison, jsRunner: await jsRunner(root) };
+    let aiSummary: string | undefined;
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (flags.ai === true && apiKey && flags.diff) {
+      // Only source files go to the model, with a few lines of context; the analysis above goes along as facts it must not contradict.
+      const range = typeof flags.range === 'string' ? flags.range : 'HEAD';
+      const sourceGlobs = ['*.ts', '*.tsx', '*.mts', '*.cts', '*.js', '*.jsx', '*.mjs', '*.cjs', '*.py', '*.go'];
+      const { stdout } = await exec('git', ['diff', '-U3', range, '--', ...sourceGlobs], { cwd: root, maxBuffer: 64 * 1024 * 1024 });
+      aiSummary = await summarize(
+        { diff: stdout, facts: impactMarkdown(graph, res, mdOptions).replace(COMMENT_MARKER, '').trim(), title: process.env.CODEGRAPH_PR_TITLE, body: process.env.CODEGRAPH_PR_BODY },
+        { apiKey, model: process.env.CODEGRAPH_AI_MODEL || undefined },
+      );
+    }
+    console.log(impactMarkdown(graph, res, { ...mdOptions, aiSummary }));
     if (typeof flags['inline-out'] === 'string' && diffInfo) {
       const inline = inlineComments({ graph, res, changes: fileChanges, comparison, changedFiles: diffInfo.changedFiles, hotspots: flags['inline-hotspots'] === true });
       await fs.writeFile(flags['inline-out'], JSON.stringify(inline, null, 1));
