@@ -1,5 +1,5 @@
 import type { Node } from '@codegraph/parser';
-import { kids, named } from './util';
+import { argCount, kids, named } from './util';
 import type { CallFact, ExportFact, FileFacts, ImportBinding, ImportFact, SymbolFact, VarFact } from './types';
 
 interface Ctx {
@@ -207,6 +207,25 @@ export function extractJs(path: string, lang: string, root: Node): FileFacts {
   }
   const ctorType = (v: Node | null | undefined) => (v?.type === 'new_expression' ? chain(v.childForFieldName('constructor')) : null);
 
+  /** Required and accepted argument counts of a function node (`this` parameters and destructuring count as one). */
+  function arityOf(fn: Node): { min: number; max: number | null } {
+    let min = 0;
+    let max: number | null = 0;
+    for (const p of named(fn.childForFieldName('parameters'))) {
+      if (p.type === 'comment') continue;
+      const pat = p.childForFieldName('pattern');
+      if ((pat ?? p).text === 'this') continue;
+      if (p.type === 'rest_pattern' || pat?.type === 'rest_pattern') max = null;
+      else if (p.type === 'optional_parameter' || p.type === 'assignment_pattern' || (p.type === 'required_parameter' && p.childForFieldName('value'))) {
+        if (max !== null) max++;
+      } else {
+        min++;
+        if (max !== null) max++;
+      }
+    }
+    return { min, max };
+  }
+
   function declareFunction(name: string, node: Node, ctx: Ctx, kind: 'function' | 'method' = 'function', local = false) {
     const qname = kind === 'method' && ctx.cls ? `${ctx.cls}.${name}` : qual(ctx, name);
     collectParams(node, qname, kind === 'method' && name === 'constructor' ? ctx.cls : null);
@@ -219,6 +238,7 @@ export function extractJs(path: string, lang: string, root: Node): FileFacts {
       endLine: node.endPosition.row + 1,
       className: kind === 'method' ? (ctx.cls ?? undefined) : undefined,
       ...(local ? { local: true } : {}),
+      arity: arityOf(node),
       ...returnTypes(node.childForFieldName('return_type')),
     });
     // Parameter default values / body are visited with this symbol as the caller.
@@ -410,7 +430,7 @@ export function extractJs(path: string, lang: string, root: Node): FileFacts {
 
   function callFromFn(fn: Node, ctx: Ctx, node: Node, isNew: boolean) {
     const c = callShape(fn, node, isNew);
-    if (c) pushCall(c, ctx);
+    if (c) pushCall({ ...c, ...argCount(node.childForFieldName('arguments')) }, ctx);
   }
 
   /** The call fact for `fn(...)` (null for computed callees such as `a[b]()`). */

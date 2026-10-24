@@ -1,5 +1,5 @@
-import type { CodeGraph, Confidence } from '@codegraph/core';
-import { summarizeImpact, type ImpactResult } from '@codegraph/analysis';
+import type { CodeGraph, Confidence, GraphNode } from '@codegraph/core';
+import { isTestPath, summarizeImpact, type DanglingCall, type ImpactResult, type SignatureChange } from '@codegraph/analysis';
 
 export const COMMENT_MARKER = '<!-- codegraph-impact -->';
 
@@ -9,7 +9,21 @@ export const symbolLabel = (g: CodeGraph, id: string) => {
   return n.kind === 'file' ? n.file! : `${n.file}#${n.qualifiedName}`;
 };
 
+/** A symbol, or for a file node the code that runs when the file loads. */
+const refLabel = (g: CodeGraph, id: string) => (g.node(id)?.kind === 'file' ? `\`${g.node(id)!.file}\` (top-level code)` : `\`${symbolLabel(g, id)}\``);
+
 const DOT: Record<Confidence, string> = { resolved: '🟢', probable: '🟡', ambiguous: '🔴' };
+
+/** What comparing with the base commit found. */
+export interface BaseComparison {
+  dangling: DanglingCall[];
+  signatures: SignatureChange[];
+  removedApi: GraphNode[];
+  /** `file#name` of every function, method and class the base commit had. */
+  baseSymbols?: Set<string>;
+  /** `kind:name` of the same, to tell a move from an addition. */
+  baseNames?: Set<string>;
+}
 
 export interface MarkdownOptions {
   limit?: number;
@@ -19,6 +33,12 @@ export interface MarkdownOptions {
   /** Symbols the change adds in full, and files it deletes (whose symbols no longer exist to be checked). */
   created?: number;
   deletedFiles?: string[];
+  /** What comparing with the base commit found (absent when it could not be done). */
+  comparison?: BaseComparison;
+  /** Public symbols the change adds, as `file#name`. */
+  createdPublic?: string[];
+  /** A model's reading of the diff (already cleaned). Shown under the verdict, which does not depend on it. */
+  aiSummary?: string;
   /** How the project runs its JavaScript tests, when it can be told from package.json. */
   jsRunner?: 'vitest' | 'jest';
 }
@@ -39,6 +59,80 @@ export function testCommands(tests: string[], jsRunner?: 'vitest' | 'jest'): str
  * A pull request comment: how far a change reaches, how sure we are, and which tests to run. The headline counts only
  * code outside the files the change edits, because that is the code whose author did not look at the change.
  */
+const short = (s: string) => s.replace(/^.*#/, '');
+const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? '' : 's'}`;
+
+/**
+ * One line that says what kind of change this is, from evidence: the most serious thing found wins. It does not guess at
+ * intent (a bug fix and a feature look the same here); it says whether existing callers can break.
+ */
+function verdictLines(g: CodeGraph, v: { dangling: DanglingCall[]; signatures: SignatureChange[]; removedApi: GraphNode[]; outside: number; changed: number; createdPublic: string[]; created: number }): string[] {
+  const arg = (n: number) => `${n} more argument${n === 1 ? '' : 's'}`;
+  const name = (s: SignatureChange) => `\`${s.symbol.qualifiedName ?? s.symbol.name}\``;
+  const what = (s: SignatureChange) => {
+    const t: string[] = [];
+    if (s.kind.includes('requires-more')) t.push(`now requires ${arg(s.after.min - s.before.min)}`);
+    if (s.kind.includes('accepts-fewer')) t.push(`now accepts at most ${plural(s.after.max ?? 0, 'argument')}`);
+    return t.join(' and ');
+  };
+  const broken = v.signatures.filter((s) => s.violating.length);
+  if (v.dangling.length || broken.length) {
+    const reasons: string[] = [];
+    if (v.dangling.length) reasons.push(`${plural(v.dangling.length, 'call')} to code this change removes ${v.dangling.length === 1 ? 'is' : 'are'} still there (below)`);
+    for (const s of broken.slice(0, 4)) {
+      const sites = s.violating.slice(0, 3).map((x) => `\`${x.file}:${x.line}\` passes ${x.argc}`).join(', ');
+      reasons.push(`${name(s)} ${what(s)}, but ${sites}${s.violating.length > 3 ? ` and ${s.violating.length - 3} more call${s.violating.length - 3 === 1 ? '' : 's'}` : ''}`);
+    }
+    if (broken.length > 4) reasons.push(`…and ${broken.length - 4} more changed signatures with calls that no longer fit`);
+    return ['**Verdict: 🔴 likely breaking.** Existing callers can fail:', ...reasons.map((x) => `- ${x}`)];
+  }
+  const publicSigs = v.signatures;
+  if (publicSigs.length || v.removedApi.length) {
+    const lines: string[] = ['**Verdict: 🟠 may change public API.** Nothing in this repository is known to break; if these are used from outside it, they may:'];
+    for (const s of publicSigs.slice(0, 4)) {
+      lines.push(`- ${name(s)} ${what(s)}${s.unchecked ? ` (${plural(s.unchecked, 'call')} in this repository could not be checked)` : '; every call in this repository already fits'}`);
+    }
+    if (v.removedApi.length) {
+      const names = v.removedApi.slice(0, 4).map((n) => `\`${n.qualifiedName ?? n.name}\``).join(', ');
+      lines.push(`- removes ${names}${v.removedApi.length > 4 ? ` and ${v.removedApi.length - 4} more` : ''}, which nothing here still calls`);
+    }
+    return lines;
+  }
+  if (v.changed && v.outside) return ['**Verdict: 🟡 changes shared code.** No argument list changed incompatibly and nothing was removed, but the behaviour of code others call is different.'];
+  if (v.changed) return ['**Verdict: 🟢 contained.** It edits code that nothing outside the edited files calls.'];
+  if (v.created) {
+    const names = v.createdPublic.slice(0, 5).map((n) => `\`${short(n)}\``).join(', ');
+    return [`**Verdict: 🟢 additive.** New code only; nothing existing is edited.${v.createdPublic.length ? ` Adds ${plural(v.createdPublic.length, 'public symbol')}: ${names}${v.createdPublic.length > 5 ? ', …' : ''}.` : ''}`];
+  }
+  void g;
+  return [];
+}
+
+/**
+ * Callers outside the edited files, grouped under the edited symbol that reaches them (the first edit on the strongest
+ * path), the edit with the most callers first.
+ */
+export function reachByEdit(g: CodeGraph, r: ImpactResult, outside: ImpactResult['impacted']): [string, ImpactResult['impacted']][] {
+  const via = new Map(r.impacted.map((i) => [i.id, i.via]));
+  const seeds = new Set(r.seeds);
+  const groups = new Map<string, ImpactResult['impacted']>();
+  for (const i of outside) {
+    let root = i.id;
+    for (let n = 0; n < 30 && !seeds.has(root) && via.get(root); n++) root = via.get(root)!;
+    groups.set(root, [...(groups.get(root) ?? []), i]);
+  }
+  void g;
+  return [...groups].sort((x, y) => y[1].length - x[1].length || x[0].localeCompare(y[0]));
+}
+
+/** The callers that sit outside `inside`, the set of files a change edits. */
+export function callersOutside(g: CodeGraph, r: ImpactResult, inside: Set<string>) {
+  return r.impacted.filter((i) => {
+    const f = g.node(i.id)?.file;
+    return !!f && !inside.has(f);
+  });
+}
+
 export function impactMarkdown(g: CodeGraph, r: ImpactResult, opts: MarkdownOptions = {}): string {
   const limit = opts.limit ?? 10;
   const s = summarizeImpact(g, r);
@@ -53,6 +147,22 @@ export function impactMarkdown(g: CodeGraph, r: ImpactResult, opts: MarkdownOpti
   const out: string[] = [COMMENT_MARKER, `### ${opts.title ?? 'CodeGraph: what this change can reach'}`, ''];
 
   const fileSeeds = r.seeds.filter((id) => g.node(id)?.kind === 'file').length;
+  const dangling = opts.comparison?.dangling ?? [];
+  const signatures = opts.comparison?.signatures ?? [];
+  const removedApi = opts.comparison?.removedApi ?? [];
+  const verdict = verdictLines(g, { dangling, signatures, removedApi, outside: outside.length, changed: r.seeds.filter((id) => g.node(id)?.kind !== 'file').length, createdPublic: opts.createdPublic ?? [], created: opts.created ?? 0 });
+  if (verdict.length) out.push(...verdict, '');
+  if (opts.aiSummary) out.push('**Reading of the change** _(written by a model from the diff, the description and the facts in this comment; it can be wrong, and the verdict above does not depend on it)_', '', opts.aiSummary, '');
+  if (dangling.length) {
+    const d = dangling;
+    out.push(`⚠️ **${d.length} call${d.length === 1 ? '' : 's'} to code this change removes ${d.length === 1 ? 'is' : 'are'} still there.** Each function below existed before, is gone now, and the caller still calls a name that no longer resolves. A rename or removal that missed a caller looks like this.`, '');
+    for (const x of d.slice(0, 8)) {
+      const gone = x.removed.kind === 'file' ? x.removed.file : `${x.removed.file}#${x.removed.qualifiedName}`;
+      out.push(`- \`${gone}\` was removed, but ${refLabel(g, x.caller.id)} still calls \`${x.removed.name}\` (${x.caller.file}:${x.line})`);
+    }
+    if (d.length > 8) out.push(`- …and ${d.length - 8} more`);
+    out.push('');
+  }
   const changed = r.seeds.length - fileSeeds; // existing symbols edited; a module-level edit is counted apart
   if (!changed && fileSeeds && !outside.length) {
     out.push(`This change edits top-level code (imports, constants, statements) in ${fileSeeds} file${fileSeeds === 1 ? '' : 's'} and no function or class in them.${opts.created ? ` It also adds ${opts.created} new symbols.` : ''}`);
@@ -62,13 +172,19 @@ export function impactMarkdown(g: CodeGraph, r: ImpactResult, opts: MarkdownOpti
     out.push(`This change edits ${changed} existing symbol${changed === 1 ? '' : 's'}, and nothing outside the files it edits calls ${changed === 1 ? 'it' : 'them'}.`);
   } else {
     out.push(
-      `**${outside.length} symbols in ${files.size} files** you did not edit could be affected by the ${changed} existing symbol${changed === 1 ? '' : 's'} this change edits ` +
+      `**${outside.length} symbol${outside.length === 1 ? '' : 's'} in ${files.size} file${files.size === 1 ? '' : 's'}** you did not edit could be affected by the ${changed} existing symbol${changed === 1 ? '' : 's'} this change edits ` +
         `(🟢 ${by.resolved} proven · 🟡 ${by.probable} probable · 🔴 ${by.ambiguous} guessed by name).`,
     );
-    const shown = outside.slice(0, limit);
-    out.push('', '<details open><summary>Callers outside this change</summary>', '', '| | Hops | Symbol |', '|---|---|---|');
-    for (const i of shown) out.push(`| ${DOT[i.confidence]} | ${i.depth} | \`${symbolLabel(g, i.id)}\` |`);
-    if (outside.length > shown.length) out.push(`| | | …and ${outside.length - shown.length} more |`);
+    const ranked = reachByEdit(g, r, outside);
+    out.push('', '<details open><summary>Which edit reaches whom</summary>', '');
+    for (const [root, callers] of ranked.slice(0, 6)) {
+      const fs = new Set(callers.map((c) => g.node(c.id)?.file));
+      const worst = callers.some((c) => c.confidence !== 'resolved') ? ' (includes unproven links)' : '';
+      out.push(`- ${refLabel(g, root)} is reached by **${callers.length}** in ${fs.size} file${fs.size === 1 ? '' : 's'}${worst}`);
+      const nearest = [...callers].sort((x, y) => x.depth - y.depth).slice(0, 4);
+      out.push(`  - ${nearest.map((c) => `${DOT[c.confidence]} ${refLabel(g, c.id)}`).join(', ')}${callers.length > nearest.length ? `, and ${callers.length - nearest.length} more` : ''}`);
+    }
+    if (ranked.length > 6) out.push(`- …and ${ranked.length - 6} more edited symbols with callers elsewhere`);
     out.push('', '</details>');
   }
   const notes: string[] = [];
@@ -79,10 +195,15 @@ export function impactMarkdown(g: CodeGraph, r: ImpactResult, opts: MarkdownOpti
 
   if (r.tests.length) {
     const cmds = testCommands(r.tests, opts.jsRunner);
-    out.push('', `<details><summary>${r.tests.length} test file${r.tests.length === 1 ? '' : 's'} to run</summary>`, '');
+    const total = g.nodes('file').filter((n) => n.file && isTestPath(n.file)).length;
+    const broad = total >= 5 && r.tests.length / total > 0.7 ? ' That is most of the suite: this change touches widely used code.' : '';
+    out.push('', `<details><summary>${r.tests.length}${total ? ` of ${total}` : ''} test file${(total || r.tests.length) === 1 ? '' : 's'} to run</summary>`, '');
+    if (broad) out.push(broad.trim(), '');
     if (cmds.length) out.push('```bash', ...cmds, '```', '');
-    out.push(...r.tests.slice(0, 30).map((t) => `- \`${t}\``));
-    if (r.tests.length > 30) out.push(`- …and ${r.tests.length - 30} more`);
+    // With a command above, the file list only repeats it; keep it when it is short or there is no command.
+    const list = !cmds.length || r.tests.length <= 8;
+    if (!list && cmds.length) out.pop(); // no list follows the command, so no blank line either
+    if (list) out.push(...r.tests.slice(0, 30).map((t) => `- \`${t}\``), ...(r.tests.length > 30 ? [`- …and ${r.tests.length - 30} more`] : []));
     out.push('', '</details>');
   }
   out.push('', `<sub>Static analysis of calls and imports (TypeScript, JavaScript, Python, Go). 🟡 and 🔴 links are name matches, so check them before relying on them. Dynamic calls are invisible to it. [CodeGraph](https://github.com/harsharajkumar-273/CodeGraph)</sub>`);

@@ -1,5 +1,5 @@
 import type { Node } from '@codegraph/parser';
-import { kids, named } from './util';
+import { argCount, kids, named } from './util';
 import type { CallFact, FileFacts, ImportBinding, SymbolFact, VarFact } from './types';
 
 interface Ctx {
@@ -107,6 +107,32 @@ export function extractPython(path: string, lang: string, root: Node): FileFacts
     }
   }
 
+  /** Required and accepted argument counts, not counting the receiver; keyword-only parameters count as arguments too. */
+  function arityOf(fn: Node, isMethod: boolean): { min: number; max: number | null } {
+    // The first parameter of a method is the receiver (`self`, `cls`, whatever it is called) unless the method is static.
+    const isStatic = fn.parent?.type === 'decorated_definition' && named(fn.parent).some((d) => d.type === 'decorator' && /\bstaticmethod\b/.test(d.text));
+    const dropFirst = isMethod && !isStatic;
+    let min = 0;
+    let max: number | null = 0;
+    let first = true;
+    for (const p of named(fn.childForFieldName('parameters'))) {
+      if (p.type === 'comment') continue;
+      const wasFirst = first;
+      first = false;
+      const inner = p.type === 'typed_parameter' ? named(p)[0] : p;
+      if (inner?.type === 'list_splat_pattern') max = null;
+      else if (inner?.type === 'dictionary_splat_pattern') continue;
+      else if (p.type === 'default_parameter' || p.type === 'typed_default_parameter') {
+        if (max !== null) max++;
+      } else if (p.type === 'identifier' || p.type === 'typed_parameter') {
+        if (dropFirst && wasFirst) continue;
+        min++;
+        if (max !== null) max++;
+      }
+    }
+    return { min, max };
+  }
+
   function declareFunction(node: Node, ctx: Ctx) {
     const nm = node.childForFieldName('name');
     if (!nm) return;
@@ -119,6 +145,7 @@ export function extractPython(path: string, lang: string, root: Node): FileFacts
       startLine: line(node),
       endLine: node.endPosition.row + 1,
       className: isMethod ? (ctx.cls ?? undefined) : undefined,
+      arity: arityOf(node, isMethod),
       // `-> Foo` (for `async def`, also what `await f()` yields).
       ...(annType(node.childForFieldName('return_type')) ? { returns: annType(node.childForFieldName('return_type'))! } : {}),
     });
@@ -214,7 +241,7 @@ export function extractPython(path: string, lang: string, root: Node): FileFacts
   function handleCall(node: Node, ctx: Ctx) {
     const args = node.childForFieldName('arguments');
     const shape = callShape(node);
-    if (shape) push(shape, ctx);
+    if (shape) push({ ...shape, ...argCount(args) }, ctx);
     if (args) {
       for (const a of named(args)) {
         if (a.type === 'identifier') push({ callee: a.text, kind: 'ref', line: line(a) }, ctx);
