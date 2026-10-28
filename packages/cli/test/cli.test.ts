@@ -9,13 +9,14 @@ import { blastRadius, resolveTargets } from '@codegraph/analysis';
 import { fixture } from '../../extractors/test/helpers';
 import { cmdImpact } from '../src/commands';
 import { buildTools, handle } from '../src/mcp';
+import { Workspace } from '../src/workspace';
 import { COMMENT_MARKER, impactMarkdown, testCommands } from '../src/report';
 
 let graph: CodeGraph;
 let tools: ReturnType<typeof buildTools>;
 beforeAll(async () => {
   graph = (await indexRepo(fixture('ts-basic'))).graph;
-  tools = buildTools(async () => ({ graph, root: fixture('ts-basic') }), () => {});
+  tools = buildTools(new Workspace(fixture('ts-basic')));
 });
 
 const call = async (name: string, args: object) => {
