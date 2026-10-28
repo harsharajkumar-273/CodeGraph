@@ -90,6 +90,8 @@ Targets accepted by `impact` / `slice`: `src/a.ts`, `src/a.ts#Foo.bar`, `src/a.t
 
 ## Use it with AI agents (MCP)
 
+**Before an agent writes an edit**, `codegraph_check_change` takes the new file text and says what it would break (removed functions still called, calls with the wrong number of arguments, removed public API); `codegraph_verify_symbol` confirms a function exists with the signature the agent is about to use. On constructed breakage in this repo it caught 100% of removals and 88% of added required parameters with no false alarms; it does not see React components used as JSX. Details and limits: [docs/AGENT-EVAL.md](docs/AGENT-EVAL.md).
+
 `codegraph mcp` is a [Model Context Protocol](https://modelcontextprotocol.io) server over stdio. Agents such as Claude
 Code can ask what a change touches before they make it. Tools: `codegraph_impact`, `codegraph_diff_impact`,
 `codegraph_find`, `codegraph_callers_callees`, `codegraph_overview`, `codegraph_reindex`.
