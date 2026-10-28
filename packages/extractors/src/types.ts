@@ -20,6 +20,10 @@ export interface SymbolFact {
   local?: boolean;
   /** How many arguments a caller must pass and may pass (null max: variadic). The receiver (`self`, `this`, a Go receiver) is not counted. */
   arity?: { min: number; max: number | null };
+  /** Each parameter as written (`timeout: number = 30`, `*args`), the receiver left out: what a caller reads to make a call. */
+  params?: string[];
+  /** The return type exactly as written, for showing a signature (`string`, `int | None`, `(int, error)`). */
+  returnText?: string;
   /** Declared return type as written (`Response`, `Foo`), for functions and methods. */
   returns?: string;
   /** What `await f()` yields: `Promise<Foo>` and `Foo | Promise<Foo>` give `Foo`. */

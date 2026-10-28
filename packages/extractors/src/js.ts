@@ -1,5 +1,5 @@
 import type { Node } from '@codegraph/parser';
-import { argCount, kids, named } from './util';
+import { argCount, kids, named, paramText } from './util';
 import type { CallFact, ExportFact, FileFacts, ImportBinding, ImportFact, SymbolFact, VarFact } from './types';
 
 interface Ctx {
@@ -207,6 +207,13 @@ export function extractJs(path: string, lang: string, root: Node): FileFacts {
   }
   const ctorType = (v: Node | null | undefined) => (v?.type === 'new_expression' ? chain(v.childForFieldName('constructor')) : null);
 
+  /** Each parameter as written, leaving out a TypeScript `this` parameter. */
+  function paramsOf(fn: Node): string[] {
+    return named(fn.childForFieldName('parameters'))
+      .filter((p) => p.type !== 'comment' && (p.childForFieldName('pattern') ?? p).text !== 'this')
+      .map(paramText);
+  }
+
   /** Required and accepted argument counts of a function node (`this` parameters and destructuring count as one). */
   function arityOf(fn: Node): { min: number; max: number | null } {
     let min = 0;
@@ -239,6 +246,8 @@ export function extractJs(path: string, lang: string, root: Node): FileFacts {
       className: kind === 'method' ? (ctx.cls ?? undefined) : undefined,
       ...(local ? { local: true } : {}),
       arity: arityOf(node),
+      params: paramsOf(node),
+      ...(node.childForFieldName('return_type') ? { returnText: node.childForFieldName('return_type')!.text.replace(/^:\s*/, '').slice(0, 80) } : {}),
       ...returnTypes(node.childForFieldName('return_type')),
     });
     // Parameter default values / body are visited with this symbol as the caller.

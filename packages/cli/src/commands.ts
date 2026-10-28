@@ -6,15 +6,16 @@ import { basename, dirname, extname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import { CodeGraph, type Confidence, type GraphJSON, type GraphNode } from '@codegraph/core';
-import { indexRepo, type IndexOptions } from '@codegraph/extractors';
+import { indexRepo, loadRepoFiles, type IndexOptions } from '@codegraph/extractors';
 import {
   blastRadius, changedNodes, importCycles, isTestPath, parseUnifiedDiff, removedButStillCalled, resolveTargets, slice, summarizeImpact, variableLineage,
-  changedSignatures, removedPublicApi, type CallSite, type DanglingCall, type FileChange,
+  type FileChange, type ImpactResult,
 } from '@codegraph/analysis';
 import { resolveRepo } from './repo';
 import { summarize } from './ai';
+import { analyzeChange, collectCalls, indexVersion, type ChangeAnalysis, type VersionIndex } from './change';
 import { inlineComments } from './inline';
-import { COMMENT_MARKER, impactMarkdown, symbolLabel, type BaseComparison } from './report';
+import { COMMENT_MARKER, impactMarkdown, symbolLabel } from './report';
 
 const exec = promisify(execFile);
 
@@ -78,62 +79,29 @@ export async function cmdIndex(pos: string[], flags: Flags) {
 }
 
 /**
- * A trace callback that records, per caller, the call sites that resolved to nothing (`name -> line`), and optionally every
- * call that did resolve, by the `file#name` it resolved to, with how many arguments it passes.
+ * The version of the code a change started from: the base commit of a range, unpacked and indexed. Any failure just means
+ * there is no comparison.
  */
-function collectCalls(unresolved: Map<string, Map<string, number>>, sites?: Map<string, CallSite[]>): NonNullable<IndexOptions['trace']> {
-  return (t) => {
-    if (t.call.kind === 'ref') return;
-    const caller = t.call.caller ? `${t.file}#${t.call.caller}` : t.file;
-    if (!t.targets.length) {
-      const m = unresolved.get(caller) ?? new Map<string, number>();
-      m.set(t.call.callee, t.call.line);
-      unresolved.set(caller, m);
-      return;
-    }
-    if (!sites) return;
-    for (const target of t.targets) {
-      const k = `${target.file}#${target.qname}`;
-      const list = sites.get(k) ?? [];
-      list.push({ caller, file: t.file, line: t.call.line, argc: t.call.argc });
-      sites.set(k, list);
-    }
-  };
-}
-
-/**
- * What the change did to the code it started from: functions removed that surviving callers still call (the shape of a
- * rename that missed a caller), functions whose argument counts changed, and public API removed. Needs the base commit,
- * which it unpacks and indexes; any failure just means no comparison.
- */
-async function compareWithBase(root: string, range: string, head: CodeGraph, unresolved: Map<string, Map<string, number>>, sites: Map<string, CallSite[]>): Promise<BaseComparison> {
-  const none: BaseComparison = { dangling: [], signatures: [], removedApi: [] };
+async function indexBaseCommit(root: string, range: string): Promise<VersionIndex | undefined> {
   try {
     const threeDot = range.includes('...');
     const [left, right] = range.split(threeDot ? '...' : '..');
     let rev = left || 'HEAD';
     if (threeDot) rev = (await exec('git', ['merge-base', rev, right || 'HEAD'], { cwd: root })).stdout.trim();
-    if (!/^[0-9A-Za-z][\w./~^@-]*$/.test(rev)) return none;
+    if (!/^[0-9A-Za-z][\w./~^@-]*$/.test(rev)) return undefined;
     const dir = await fs.mkdtemp(join(tmpdir(), 'codegraph-base-'));
     try {
       await exec('sh', ['-c', 'git archive "$REV" | tar -x -C "$DIR"'], { cwd: root, env: { ...process.env, REV: rev, DIR: dir }, maxBuffer: 64 * 1024 * 1024 });
-      const baseUnresolved = new Map<string, Map<string, number>>();
-      const base = await indexRepo(dir, { trace: collectCalls(baseUnresolved) });
-      const found: BaseComparison = {
-        dangling: removedButStillCalled(base.graph, head, unresolved, baseUnresolved),
-        signatures: changedSignatures(base.graph, head, sites),
-        removedApi: removedPublicApi(base.graph, head),
-        baseSymbols: new Set(base.graph.nodes(['function', 'method', 'class']).map((n) => `${n.file}#${n.qualifiedName}`)),
-        baseNames: new Set(base.graph.nodes(['function', 'method', 'class']).map((n) => `${n.kind}:${n.qualifiedName ?? n.name}`)),
-      };
-      console.error(`${color.dim}compared with the base commit ${rev.slice(0, 10)}: ${base.stats.files} files, ${found.dangling.length} removed call${found.dangling.length === 1 ? '' : 's'} still used, ${found.signatures.length} changed signature${found.signatures.length === 1 ? '' : 's'}${color.off}`);
-      return found;
+      const { files, configs } = await loadRepoFiles(dir);
+      const base = await indexVersion(files, configs, dir);
+      console.error(`${color.dim}compared with the base commit ${rev.slice(0, 10)}: ${base.files} files${color.off}`);
+      return base;
     } finally {
       await fs.rm(dir, { recursive: true, force: true });
     }
   } catch (e) {
     console.error(`${color.dim}could not compare with the base commit: ${(e as Error).message.split('\n')[0]}${color.off}`);
-    return none;
+    return undefined;
   }
 }
 
@@ -141,42 +109,29 @@ export async function cmdImpact(pos: string[], flags: Flags) {
   const repo = typeof flags.repo === 'string' ? flags.repo : '.';
   // A pull request comment also compares with the base commit, so it needs every call site the new version could not resolve.
   const compare = !!flags.diff && flags.format === 'markdown' && typeof flags.graph !== 'string' && flags['no-compare'] !== true;
-  const unresolved = new Map<string, Map<string, number>>();
-  const sites = new Map<string, CallSite[]>();
-  const { graph, root } = await load(
-    repo,
-    flags,
-    compare ? collectCalls(unresolved, sites) : undefined,
-  );
-  let comparison: BaseComparison | undefined;
+  const unresolved: VersionIndex['unresolved'] = new Map();
+  const sites: VersionIndex['sites'] = new Map();
+  const { graph, root } = await load(repo, flags, compare ? collectCalls(unresolved, sites) : undefined);
+  let analysis: ChangeAnalysis | undefined;
   let fileChanges: FileChange[] = [];
   let seeds: string[] = [];
-  let diffInfo: { changedFiles: Set<string>; created: number; createdPublic: string[]; deletedFiles: string[] } | undefined;
+  let res: ImpactResult | undefined;
   if (flags.diff) {
-    const range = [typeof flags.range === 'string' ? flags.range : 'HEAD'];
-    const { stdout } = await exec('git', ['diff', '-U0', ...range], { cwd: root, maxBuffer: 64 * 1024 * 1024 });
-    const changes = parseUnifiedDiff(stdout);
-    fileChanges = changes;
-    const changed = changedNodes(graph, changes);
-    let { nodes, created } = changed;
-    const { unmapped } = changed;
-    diffInfo = { changedFiles: new Set(changes.filter((c) => !c.deleted).map((c) => c.file)), created: created.length, createdPublic: created.filter((n) => n.exported && !n.name.startsWith('_') && !isTestPath(n.file ?? '')).map((n) => `${n.file}#${n.qualifiedName}`), deletedFiles: changes.filter((c) => c.deleted).map((c) => c.file) };
-    if (unmapped.length) console.error(`${color.dim}not in graph (non-source or new): ${unmapped.slice(0, 8).join(', ')}${color.off}`);
-    if (compare) comparison = await compareWithBase(root, typeof flags.range === 'string' ? flags.range : 'HEAD', graph, unresolved, sites);
-    if (comparison?.baseSymbols) {
-      // A hunk that edits one function and adds another looks like a single edit; the base commit says which symbols are new.
-      const isFresh = (n: GraphNode) => ['function', 'method', 'class'].includes(n.kind) && !comparison!.baseSymbols!.has(`${n.file}#${n.qualifiedName}`);
-      created = [...created, ...nodes.filter(isFresh)];
-      nodes = nodes.filter((n) => !isFresh(n));
+    const range = typeof flags.range === 'string' ? flags.range : 'HEAD';
+    const { stdout } = await exec('git', ['diff', '-U0', range], { cwd: root, maxBuffer: 64 * 1024 * 1024 });
+    fileChanges = parseUnifiedDiff(stdout);
+    const base = compare ? await indexBaseCommit(root, range) : undefined;
+    analysis = analyzeChange({ head: { graph, unresolved, sites }, base, changes: fileChanges, minConfidence: minConf(flags), maxDepth: flags.depth ? Number(flags.depth) : undefined, jsRunner: await jsRunner(root) });
+    if (analysis.unmapped.length) console.error(`${color.dim}not in graph (non-source or new): ${analysis.unmapped.slice(0, 8).join(', ')}${color.off}`);
+    if (analysis.comparison) {
+      const c = analysis.comparison;
+      console.error(`${color.dim}${c.dangling.length} removed call${c.dangling.length === 1 ? '' : 's'} still used, ${c.signatures.length} changed signature${c.signatures.length === 1 ? '' : 's'}${color.off}`);
     }
-    seeds = nodes.map((n) => n.id);
-    // A function that only moved to another file is not new public API.
-    const wasThere = (n: GraphNode) => !!comparison?.baseNames?.has(`${n.kind}:${n.qualifiedName ?? n.name}`);
-    diffInfo = { ...diffInfo!, created: created.length, createdPublic: created.filter((n) => n.exported && !n.name.startsWith('_') && !isTestPath(n.file ?? '') && !wasThere(n)).map((n) => `${n.file}#${n.qualifiedName}`) };
-    const anyFinding = !!comparison && (comparison.dangling.length > 0 || comparison.signatures.length > 0 || comparison.removedApi.length > 0);
-    if (!seeds.length && !(flags.format === 'markdown' && (created.length || anyFinding || diffInfo.deletedFiles.length))) {
+    if (analysis.empty || (!analysis.res.seeds.length && flags.format !== 'markdown')) {
       return console.log(flags.format === 'markdown' ? '' : 'No changed source symbols found in diff.');
     }
+    res = analysis.res;
+    seeds = res.seeds;
   } else {
     if (!pos[0]) throw new Error('usage: codegraph impact <target> | --diff [range]');
     const found = resolveTargets(graph, pos[0]);
@@ -184,13 +139,15 @@ export async function cmdImpact(pos: string[], flags: Flags) {
     if (found.length > 1) console.error(`${color.dim}${found.length} matches, analyzing all:${color.off}\n${found.slice(0, 8).map((n) => '  ' + label(graph, n.id)).join('\n')}`);
     seeds = found.map((n) => n.id);
   }
-  const res = blastRadius(graph, seeds, {
+  res ??= blastRadius(graph, seeds, {
     maxDepth: flags.depth ? Number(flags.depth) : undefined,
     minConfidence: minConf(flags),
     expandFiles: !flags.diff,
   });
   if (flags.format === 'markdown') {
-    const mdOptions = { ...diffInfo, comparison, jsRunner: await jsRunner(root) };
+    const mdOptions = analysis?.options ?? {};
+    const comparison = analysis?.comparison;
+    const diffInfo = analysis ? { changedFiles: analysis.options.changedFiles! } : undefined;
     let aiSummary: string | undefined;
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (flags.ai === true && apiKey && flags.diff) {

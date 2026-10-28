@@ -615,6 +615,8 @@ class Resolver {
         exported: exportedLocals.has(s.qname),
         parent,
         ...(s.arity ? { arity: s.arity } : {}),
+        ...(s.params ? { params: s.params } : {}),
+        ...(s.returnText ?? s.returns ? { returns: s.returnText ?? s.returns } : {}),
       };
       g.addNode(node);
       g.addEdge({ from: parent, to: node.id, kind: 'defines', confidence: 'resolved', line: s.startLine });

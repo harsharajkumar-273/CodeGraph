@@ -1,5 +1,5 @@
 import type { Node } from '@codegraph/parser';
-import { argCount, kids, named } from './util';
+import { argCount, kids, named, paramText } from './util';
 import type { CallFact, FileFacts, ImportBinding, SymbolFact, VarFact } from './types';
 
 interface Ctx {
@@ -107,6 +107,13 @@ export function extractPython(path: string, lang: string, root: Node): FileFacts
     }
   }
 
+  /** Each parameter as written, without the receiver of a method (see arityOf). */
+  function paramsOf(fn: Node, isMethod: boolean): string[] {
+    const isStatic = fn.parent?.type === 'decorated_definition' && named(fn.parent).some((d) => d.type === 'decorator' && /\bstaticmethod\b/.test(d.text));
+    const list = named(fn.childForFieldName('parameters')).filter((p) => p.type !== 'comment');
+    return (isMethod && !isStatic ? list.slice(1) : list).map(paramText);
+  }
+
   /** Required and accepted argument counts, not counting the receiver; keyword-only parameters count as arguments too. */
   function arityOf(fn: Node, isMethod: boolean): { min: number; max: number | null } {
     // The first parameter of a method is the receiver (`self`, `cls`, whatever it is called) unless the method is static.
@@ -146,6 +153,8 @@ export function extractPython(path: string, lang: string, root: Node): FileFacts
       endLine: node.endPosition.row + 1,
       className: isMethod ? (ctx.cls ?? undefined) : undefined,
       arity: arityOf(node, isMethod),
+      params: paramsOf(node, isMethod),
+      ...(node.childForFieldName('return_type') ? { returnText: node.childForFieldName('return_type')!.text.slice(0, 80) } : {}),
       // `-> Foo` (for `async def`, also what `await f()` yields).
       ...(annType(node.childForFieldName('return_type')) ? { returns: annType(node.childForFieldName('return_type'))! } : {}),
     });
