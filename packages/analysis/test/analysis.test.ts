@@ -1,7 +1,11 @@
+import { execFileSync } from 'node:child_process';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
 import type { CodeGraph } from '@codegraph/core';
 import { indexFiles, indexRepo } from '@codegraph/extractors';
-import { blastRadius, changedNodes, changedSignatures, removedButStillCalled, removedPublicApi, importCycles, parseUnifiedDiff, resolveTargets, slice, variableLineage } from '../src';
+import { blastRadius, changedNodes, changedSignatures, diffLines, removedButStillCalled, removedPublicApi, importCycles, parseUnifiedDiff, resolveTargets, slice, variableLineage } from '../src';
 import { fixture } from '../../extractors/test/helpers';
 
 let g: CodeGraph;
@@ -359,5 +363,49 @@ describe('signature changes and removed public API', () => {
     const base = await graphOf({ 'lib.ts': 'export function keep() {}\nexport function gone() {}\n', 'lib.test.ts': 'export function helper() {}\n', '_p.py': 'def _hidden(): pass\ndef shown(): pass\n' });
     const head = await graphOf({ 'lib.ts': 'export function keep() {}\n', '_p.py': '' });
     expect(removedPublicApi(base, head).map((n) => n.name).sort()).toEqual(['gone', 'shown']);
+  });
+});
+
+describe('diffLines', () => {
+  const t = (n: number, mark = (i: number) => `line ${i}`) => Array.from({ length: n }, (_, i) => mark(i + 1)).join('\n') + '\n';
+
+  it('reports an inserted block, a rewritten line and a deleted block like git does', () => {
+    const base = t(10);
+    const inserted = base.replace('line 4\n', 'line 4\nnew a\nnew b\n');
+    expect(diffLines('f', base, inserted)).toMatchObject({ ranges: [[5, 6]], inserted: [[5, 6]], removed: [] });
+    const edited = base.replace('line 3\n', 'line three\n');
+    expect(diffLines('f', base, edited)).toMatchObject({ ranges: [[3, 3]], inserted: [], removed: [[3, 3]] });
+    const deleted = base.replace('line 6\nline 7\n', '');
+    expect(diffLines('f', base, deleted)).toMatchObject({ ranges: [[5, 5]], inserted: [], removed: [[6, 7]] });
+  });
+
+  it('handles new files, deleted files and identical text', () => {
+    expect(diffLines('f', null, t(3))).toMatchObject({ added: true, ranges: [[1, 3]] });
+    expect(diffLines('f', t(3), null)).toMatchObject({ deleted: true, removed: [[1, 3]] });
+    expect(diffLines('f', t(3), t(3))).toMatchObject({ ranges: [], inserted: [], removed: [] });
+    expect(diffLines('f', null, null)).toBeUndefined();
+  });
+
+  it('agrees with git on the lines it reports for separate edits', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'cg-diff-'));
+    try {
+      const base = t(40);
+      const next = base.replace('line 5\n', 'FIVE\n').replace('line 20\n', 'line 20\nextra\n').replace('line 31\nline 32\n', '');
+      writeFileSync(join(dir, 'a'), base);
+      writeFileSync(join(dir, 'b'), next);
+      let raw = '';
+      try {
+        execFileSync('git', ['diff', '--no-index', '-U0', 'a', 'b'], { cwd: dir, stdio: 'pipe' });
+      } catch (e) {
+        raw = (e as { stdout: Buffer }).stdout.toString(); // exit status 1 means "differs"
+      }
+      const git = parseUnifiedDiff(raw.replace(/^--- a\/a/m, '--- a/f').replace(/^\+\+\+ b\/b/m, '+++ b/f'))[0];
+      const mine = diffLines('f', base, next)!;
+      expect(mine.ranges).toEqual(git.ranges);
+      expect(mine.removed).toEqual(git.removed);
+      expect(mine.inserted).toEqual(git.inserted);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });

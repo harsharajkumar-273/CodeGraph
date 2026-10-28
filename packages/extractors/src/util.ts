@@ -17,3 +17,6 @@ export function argCount(args: Node | null | undefined): { argc?: number } {
   if (list.some((a) => SPREAD.has(a.type)) || kids(args).some((k) => k.type === '...')) return {};
   return { argc: list.length };
 }
+
+/** A parameter as written, on one line and capped, for showing a signature. */
+export const paramText = (n: Node): string => n.text.replace(/\s+/g, ' ').trim().slice(0, 80);

@@ -1,5 +1,5 @@
 import type { Node } from '@codegraph/parser';
-import { argCount, named } from './util';
+import { argCount, named, paramText } from './util';
 import type { CallFact, FileFacts, SymbolFact } from './types';
 
 const line = (n: Node) => n.startPosition.row + 1;
@@ -235,6 +235,9 @@ export function extractGo(path: string, lang: string, root: Node): FileFacts {
     return { min: n, max: variadic ? null : n };
   }
 
+  /** Each parameter declaration as written (`a, b int`, `rest ...string`). */
+  const paramsOf = (fn: Node): string[] => named(fn.childForFieldName('parameters')).filter((p) => p.type !== 'comment').map(paramText);
+
   function declareFunction(node: Node) {
     const nm = node.childForFieldName('name');
     if (!nm) return;
@@ -246,7 +249,7 @@ export function extractGo(path: string, lang: string, root: Node): FileFacts {
     go.results[qname] = res;
     addSymbol({
       name: nm.text, qname, kind: isMethod ? 'method' : 'function', startLine: line(node), endLine: node.endPosition.row + 1,
-      ...(isMethod ? { className: recvType } : {}), arity: arityOf(node), ...(res[0] && res[0] !== '?' ? { returns: res[0] } : {}),
+      ...(isMethod ? { className: recvType } : {}), arity: arityOf(node), params: paramsOf(node), ...(node.childForFieldName('result') ? { returnText: node.childForFieldName('result')!.text.replace(/\s+/g, ' ').slice(0, 80) } : {}), ...(res[0] && res[0] !== '?' ? { returns: res[0] } : {}),
     });
     if (recv) for (const n of named(recv)) if (n.type === 'identifier') setType(qname, n.text, recvType, n);
     params(node.childForFieldName('parameters'), qname);
