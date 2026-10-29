@@ -6,8 +6,10 @@ export interface DanglingCall {
   removed: GraphNode;
   /** The caller in the new version (a symbol, or a file for top-level code). */
   caller: GraphNode;
-  /** The line in the new version where the unresolved call is made. */
+  /** The line in the new version where the unresolved call is made (the first one, when the caller makes several). */
   line: number;
+  /** Every such line, in order. */
+  lines: number[];
 }
 
 const key = (n: GraphNode) => (n.kind === 'file' ? n.file! : `${n.file}#${n.qualifiedName}`);
@@ -16,7 +18,7 @@ const key = (n: GraphNode) => (n.kind === 'file' ? n.file! : `${n.file}#${n.qual
  * Symbols that exist in `base` but not in `head`, which `head` still seems to call.
  *
  * `headUnresolved` maps a caller in the new version (`file#qualified.name`, or just `file` for top-level code) to the call
- * sites there that resolved to nothing, as `name -> line`. A removed function is reported against a caller that existed in
+ * sites there that resolved to nothing, as `name -> lines`. A removed function is reported against a caller that existed in
  * the base calling it, still exists, and still makes a call of that name that resolves to nothing: the shape of a rename
  * or removal whose callers were not all updated. A call that now resolves somewhere else is not reported, and neither is a
  * name the caller already called without resolving in the base (`m.get()` on an external map): that call says nothing about
@@ -25,8 +27,8 @@ const key = (n: GraphNode) => (n.kind === 'file' ? n.file! : `${n.file}#${n.qual
 export function removedButStillCalled(
   base: CodeGraph,
   head: CodeGraph,
-  headUnresolved: Map<string, Map<string, number>>,
-  baseUnresolved: Map<string, Map<string, number>> = new Map(),
+  headUnresolved: Map<string, Map<string, number[]>>,
+  baseUnresolved: Map<string, Map<string, number[]>> = new Map(),
 ): DanglingCall[] {
   const inHead = new Set(head.nodes(['function', 'method', 'class', 'file']).map(key));
   const out: DanglingCall[] = [];
@@ -36,8 +38,8 @@ export function removedButStillCalled(
       const callerBase = base.node(e.from);
       if (!callerBase || !inHead.has(key(callerBase))) continue; // the caller was removed too
       if (baseUnresolved.get(key(callerBase))?.has(removed.name)) continue;
-      const line = headUnresolved.get(key(callerBase))?.get(removed.name);
-      if (line !== undefined) out.push({ removed, caller: callerBase, line });
+      const lines = headUnresolved.get(key(callerBase))?.get(removed.name);
+      if (lines?.length) out.push({ removed, caller: callerBase, line: lines[0], lines });
     }
   }
   return out.sort((a, b) => key(a.removed).localeCompare(key(b.removed)) || key(a.caller).localeCompare(key(b.caller)));

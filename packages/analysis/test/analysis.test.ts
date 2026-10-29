@@ -238,13 +238,13 @@ describe('cycles', () => {
 describe('removed but still called', () => {
   /** Index a version of a project and collect its unresolved call sites the way the CLI does. */
   async function version(files: Record<string, string>) {
-    const unresolved = new Map<string, Map<string, number>>();
+    const unresolved = new Map<string, Map<string, number[]>>();
     const { graph } = await indexFiles(files, {}, '.', {
       trace: (t) => {
         if (t.targets.length || t.call.kind === 'ref') return;
         const k = t.call.caller ? `${t.file}#${t.call.caller}` : t.file;
-        const m = unresolved.get(k) ?? new Map<string, number>();
-        m.set(t.call.callee, t.call.line);
+        const m = unresolved.get(k) ?? new Map<string, number[]>();
+        m.set(t.call.callee, [...(m.get(t.call.callee) ?? []), t.call.line]);
         unresolved.set(k, m);
       },
     });
@@ -259,6 +259,15 @@ describe('removed but still called', () => {
     const r = removedButStillCalled(base.graph, head.graph, head.unresolved, base.unresolved);
     expect(r.map((d) => [d.removed.qualifiedName, d.caller.qualifiedName])).toEqual([['parse', 'a']]);
     expect(r[0].line).toBe(2);
+  });
+
+  it('reports every call a caller makes to the removed function, not just the last', async () => {
+    const use2 = "import { parse } from './lib';\nexport function a() {\n  parse('1');\n  parse('2');\n  return parse('3');\n}\n";
+    const base = await version({ 'lib.ts': lib, 'use.ts': use2 });
+    const head = await version({ 'lib.ts': 'export function keep() {}\n', 'use.ts': use2 });
+    const r = removedButStillCalled(base.graph, head.graph, head.unresolved, base.unresolved);
+    expect(r).toHaveLength(1);
+    expect(r[0].lines).toEqual([3, 4, 5]);
   });
 
   it('is quiet when the callers were updated, or removed together with the function', async () => {
