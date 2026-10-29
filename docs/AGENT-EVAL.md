@@ -26,8 +26,8 @@ CodeGraph's own source (96 files; 20 edits per kind, seed 7; raw rows in `docs/e
 
 | edit | n | compiler: broken | `check_change`: breaking | caught | false alarms | call-site recall | call-site precision | grep recall | grep precision |
 |---|---|---|---|---|---|---|---|---|---|
-| remove | 20 | 20 | 20 | 100% | n/a | 73% | 97% | 100% | 34% |
-| add-param | 20 | 17 | 15 | 88% | 0% | 86% | 100% | 100% | 35% |
+| remove | 20 | 20 | 20 | 100% | n/a | 100% | 100% | 100% | 34% |
+| add-param | 20 | 17 | 15 | 88% | 0% | 86% | 100% | 100% | 34% |
 | body-edit | 20 | 0 | 0 | n/a | 0% | | | | |
 | add-func | 20 | 0 | 0 | n/a | 0% | | | | |
 
@@ -40,8 +40,11 @@ Median time for a check, including the compiler run: about 3 s (the check itself
   that depends on the type of the props, not on an argument count. I tried counting a JSX element as a call with one
   argument; it made things worse (the compiler accepts a second parameter on a component and rejects a changed props type),
   so that change was reverted. Checking props needs type information CodeGraph does not have.
-- **Some call sites of removed functions** (recall 73%): in four functions, half of the sites were missed; the worst cases
-  have many callers inside one large file. Not yet root-caused.
+- **A bug this benchmark found and fixed.** The first run found only 73% of the call sites of a removed function: when one
+  function called the removed one several times, only one line was kept per caller. All lines are kept now (regression test
+  in `packages/analysis/test/analysis.test.ts`), and the same fix improves the pull request comment. The 73% figure was from
+  the earlier run; the table is from the run after the fix, on the same 20 functions per kind (same seed), so it is a
+  fix verified on the data that found it, not a fresh sample.
 - **Grep has higher recall and far lower precision.** Grep finds every mention (100% recall) but 2 of 3 lines it returns are
   not calls (imports, comments, same-named things), and it cannot say whether the edit is a problem at all.
 - **One removal of an uncalled function** broke the compiler (it was used as a value, not a call) and was not flagged.

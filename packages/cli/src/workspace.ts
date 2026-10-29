@@ -113,7 +113,7 @@ export class Workspace {
         findings.push({
           kind: 'removed-but-called',
           message: `\`${r.qualifiedName ?? r.name}\` (${r.file}) no longer exists but ${ds.length} call${ds.length === 1 ? ' still uses' : 's still use'} it.`,
-          at: ds.map((d) => `${d.caller.file}:${d.line}`),
+          at: ds.flatMap((d) => d.lines.map((l) => `${d.caller.file}:${l}`)),
         });
       }
       for (const s of c.signatures) {

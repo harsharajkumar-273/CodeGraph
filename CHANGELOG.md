@@ -5,6 +5,7 @@ All notable changes to [`codegraph-engine`](https://www.npmjs.com/package/codegr
 ## Unreleased
 
 ### Fixed
+- **Every call to a removed function is reported**, not one per calling function (a function that called the removed one three times showed only one line). Found by the mutation benchmark.
 - **Diffs no longer inflate the blast radius.** An edit on a line that declares a local variable is a change to its function (it used to be attributed to the variable, which has no callers, so the function's blast radius came out empty), and a module-level edit such as an import line no longer counts every symbol in the file as changed. Symbols a diff adds in full are reported as new instead of as changes. The pull request comment now counts only callers outside the files the change edits, says plainly when a change only adds code, and gives a test command per ecosystem (`go test ./pkg`, `pytest`, `vitest`/`jest`).
 - **Python function-local imports** (`def f(): from x import y`) are scoped to that function instead of replacing the file's import of the same name, and shadow a same-named function outside it. Removes one `resolved` error each in Flask and Rich in the Jedi check.
 

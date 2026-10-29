@@ -14,8 +14,8 @@ type Trace = NonNullable<NonNullable<Parameters<typeof indexFiles>[3]>['trace']>
 /** An indexed version of the code, with what a comparison needs besides the graph: which calls resolved to nothing, and where each function is called. */
 export interface VersionIndex {
   graph: CodeGraph;
-  /** Per caller (`file#name`, or `file` for top-level code): call sites that resolved to nothing, as `name -> line`. */
-  unresolved: Map<string, Map<string, number>>;
+  /** Per caller (`file#name`, or `file` for top-level code): call sites that resolved to nothing, as `name -> lines`. */
+  unresolved: Map<string, Map<string, number[]>>;
   /** Per function (`file#name`): the calls that resolved to it, with how many arguments each passes. */
   sites: Map<string, CallSite[]>;
   files?: number;
@@ -27,8 +27,8 @@ export function collectCalls(unresolved: VersionIndex['unresolved'], sites?: Ver
     if (t.call.kind === 'ref') return;
     const caller = t.call.caller ? `${t.file}#${t.call.caller}` : t.file;
     if (!t.targets.length) {
-      const m = unresolved.get(caller) ?? new Map<string, number>();
-      m.set(t.call.callee, t.call.line);
+      const m = unresolved.get(caller) ?? new Map<string, number[]>();
+      m.set(t.call.callee, [...(m.get(t.call.callee) ?? []), t.call.line]);
       unresolved.set(caller, m);
       return;
     }
