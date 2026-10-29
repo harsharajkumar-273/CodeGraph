@@ -456,7 +456,7 @@ export class GoResolver {
         const owner = s.className ? pkg.types.get(s.className) : undefined;
         const parent = owner ? symbolId(owner.file.path, owner.sym.qname) : fileId(f.path);
         const exported = isUpper(s.name) && (!s.className || isUpper(s.className));
-        const node: GraphNode = { id: symbolId(f.path, s.qname), kind: s.kind, name: s.name, qualifiedName: s.qname, file: f.path, lang: f.lang, startLine: s.startLine, endLine: s.endLine, exported, parent };
+        const node: GraphNode = { id: symbolId(f.path, s.qname), kind: s.kind, name: s.name, qualifiedName: s.qname, file: f.path, lang: f.lang, startLine: s.startLine, endLine: s.endLine, exported, parent, ...(s.arity ? { arity: s.arity } : {}), ...(s.params ? { params: s.params } : {}), ...(s.returnText ?? s.returns ? { returns: s.returnText ?? s.returns } : {}) };
         g.addNode(node);
       }
     }

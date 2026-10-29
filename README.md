@@ -90,6 +90,8 @@ Targets accepted by `impact` / `slice`: `src/a.ts`, `src/a.ts#Foo.bar`, `src/a.t
 
 ## Use it with AI agents (MCP)
 
+**Before an agent writes an edit**, `codegraph_check_change` takes the new file text and says what it would break (removed functions still called, calls with the wrong number of arguments, removed public API); `codegraph_verify_symbol` confirms a function exists with the signature the agent is about to use. On constructed breakage in this repo it caught 100% of removals (every call site found) and 88% of added required parameters with no false alarms; it cannot tell when a changed React component no longer fits its JSX uses. Details and limits: [docs/AGENT-EVAL.md](docs/AGENT-EVAL.md).
+
 `codegraph mcp` is a [Model Context Protocol](https://modelcontextprotocol.io) server over stdio. Agents such as Claude
 Code can ask what a change touches before they make it. Tools: `codegraph_impact`, `codegraph_diff_impact`,
 `codegraph_find`, `codegraph_callers_callees`, `codegraph_overview`, `codegraph_reindex`.
@@ -119,6 +121,52 @@ jobs:
       - uses: harsharajkumar-273/CodeGraph@main
         # with: { min-confidence: probable, fail-above: 200 }
 ```
+
+It also compares with the base commit and opens with a **verdict** that says whether existing callers can fail. It is
+evidence, not a guess at intent: it cannot tell a bug fix from a feature, only whether something that exists is now
+broken.
+
+| Verdict | When |
+|---|---|
+| 🔴 likely breaking | a function was removed or renamed and a surviving caller still calls the old name; or a function now needs more arguments (or accepts fewer) and a call site passes a count that no longer fits (it names the file and line) |
+| 🟠 may change public API | an exported function's argument counts changed, or an exported function was removed, but nothing in the repository is known to break |
+| 🟡 changes shared code | it edits code that other files call, with no incompatible signature change |
+| 🟢 contained / additive | it edits code nothing outside the edited files calls, or only adds new code (listing the new public symbols) |
+
+The findings that have a line are also left **on the diff** as review comments, because that is where a reviewer looks: a
+removed function that is still called goes on its deleted definition (GitHub only allows comments on lines of the diff,
+and the caller that was missed is in a file the pull request did not touch), and a changed signature goes on the new
+signature, naming the calls that no longer fit. They are replaced on each push and left alone once someone has replied.
+Only 🔴 and 🟠 findings get a line comment; `inline-comments: all` adds a note on edits to code many others depend on,
+and `inline-comments: false` turns them off. The action analyses the pull request's own commit, not the merge commit, so
+that its line numbers match GitHub's diff.
+
+### An optional reading by a model
+
+Everything above is a fact about the code's structure, which is why it can be trusted and also why it cannot say what a
+change is *for*. With an Anthropic API key the comment gains a short **reading of the change**: what it does in plain
+language, whether the diff matches what the author wrote in the description (it will notice a change the description does
+not mention), and up to three things worth checking. The deterministic verdict and facts are handed to the model as ground
+truth, and the verdict does not depend on it.
+
+```yaml
+      - uses: harsharajkumar-273/CodeGraph@main
+        with:
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+```
+
+It is off unless that key is set. When on, **the diff of the source files, the pull request title and description, and the
+comment's facts are sent to the Anthropic API** on every push, at a few thousand tokens in and at most 700 out. It never runs
+for a pull request from a fork. The title, description and diff are written by whoever opens the pull request, so they are
+quoted as untrusted data the model is told never to obey, and its answer is only ever shown as text (markup, links and
+mentions are stripped). It can still be wrong or miss things, so read it as a first pass from a reviewer, not a check. Its
+answers have not been evaluated here, because that needs a key: try it on a few of your own pull requests before relying on it.
+
+What it can't see: it compares argument *counts* only (not names, order or types), reports calls only (not imports or
+type-only uses), and treats every top-level Python function as public. Checked on 132 real single commits from four
+repositories (Requests, Gin, Hono and this one) it raised no 🔴 or 🟠, and on a rename and on a new required argument
+injected into Requests, Hono and Gin it fired with the real call sites. It has not been run on many real pull requests
+that contain a genuine breaking change. `codegraph impact --no-compare` skips the comparison.
 
 `fail-above` makes the check fail when a change reaches more symbols than that. Pull requests from forks have a
 read-only token, so the result goes to the job summary instead of a comment. The same text is available locally with

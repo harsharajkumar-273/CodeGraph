@@ -7,7 +7,7 @@ const HELP = `codegraph — AST dependency, call-graph and blast-radius engine
 Usage:
   codegraph index  [path|owner/repo|github-url] [-o graph.json]
   codegraph impact <target> [--repo path] [--depth N] [--min-confidence resolved|probable|ambiguous] [--json]
-  (impact also takes --format markdown for a pull request comment)
+  (impact also takes --format markdown for a pull request comment, --inline-out <file> for line comments, --no-compare to skip the base commit, --ai for a model's reading of the diff when ANTHROPIC_API_KEY is set)
   codegraph impact --diff [--range main...HEAD] [--repo path]   blast radius of a git diff (default: working tree vs HEAD)
   codegraph slice  <target> [--callers N] [--callees N] [--print]
   codegraph vars   <function> | <function#var>   local variables, or one variable's dataflow lineage
@@ -36,6 +36,10 @@ const { positionals, values } = parseArgs({
     diff: { type: 'boolean' },
     range: { type: 'string' },
     json: { type: 'boolean' },
+    'no-compare': { type: 'boolean' },
+    'inline-out': { type: 'string' },
+    'inline-hotspots': { type: 'boolean' },
+    ai: { type: 'boolean' },
     format: { type: 'string' },
     print: { type: 'boolean' },
     help: { type: 'boolean', short: 'h' },
