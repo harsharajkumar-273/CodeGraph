@@ -35,9 +35,11 @@ Median time for a check, including the compiler run: about 3 s (the check itself
 
 ## What it misses, and what the numbers do not show
 
-- **JSX components.** All five `add-param` misses (and the two reported as `api-change`) are React components used as
-  `<Footer />`. A JSX element is not a call edge in CodeGraph, so a changed component signature is not connected to its uses.
-  This is a real gap, not a measurement problem.
+- **React components.** All five `add-param` misses (and the two reported as `api-change`) are components used as
+  `<Footer />`. CodeGraph does connect a JSX element to its component as a call, but it cannot say whether the element fits:
+  that depends on the type of the props, not on an argument count. I tried counting a JSX element as a call with one
+  argument; it made things worse (the compiler accepts a second parameter on a component and rejects a changed props type),
+  so that change was reverted. Checking props needs type information CodeGraph does not have.
 - **Some call sites of removed functions** (recall 73%): in four functions, half of the sites were missed; the worst cases
   have many callers inside one large file. Not yet root-caused.
 - **Grep has higher recall and far lower precision.** Grep finds every mention (100% recall) but 2 of 3 lines it returns are
