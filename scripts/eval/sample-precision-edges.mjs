@@ -5,10 +5,10 @@
 // for manual verification. This is how the numbers in docs/PRECISION.md were produced.
 //
 // Usage:
-//   node scripts/sample-precision-edges.mjs <graph.json> <repo-root> <out.md> [seed] [perTier]
+//   node scripts/eval/sample-precision-edges.mjs <graph.json> <repo-root> <out.md> [seed] [perTier]
 //
 // Example (after `npm run cg -- index pallets/flask`):
-//   node scripts/sample-precision-edges.mjs ~/.cache/codegraph/repos/pallets__flask/.codegraph/graph.json ~/.cache/codegraph/repos/pallets__flask flask-sample.md 42 11
+//   node scripts/eval/sample-precision-edges.mjs ~/.cache/codegraph/repos/pallets__flask/.codegraph/graph.json ~/.cache/codegraph/repos/pallets__flask flask-sample.md 42 11
 //
 import { readFileSync, existsSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';

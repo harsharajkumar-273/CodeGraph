@@ -1,7 +1,7 @@
 {
   "name": "codegraph-engine",
   "version": "0.2.0",
-  "description": "AST dependency, call-graph, variable-lineage and blast-radius engine for TypeScript/JavaScript/Python repos, with confidence-labeled edges (resolved/probable/ambiguous) and a React Flow UI.",
+  "description": "AST dependency, call-graph, variable-lineage and blast-radius engine for TypeScript, JavaScript, Python and Go repos, with confidence-labeled edges (resolved/probable/ambiguous), a pull request action, an MCP server for AI agents, and a web explorer.",
   "type": "module",
   "license": "MIT",
   "homepage": "https://github.com/harsharajkumar-273/CodeGraph",
@@ -14,7 +14,7 @@
   },
   "keywords": [
     "ast", "call-graph", "dependency-graph", "blast-radius", "static-analysis",
-    "tree-sitter", "code-analysis", "impact-analysis", "variable-lineage"
+    "tree-sitter", "code-analysis", "impact-analysis", "variable-lineage", "mcp", "go", "python", "typescript"
   ],
   "engines": {
     "node": ">=20"

@@ -18,7 +18,7 @@ the target definition) and judged correct or wrong. Reproduce with:
 
 ```bash
 npm run cg -- index pallets/flask
-node scripts/sample-precision-edges.mjs ~/.cache/codegraph/repos/pallets__flask/.codegraph/graph.json ~/.cache/codegraph/repos/pallets__flask flask-sample.md 42 11
+node scripts/eval/sample-precision-edges.mjs ~/.cache/codegraph/repos/pallets__flask/.codegraph/graph.json ~/.cache/codegraph/repos/pallets__flask flask-sample.md 42 11
 ```
 
 ## Results
