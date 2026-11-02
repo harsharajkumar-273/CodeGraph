@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
 import type { CodeGraph } from '@codegraph/core';
 import { indexFiles, indexRepo } from '@codegraph/extractors';
-import { blastRadius, changedNodes, changedSignatures, diffLines, removedButStillCalled, removedPublicApi, importCycles, parseUnifiedDiff, resolveTargets, slice, variableLineage } from '../src';
+import { blastRadius, changedNodes, changedSignatures, diffLines, removedButStillCalled, removedPublicApi, signatureNotes, importCycles, parseUnifiedDiff, resolveTargets, slice, variableLineage } from '../src';
 import { fixture } from '../../extractors/test/helpers';
 
 let g: CodeGraph;
@@ -418,3 +418,25 @@ describe('diffLines', () => {
     }
   });
 });
+
+describe('signatureNotes', () => {
+  const idx = async (files: Record<string, string>) => (await indexFiles(files, {}, '.')).graph;
+  it('states return type, default, type and visibility changes, and stays quiet about a private uncalled helper', async () => {
+    const base = await idx({
+      'a.ts': "export function f(x: number, y = 1): string { return ''; }\nexport function g(a: string, b: number): void {}\nexport function h(n: number) {}\nfunction priv(q: number): number { return q; }\n",
+    });
+    const head = await idx({
+      'a.ts': "export function f(x: number, y = 2): string | null { return null; }\nexport function g(a: string, b: string): void {}\nfunction h(n: number) {}\nfunction priv(q: string): string { return q; }\n",
+    });
+    const by = Object.fromEntries(signatureNotes(base, head).map((n) => [n.symbol.name, n.notes]));
+    expect(by.f).toEqual(['return type `string` -> `string | null`', 'default of `y` changed: `1` -> `2`']);
+    expect(by.g).toEqual(['type of `b` changed: `b: number` -> `b: string`']);
+    expect(by.h).toEqual(['no longer exported']);
+    expect(by.priv).toBeUndefined();
+  });
+  it('is empty when nothing about the declarations changed', async () => {
+    const src = { 'a.ts': 'export function f(x: number): number { return x; }\n' };
+    expect(signatureNotes(await idx(src), await idx({ 'a.ts': 'export function f(x: number): number { return x + 1; }\n' }))).toEqual([]);
+  });
+});
+

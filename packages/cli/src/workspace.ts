@@ -15,7 +15,7 @@ export interface ProposedFile {
 export type Verdict = 'breaking' | 'api-change' | 'shared' | 'contained' | 'additive' | 'nothing';
 
 export interface Finding {
-  kind: 'removed-but-called' | 'too-few-arguments' | 'too-many-arguments' | 'public-api-removed' | 'unchecked-calls';
+  kind: 'signature-changed' | 'removed-but-called' | 'too-few-arguments' | 'too-many-arguments' | 'public-api-removed' | 'unchecked-calls';
   message: string;
   /** Where the problem would show up, `file:line`. */
   at: string[];
@@ -132,6 +132,7 @@ export class Workspace {
           });
         }
       }
+      for (const n of c.notes ?? []) findings.push({ kind: 'signature-changed', message: `\`${n.symbol.qualifiedName ?? n.symbol.name}\` (${n.symbol.file}): ${n.notes.join('; ')}.`, at: [] });
       if (c.removedApi.length) {
         findings.push({ kind: 'public-api-removed', message: `Public API removed: ${cap(c.removedApi, 8).map((n) => `\`${n.qualifiedName ?? n.name}\``).join(', ')}.`, at: cap(c.removedApi, 8).map((n) => n.file ?? '') });
       }
@@ -143,7 +144,7 @@ export class Workspace {
     const signaturesChanged = !!c?.signatures.length;
     const verdict: Verdict = findings.some((f) => ['removed-but-called', 'too-few-arguments', 'too-many-arguments'].includes(f.kind))
       ? 'breaking'
-      : signaturesChanged || c?.removedApi.length
+      : signaturesChanged || c?.removedApi.length || c?.notes?.length
         ? 'api-change'
         : outside.length
           ? 'shared'
