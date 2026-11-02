@@ -53,6 +53,20 @@ codegraph index pallets/flask
 
 Or without installing globally: `npx --package=codegraph-engine codegraph index .`
 
+
+### From GitHub Packages
+
+Each GitHub release also publishes `@harsharajkumar-273/codegraph-engine` to the GitHub npm registry. GitHub's registry needs a
+token even to install a public package (a personal access token with `read:packages`):
+
+```bash
+echo "@harsharajkumar-273:registry=https://npm.pkg.github.com" >> ~/.npmrc
+echo "//npm.pkg.github.com/:_authToken=YOUR_TOKEN" >> ~/.npmrc
+npm install -g @harsharajkumar-273/codegraph-engine
+```
+
+The pull request action does not need either: `uses: harsharajkumar-273/CodeGraph@<tag>` runs straight from the repository.
+
 ## Quick start (from a clone of this repo)
 
 ```bash
