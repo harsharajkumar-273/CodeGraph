@@ -2,7 +2,7 @@
   "name": "codegraph",
   "private": true,
   "type": "module",
-  "description": "AST dependency, call-graph and blast-radius engine for analyzing repos (Tree-sitter + TypeScript).",
+  "description": "AST dependency, call-graph and blast-radius engine for analyzing TypeScript, JavaScript, Python and Go repos (Tree-sitter). Monorepo; the published package is packages/cli (codegraph-engine).",
   "license": "MIT",
   "workspaces": ["packages/*"],
   "scripts": {
