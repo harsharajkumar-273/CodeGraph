@@ -4,7 +4,7 @@
 import type { CodeGraph, Confidence, GraphNode } from '@codegraph/core';
 import { indexFiles } from '@codegraph/extractors';
 import {
-  blastRadius, changedNodes, changedSignatures, isTestPath, removedButStillCalled, removedPublicApi,
+  blastRadius, changedNodes, changedSignatures, isTestPath, removedButStillCalled, removedPublicApi, signatureNotes,
   type CallSite, type FileChange, type ImpactResult,
 } from '@codegraph/analysis';
 import type { BaseComparison, MarkdownOptions } from './report';
@@ -57,6 +57,7 @@ export function compareVersions(base: VersionIndex, head: VersionIndex): BaseCom
     dangling: removedButStillCalled(base.graph, head.graph, head.unresolved, base.unresolved),
     signatures: changedSignatures(base.graph, head.graph, head.sites),
     removedApi: removedPublicApi(base.graph, head.graph),
+    notes: signatureNotes(base.graph, head.graph),
     baseSymbols: new Set(symbols(base.graph).map((n) => `${n.file}#${n.qualifiedName}`)),
     baseNames: new Set(symbols(base.graph).map((n) => `${n.kind}:${n.qualifiedName ?? n.name}`)),
   };

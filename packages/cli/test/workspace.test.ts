@@ -64,6 +64,13 @@ describe('check_change', () => {
     expect(r.verdict).toBe('nothing');
   });
 
+  it('reports a changed return type as an API change, without calling it breaking', async () => {
+    const ws = new Workspace(dir, 0);
+    const r = await ws.check([{ path: 'src/math.ts', content: 'export function add(a: number, b: number): string {\n  return String(a + b);\n}\nexport function sub(a: number, b: number): number {\n  return a - b;\n}\n' }]);
+    expect(r.verdict).toBe('api-change');
+    expect(r.text).toContain('return type `number` -> `string`');
+  });
+
   it('checks Python and Go the same way', async () => {
     put('py/lib.py', 'def helper(a, b):\n    return a + b\n');
     put('py/main.py', 'from lib import helper\n\ndef run():\n    return helper(1, 2)\n');

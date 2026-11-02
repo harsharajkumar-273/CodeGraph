@@ -1,5 +1,5 @@
 import type { CodeGraph, Confidence, GraphNode } from '@codegraph/core';
-import { isTestPath, summarizeImpact, type DanglingCall, type ImpactResult, type SignatureChange } from '@codegraph/analysis';
+import { isTestPath, summarizeImpact, type DanglingCall, type ImpactResult, type SignatureChange, type SignatureNote } from '@codegraph/analysis';
 
 export const COMMENT_MARKER = '<!-- codegraph-impact -->';
 
@@ -19,6 +19,8 @@ export interface BaseComparison {
   dangling: DanglingCall[];
   signatures: SignatureChange[];
   removedApi: GraphNode[];
+  /** Changes to a kept function's signature that argument counting does not see (types, defaults, return type, visibility). */
+  notes?: SignatureNote[];
   /** `file#name` of every function, method and class the base commit had. */
   baseSymbols?: Set<string>;
   /** `kind:name` of the same, to tell a move from an addition. */
@@ -152,6 +154,13 @@ export function impactMarkdown(g: CodeGraph, r: ImpactResult, opts: MarkdownOpti
   const removedApi = opts.comparison?.removedApi ?? [];
   const verdict = verdictLines(g, { dangling, signatures, removedApi, outside: outside.length, changed: r.seeds.filter((id) => g.node(id)?.kind !== 'file').length, createdPublic: opts.createdPublic ?? [], created: opts.created ?? 0 });
   if (verdict.length) out.push(...verdict, '');
+  const sigNotes = opts.comparison?.notes ?? [];
+  if (sigNotes.length) {
+    out.push('**Signature details** _(read from the declarations, not from behaviour)_');
+    for (const n of sigNotes.slice(0, 6)) out.push(`- \`${n.symbol.qualifiedName ?? n.symbol.name}\`: ${n.notes.join('; ')}`);
+    if (sigNotes.length > 6) out.push(`- …and ${sigNotes.length - 6} more`);
+    out.push('');
+  }
   if (opts.aiSummary) out.push('**Reading of the change** _(written by a model from the diff, the description and the facts in this comment; it can be wrong, and the verdict above does not depend on it)_', '', opts.aiSummary, '');
   if (dangling.length) {
     const d = dangling;
