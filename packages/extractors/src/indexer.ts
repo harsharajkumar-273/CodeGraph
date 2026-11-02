@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { promises as fs } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 import { createFilter } from './filter';
@@ -39,9 +40,8 @@ async function walk(root: string, opts: IndexOptions) {
   return { sources: sources.sort(), configs: configs.sort() };
 }
 
-/** Index an on-disk repository (a local checkout). */
-export async function indexRepo(root: string, opts: IndexOptions = {}): Promise<IndexResult> {
-  const t0 = Date.now();
+/** Every indexed source file of a checkout (and the config files the resolver reads), as path -> text. */
+export async function loadRepoFiles(root: string, opts: IndexOptions = {}): Promise<{ files: Map<string, string>; configs: Map<string, string>; skipped: number }> {
   const { sources, configs } = await walk(root, opts);
   const max = opts.maxFileBytes ?? 1_000_000;
   const files = new Map<string, string>();
@@ -57,7 +57,32 @@ export async function indexRepo(root: string, opts: IndexOptions = {}): Promise<
   }
   const cfg = new Map<string, string>();
   for (const rel of configs) cfg.set(rel, await fs.readFile(join(root, rel), 'utf8'));
-  const res = await indexFiles(files, cfg, root, opts);
+  return { files, configs: cfg, skipped };
+}
+
+/**
+ * A cheap signature of the checkout: every indexed file's path, size and modification time. It changes when a file is added,
+ * removed or edited, without reading any file, so a long-lived process can tell when its index is stale.
+ */
+export async function fingerprintRepo(root: string, opts: IndexOptions = {}): Promise<string> {
+  const { sources, configs } = await walk(root, opts);
+  const parts: string[] = [];
+  for (const rel of [...sources, ...configs]) {
+    try {
+      const st = await fs.stat(join(root, rel));
+      parts.push(`${rel}:${st.size}:${Math.round(st.mtimeMs)}`);
+    } catch {
+      parts.push(`${rel}:gone`);
+    }
+  }
+  return createHash('sha1').update(parts.join('\n')).digest('hex');
+}
+
+/** Index an on-disk repository (a local checkout). */
+export async function indexRepo(root: string, opts: IndexOptions = {}): Promise<IndexResult> {
+  const t0 = Date.now();
+  const { files, configs, skipped } = await loadRepoFiles(root, opts);
+  const res = await indexFiles(files, configs, root, opts);
   res.stats.skipped = skipped;
   res.stats.ms = Date.now() - t0;
   return res;

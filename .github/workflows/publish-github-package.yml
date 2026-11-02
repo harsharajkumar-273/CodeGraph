@@ -1,0 +1,34 @@
+name: Publish to GitHub Packages
+
+# Runs when a GitHub release is published (or by hand). Publishes the CLI as @harsharajkumar-273/codegraph-engine to the
+# GitHub npm registry; the public npm package keeps its unscoped name `codegraph-engine` and is published separately.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://npm.pkg.github.com
+          scope: '@harsharajkumar-273'
+      - run: npm ci
+      - run: npm test
+      - run: npm run build:cli
+      - name: Publish under the repository owner's scope
+        working-directory: packages/cli
+        run: |
+          npm pkg set name=@harsharajkumar-273/codegraph-engine
+          npm pkg set publishConfig.registry=https://npm.pkg.github.com
+          npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
