@@ -29,6 +29,11 @@ export interface GraphNode {
   endLine?: number;
   exported?: boolean;
   parent?: string; // id of containing class/file
+  /** Functions and methods: how many arguments a caller must pass (`min`) and may pass (`max`, null when variadic). The receiver is not counted. */
+  arity?: { min: number; max: number | null };
+  /** Functions and methods: each parameter as written, and the declared return type, for showing a signature. */
+  params?: string[];
+  returns?: string;
 }
 
 export interface GraphEdge {

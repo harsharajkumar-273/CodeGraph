@@ -4,11 +4,11 @@ import { execFile } from 'node:child_process';
 import { createInterface } from 'node:readline';
 import { promisify } from 'node:util';
 import type { CodeGraph, Confidence } from '@codegraph/core';
-import { indexRepo } from '@codegraph/extractors';
 import { blastRadius, changedNodes, parseUnifiedDiff, resolveTargets, summarizeImpact } from '@codegraph/analysis';
 import { resolveRepo } from './repo';
 import { symbolLabel } from './report';
 import type { Flags } from './commands';
+import { Workspace, type ProposedFile } from './workspace';
 
 const exec = promisify(execFile);
 const VERSION = '0.2.0';
@@ -28,8 +28,50 @@ const where = (g: CodeGraph, id: string) => {
   return n?.startLine ? `${symbolLabel(g, id)} (line ${n.startLine})` : symbolLabel(g, id);
 };
 
-export function buildTools(getGraph: () => Promise<{ graph: CodeGraph; root: string }>, reindex: () => void): Tool[] {
+export function buildTools(ws: Workspace): Tool[] {
+  const getGraph = async () => ({ graph: (await ws.current()).index.graph, root: ws.root });
+  const reindex = () => ws.invalidate();
   return [
+    {
+      name: 'codegraph_check_change',
+      description:
+        'Check an edit BEFORE you write it. Give the complete new text of each file you are about to change; nothing is written. Returns whether it would leave calls to removed functions, calls with the wrong number of arguments, or removed public API, which callers outside the files it reaches, and the tests to run. Use before saving any change to shared code.',
+      inputSchema: {
+        type: 'object',
+        required: ['files'],
+        properties: {
+          files: {
+            type: 'array',
+            description: 'Each file you plan to change: its repository-relative path and its complete new content (null to delete it).',
+            items: { type: 'object', required: ['path', 'content'], properties: { path: { type: 'string' }, content: { type: ['string', 'null'] } } },
+          },
+        },
+      },
+      async run(a) {
+        const files: ProposedFile[] = (Array.isArray(a.files) ? a.files : [])
+          .filter((f): f is { path: string; content: unknown } => !!f && typeof (f as { path?: unknown }).path === 'string')
+          .map((f) => ({ path: f.path, content: typeof f.content === 'string' ? f.content : null }));
+        if (!files.length) return 'Give files: [{ path, content }].';
+        return (await ws.check(files)).text;
+      },
+    },
+    {
+      name: 'codegraph_verify_symbol',
+      description: 'Before you call a function or method, confirm it exists and get its real parameters, return type, arity and caller count. A name that does not exist comes back with the closest real ones. Use `file#name` to disambiguate.',
+      inputSchema: { type: 'object', required: ['names'], properties: { names: { type: 'array', items: { type: 'string' }, description: 'Symbols such as parse, Parser.parse or src/a.ts#parse.' } } },
+      async run(a) {
+        const names = (Array.isArray(a.names) ? a.names : []).filter((n): n is string => typeof n === 'string');
+        return names.length ? ws.verify(names) : 'Give names: ["parse", ...].';
+      },
+    },
+    {
+      name: 'codegraph_repo_map',
+      description: 'A compact map of the repository: files with their most-called symbols. Use to orient yourself before searching. Pass path to look inside a directory.',
+      inputSchema: { type: 'object', properties: { path: { type: 'string' }, limit: { type: 'number' } } },
+      async run(a) {
+        return ws.map({ path: str(a.path) || undefined, limit: num(a.limit, 25) });
+      },
+    },
     {
       name: 'codegraph_impact',
       description:
@@ -68,7 +110,8 @@ export function buildTools(getGraph: () => Promise<{ graph: CodeGraph; root: str
         const range = str(a.range) || 'HEAD';
         if (!/^[\w./~^@:-]+(\.\.\.?[\w./~^@:-]+)?$/.test(range)) return `Not a valid git range: ${range}`;
         const { stdout } = await exec('git', ['diff', '-U0', range], { cwd: root, maxBuffer: 64 * 1024 * 1024 });
-        const { nodes } = changedNodes(graph, parseUnifiedDiff(stdout));
+        const changes = parseUnifiedDiff(stdout);
+        const { nodes } = changedNodes(graph, changes);
         if (!nodes.length) return 'No changed source symbols in that diff.';
         const res = blastRadius(graph, nodes.map((n) => n.id), { maxDepth: 4, minConfidence: 'probable', expandFiles: false });
         const s = summarizeImpact(graph, res);
@@ -159,7 +202,8 @@ export async function handle(tools: Tool[], msg: Rpc): Promise<object | undefine
         protocolVersion: typeof msg.params?.protocolVersion === 'string' ? msg.params.protocolVersion : '2024-11-05',
         capabilities: { tools: {} },
         serverInfo: { name: 'codegraph', version: VERSION },
-        instructions: 'Call codegraph_impact before changing shared code, and codegraph_diff_impact before committing, to see which callers and tests a change can reach.',
+        instructions:
+          'Before saving an edit to shared code, pass the new file text to codegraph_check_change: it reports calls the edit would break, without writing anything. Before calling a function you did not just read, confirm it with codegraph_verify_symbol. Use codegraph_impact for what a symbol reaches and codegraph_repo_map to orient. The index follows the files on disk.',
       });
     case 'ping':
       return reply({});
@@ -182,13 +226,8 @@ export async function handle(tools: Tool[], msg: Rpc): Promise<object | undefine
 
 export async function cmdMcp(pos: string[], _flags: Flags) {
   const root = await resolveRepo(pos[0] ?? '.');
-  let cached: Promise<{ graph: CodeGraph; root: string }> | undefined;
-  const getGraph = () =>
-    (cached ??= indexRepo(root).then(({ graph, stats }) => {
-      console.error(`codegraph: indexed ${stats.files} files, ${stats.symbols} symbols`);
-      return { graph, root };
-    }));
-  const tools = buildTools(getGraph, () => (cached = undefined));
+  const ws = new Workspace(root);
+  const tools = buildTools(ws);
   const rl = createInterface({ input: process.stdin });
   for await (const line of rl) {
     if (!line.trim()) continue;

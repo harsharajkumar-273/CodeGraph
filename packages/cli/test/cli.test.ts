@@ -1,16 +1,22 @@
-import { beforeAll, describe, expect, it } from 'vitest';
+import { execFileSync } from 'node:child_process';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { CodeGraph } from '@codegraph/core';
 import { indexRepo } from '@codegraph/extractors';
 import { blastRadius, resolveTargets } from '@codegraph/analysis';
 import { fixture } from '../../extractors/test/helpers';
+import { cmdImpact } from '../src/commands';
 import { buildTools, handle } from '../src/mcp';
+import { Workspace } from '../src/workspace';
 import { COMMENT_MARKER, impactMarkdown, testCommands } from '../src/report';
 
 let graph: CodeGraph;
 let tools: ReturnType<typeof buildTools>;
 beforeAll(async () => {
   graph = (await indexRepo(fixture('ts-basic'))).graph;
-  tools = buildTools(async () => ({ graph, root: fixture('ts-basic') }), () => {});
+  tools = buildTools(new Workspace(fixture('ts-basic')));
 });
 
 const call = async (name: string, args: object) => {
@@ -94,6 +100,42 @@ describe('pull request comment', () => {
   });
 });
 
+describe('grouping by edited symbol', () => {
+  it('lists callers under the edit that reaches them, most callers first, and marks top-level code', () => {
+    const seeds = ['src/math.ts#add', 'src/math.ts#mul'].flatMap((q) => resolveTargets(graph, q).map((n) => n.id));
+    const r = blastRadius(graph, seeds, { minConfidence: 'probable' });
+    const md = impactMarkdown(graph, r, { changedFiles: new Set(['src/math.ts']) });
+    expect(md).toContain('Which edit reaches whom');
+    expect(md).toMatch(/- `src\/math\.ts#\w+` is reached by \*\*\d+\*\* in \d+ files?/);
+    const counts = [...md.matchAll(/is reached by \*\*(\d+)\*\*/g)].map((m) => Number(m[1]));
+    expect(counts).toEqual([...counts].sort((a, b) => b - a));
+  });
+
+  it('shows the test list only when it adds something beyond the command', () => {
+    const seeds = resolveTargets(graph, 'src/math.ts#add').map((n) => n.id);
+    const r = blastRadius(graph, seeds, { minConfidence: 'probable' });
+    const many = { ...r, tests: Array.from({ length: 12 }, (_, i) => `t/a${i}.test.ts`) };
+    const withCmd = impactMarkdown(graph, many, { jsRunner: 'vitest', changedFiles: new Set() });
+    expect(withCmd).toContain('npx vitest run');
+    expect(withCmd).not.toContain('- `t/a0.test.ts`');
+    const noCmd = impactMarkdown(graph, many, { changedFiles: new Set() });
+    expect(noCmd).toContain('- `t/a0.test.ts`');
+  });
+});
+
+describe('wording', () => {
+  it('uses singular and plural correctly and keeps the headline the action reads', () => {
+    const seeds = resolveTargets(graph, 'src/math.ts#add').map((n) => n.id);
+    const r = blastRadius(graph, seeds, { minConfidence: 'probable' });
+    const one = { ...r, impacted: r.impacted.slice(0, 1), tests: ['t/a.test.ts'] };
+    const md = impactMarkdown(graph, one, { changedFiles: new Set(['src/math.ts']), jsRunner: 'vitest' });
+    expect(md).toMatch(/\*\*1 symbol in 1 file\*\*/);
+    expect(md).toMatch(/\d+ test files? to run|1 of \d+ test files to run|1 test file to run/);
+    expect(md).not.toMatch(/1 symbols|1 files/);
+    expect(md).toMatch(/```\n\n- `t\/a\.test\.ts`/); // a blank line between the command and the list
+  });
+});
+
 describe('test commands', () => {
   it('gives one command per ecosystem, and Go packages rather than files', () => {
     expect(testCommands(['a/x_test.go', 'a/y_test.go', 'b/z_test.go', 'tests/test_a.py', 'web/a.test.ts'], 'vitest')).toEqual([
@@ -105,5 +147,139 @@ describe('test commands', () => {
 
   it('offers no JavaScript command when the runner is unknown', () => {
     expect(testCommands(['web/a.test.ts'])).toEqual([]);
+  });
+});
+
+describe('comparing a pull request with its base', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'cg-rename-'));
+  const git = (...a: string[]) => execFileSync('git', ['-c', 'user.email=t@t', '-c', 'user.name=t', ...a], { cwd: dir, stdio: 'pipe' });
+  const write = (name: string, text: string) => writeFileSync(join(dir, name), text);
+  afterAll(() => rmSync(dir, { recursive: true, force: true }));
+
+  async function comment(): Promise<string> {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      await cmdImpact([], { diff: true, range: 'main...HEAD', repo: dir, format: 'markdown' });
+      return log.mock.calls.map((c) => c.join(' ')).join('\n');
+    } finally {
+      log.mockRestore();
+      err.mockRestore();
+    }
+  }
+
+  it('flags a renamed function that one caller still uses, and not the caller that was updated', async () => {
+    git('init', '-q', '-b', 'main');
+    write('lib.ts', 'export function parseConfig(t: string) { return t; }\nexport function keep() { return 1; }\n');
+    write('app.ts', "import { parseConfig, keep } from './lib';\nexport function load(t: string) { return parseConfig(t); }\nexport function other(t: string) { return parseConfig(t); }\nexport function noop() { return keep(); }\n");
+    git('add', '-A');
+    git('commit', '-qm', 'base');
+    git('checkout', '-qb', 'feature');
+    write('lib.ts', 'export function parseSettings(t: string) { return t; }\nexport function keep() { return 1; }\n');
+    write('app.ts', "import { parseSettings, keep } from './lib';\nimport { parseConfig } from './lib';\nexport function load(t: string) { return parseSettings(t); }\nexport function other(t: string) { return parseConfig(t); }\nexport function noop() { return keep(); }\n");
+    git('commit', '-qam', 'rename');
+    const md = await comment();
+    expect(md).toMatch(/1 call to code this change removes is still there/);
+    expect(md).toContain('`lib.ts#parseConfig` was removed, but `app.ts#other` still calls `parseConfig`');
+    expect(md).not.toContain('app.ts#load');
+  });
+
+  it('says nothing about removals once every caller is updated', async () => {
+    write('app.ts', "import { parseSettings, keep } from './lib';\nexport function load(t: string) { return parseSettings(t); }\nexport function other(t: string) { return parseSettings(t); }\nexport function noop() { return keep(); }\n");
+    git('commit', '-qam', 'fix the missed caller');
+    expect(await comment()).not.toMatch(/still there/);
+  });
+});
+
+describe('the verdict', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'cg-verdict-'));
+  const git = (...a: string[]) => execFileSync('git', ['-c', 'user.email=t@t', '-c', 'user.name=t', ...a], { cwd: dir, stdio: 'pipe' });
+  const write = (name: string, text: string) => writeFileSync(join(dir, name), text);
+  afterAll(() => rmSync(dir, { recursive: true, force: true }));
+  async function comment() {
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      await cmdImpact([], { diff: true, range: 'main...HEAD', repo: dir, format: 'markdown' });
+      return log.mock.calls.map((c) => c.join(' ')).join('\n');
+    } finally {
+      log.mockRestore();
+      err.mockRestore();
+    }
+  }
+  const reset = () => git('checkout', '-q', 'main') && undefined;
+
+  it('says likely breaking when a function now needs another argument, and names it', async () => {
+    git('init', '-q', '-b', 'main');
+    write('lib.py', 'def connect(host, port):\n    return host\n\ndef helper(x):\n    return x\n');
+    write('app.py', 'from lib import connect, helper\n\ndef run():\n    return connect("a", 1)\n\ndef other():\n    return helper(2)\n');
+    git('add', '-A');
+    git('commit', '-qm', 'base');
+    git('checkout', '-qb', 'sig');
+    write('lib.py', 'def connect(host, port, timeout):\n    return host\n\ndef helper(x):\n    return x + 1\n\ndef brand_new(a):\n    return a\n');
+    git('commit', '-qam', 'change');
+    const md = await comment();
+    expect(md).toMatch(/Verdict: 🔴 likely breaking/);
+    expect(md).toContain('`connect` now requires 1 more argument, but `app.py:4` passes 2');
+    expect(md).toMatch(/the 2 existing symbols this change edits/); // brand_new is new, not edited
+    reset();
+  });
+
+  it('does not say breaking when the callers were updated in the same change, but still notes the public signature', async () => {
+    git('checkout', '-q', 'main');
+    git('checkout', '-qb', 'sig-ok');
+    write('lib.py', 'def connect(host, port, timeout):\n    return host\n\ndef helper(x):\n    return x\n');
+    write('app.py', 'from lib import connect, helper\n\ndef run():\n    return connect("a", 1, 5)\n\ndef other():\n    return helper(2)\n');
+    git('commit', '-qam', 'update callers too');
+    const md = await comment();
+    expect(md).not.toMatch(/Verdict: 🔴/);
+    expect(md).toMatch(/Verdict: 🟠 may change public API/);
+    expect(md).toContain('every call in this repository already fits');
+    reset();
+  });
+
+  it('says additive for new code only, and lists the new public symbols', async () => {
+    git('checkout', '-qb', 'add');
+    write('extra.py', 'def fresh_feature(a):\n    return a\n\ndef _private(a):\n    return a\n');
+    git('add', '-A');
+    git('commit', '-qm', 'add');
+    const md = await comment();
+    expect(md).toMatch(/Verdict: 🟢 additive/);
+    expect(md).toContain('`fresh_feature`');
+    expect(md).not.toContain('`_private`');
+    reset();
+  });
+
+  it('says it may change public API when an unused exported function is deleted', async () => {
+    git('checkout', '-qb', 'rm');
+    write('lib.py', 'def connect(host, port):\n    return host\n');
+    git('commit', '-qam', 'remove helper');
+    // `other` in app.py still calls helper(): that is the louder finding
+    expect(await comment()).toMatch(/Verdict: 🔴/);
+    write('app.py', 'from lib import connect\n\ndef run():\n    return connect("a", 1)\n');
+    git('commit', '-qam', 'fix callers');
+    const md = await comment();
+    expect(md).toMatch(/Verdict: 🟠 may change public API/);
+    expect(md).toMatch(/removes .*`helper`/);
+    reset();
+  });
+
+  it('says contained when the edited code has no outside callers', async () => {
+    git('checkout', '-qb', 'inner');
+    write('solo.py', 'def only_here(a):\n    return a\n');
+    git('add', '-A');
+    git('commit', '-qm', 'solo');
+    git('checkout', '-qb', 'inner2');
+    write('solo.py', 'def only_here(a):\n    return a + 1\n');
+    git('commit', '-qam', 'edit');
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      await cmdImpact([], { diff: true, range: 'inner...HEAD', repo: dir, format: 'markdown' });
+      expect(log.mock.calls.map((c) => c.join(' ')).join('\n')).toMatch(/Verdict: 🟢 contained/);
+    } finally {
+      log.mockRestore();
+      err.mockRestore();
+    }
   });
 });
